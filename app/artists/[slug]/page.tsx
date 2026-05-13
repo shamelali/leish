@@ -69,7 +69,9 @@ export default async function ArtistProfilePage({
       rating,
       review_count,
       bio,
-      is_verified
+      is_verified,
+      avatar_url,
+      experience_years
     `)
     .eq('slug', slug)
     .eq('kind', 'artist')
@@ -92,6 +94,45 @@ export default async function ArtistProfilePage({
     ? Math.min(...services.map((s: { price_myr: number }) => s.price_myr))
     : artist.hourly_rate || 0
 
+  // Fetch portfolio images
+  const { data: portfolioAssets } = await supabase
+    .from('provider_assets')
+    .select('url, thumbnail_url, caption, asset_type')
+    .eq('provider_id', artist.id)
+    .in('asset_type', ['portfolio', 'work_sample'])
+    .order('uploaded_at', { ascending: false })
+
+  const portfolio: PortfolioItem[] = (portfolioAssets || []).map((a) => ({
+    type: 'image' as const,
+    src: a.url,
+    alt: a.caption || 'Portfolio image',
+  }))
+
+  // Fetch testimonials (published reviews)
+  const { data: reviewData } = await supabase
+    .from('reviews')
+    .select(`
+      rating,
+      body,
+      created_at,
+      author:author_id (full_name)
+    `)
+    .eq('provider_id', artist.id)
+    .eq('status', 'published')
+    .order('created_at', { ascending: false })
+    .limit(10)
+
+  const testimonials = (reviewData || []).map((r) => ({
+    rating: r.rating,
+    text: r.body,
+    name: (r.author as unknown as { full_name: string })?.full_name || 'Anonymous',
+    date: r.created_at,
+  }))
+
+  const experienceText = artist.experience_years
+    ? `${artist.experience_years}+ years`
+    : ''
+
   // Transform to match expected format
   const artistData = {
     id: artist.id,
@@ -101,17 +142,17 @@ export default async function ArtistProfilePage({
     rating: artist.rating || 0,
     reviewCount: artist.review_count || 0,
     hourlyRate: artist.hourly_rate || 0,
-    image: "/artists/placeholder.jpg", // TODO: Add image field
+    image: artist.avatar_url || "/artists/placeholder.jpg",
     bio: artist.bio || "",
-    experience: "5+ years", // TODO: Add experience field
+    experience: experienceText,
     specialties: artist.specialties || [],
-    portfolio: [] as PortfolioItem[], // TODO: Add portfolio images
+    portfolio,
     services: services?.map((s: { name: string; duration_minutes: number; price_myr: number }) => ({
       name: s.name,
       duration: `${s.duration_minutes} mins`,
       price: s.price_myr
     })) || [],
-    testimonials: [], // TODO: Add testimonials
+    testimonials,
     bookedSlots: {}
   }
 
@@ -236,8 +277,8 @@ export default async function ArtistProfilePage({
             <div className="mt-12 border-t border-border pt-8 lg:mt-16 lg:pt-12">
               <h2 className="font-serif text-xl font-medium text-foreground sm:text-2xl">Customer Reviews</h2>
               <div className="mt-6 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {artistData.testimonials.map((review: { name: string; rating: number; text: string }) => (
-                  <div key={review.name} className="border border-border p-6">
+                {artistData.testimonials.map((review, idx) => (
+                  <div key={idx} className="border border-border p-6">
                     <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
                         <Star
