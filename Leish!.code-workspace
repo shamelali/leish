@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"kimi.enableNewConversationShortcut": true
+	},
+	"extensions": {
+		"recommendations": [
+			"supabase-snippets.supabase-javascript-snippets",
+			"bhdesign.supabase-dataobject-helper"
+		]
+	}
+}

@@ -1,0 +1,2 @@
+-- Placeholder for remote migration version already applied in hosted Supabase.
+-- Added locally to reconcile migration history so subsequent migrations can be pushed safely.

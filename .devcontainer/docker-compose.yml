@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspaces/b_qRvYZb3eZrv-1771704101499:cached
+      - node_modules:/workspaces/b_qRvYZb3eZrv-1771704101499/node_modules
+    command: sleep infinity
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    ports:
+      - "3000:3000"
+    networks:
+      - leish-network
+
+  # Optional: Local Supabase for development
+  supabase:
+    image: supabase/supabase-local:latest
+    ports:
+      - "54321:54321"
+      - "54322:54322"
+      - "54323:54323"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - JWT_SECRET=your-super-secret-jwt-token
+      - ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtc2pyaGFtam11cHZyeHF5YWdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyMjEyNTEsImV4cCI6MjA4Njc5NzI1MX0.awTvF1jFf0ep7s9SdCUBnuL7e1kDaYpfATGr_7ERmVw
+      - SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtc2pyaGFtam11cHZyeHF5YWdtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTIyMTI1MSwiZXhwIjoyMDg2Nzk3MjUxfQ.jo7twVEH471lecFp6_xhyDuBilY-ZcsL9yCAG92w8ko
+    volumes:
+      - supabase-data:/var/lib/postgresql/data
+    networks:
+      - leish-network
+    profiles:
+      - local-supabase
+
+volumes:
+  node_modules:
+  supabase-data:
+
+networks:
+  leish-network:
+    driver: bridge
