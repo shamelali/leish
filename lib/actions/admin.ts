@@ -77,7 +77,7 @@ export async function flagProvider(providerId: string) {
 export async function approveReview(reviewId: string) {
   const { user } = await requireAdminUser()
   const sql = getSql()
-  await sql`update public.reviews set status = '''published''' where id = ${reviewId}`
+  await sql`update public.reviews set status = 'published' where id = ${reviewId}`
   await writeAuditLog(user.id, "review.approve", reviewId)
   revalidatePath("/admin/moderation")
 }
@@ -85,7 +85,7 @@ export async function approveReview(reviewId: string) {
 export async function hideReview(reviewId: string) {
   const { user } = await requireAdminUser()
   const sql = getSql()
-  await sql`update public.reviews set status = '''hidden''' where id = ${reviewId}`
+  await sql`update public.reviews set status = 'hidden' where id = ${reviewId}`
   await writeAuditLog(user.id, "review.hide", reviewId)
   revalidatePath("/admin/moderation")
 }
@@ -93,7 +93,7 @@ export async function hideReview(reviewId: string) {
 export async function escalateReview(reviewId: string) {
   const { user } = await requireAdminUser()
   const sql = getSql()
-  await sql`update public.reviews set status = '''escalated''' where id = ${reviewId}`
+  await sql`update public.reviews set status = 'escalated' where id = ${reviewId}`
   await writeAuditLog(user.id, "review.escalate", reviewId)
   revalidatePath("/admin/moderation")
 }
@@ -120,7 +120,7 @@ export async function resolveAlert(alertId: string, formData: FormData) {
 export async function adminConfirmBooking(bookingId: string) {
   const { user } = await requireAdminUser()
   const sql = getSql()
-  await sql`update public.bookings set status = '''confirmed''' where id = ${bookingId}`
+  await sql`update public.bookings set status = 'confirmed' where id = ${bookingId}`
   await writeAuditLog(user.id, "booking.confirm", bookingId)
   revalidatePath("/admin/bookings")
 }
@@ -128,7 +128,7 @@ export async function adminConfirmBooking(bookingId: string) {
 export async function adminCancelBooking(bookingId: string) {
   const { user } = await requireAdminUser()
   const sql = getSql()
-  await sql`update public.bookings set status = '''canceled''' where id = ${bookingId}`
+  await sql`update public.bookings set status = 'canceled' where id = ${bookingId}`
   await writeAuditLog(user.id, "booking.cancel", bookingId)
   revalidatePath("/admin/bookings")
 }
