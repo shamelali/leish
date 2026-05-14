@@ -75,9 +75,9 @@ export function Footer() {
             </h3>
             <ul className="mt-3 sm:mt-4 flex flex-col gap-2 sm:gap-3">
               <li>
-                <span className="text-sm text-muted-foreground cursor-default">
+                <Link href="/about" className="text-sm text-muted-foreground transition-colors hover:text-accent">
                   {t.footer.aboutUs}
-                </span>
+                </Link>
               </li>
               <li>
                 <span className="text-sm text-muted-foreground cursor-default">
