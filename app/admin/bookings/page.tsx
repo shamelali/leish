@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
 import { getSql } from "@/lib/db/postgres"
 import { adminCancelBooking, adminConfirmBooking } from "@/lib/actions/admin"
