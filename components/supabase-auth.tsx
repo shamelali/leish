@@ -1,23 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 
 export type UserRole = "admin" | "artist" | "studio_manager" | "customer"
 
-function getPostSignInPath(role: UserRole | undefined, isNewUser: boolean): string {
-  if (isNewUser) {
-    switch (role) {
-      case "artist":
-        return "/artist/onboarding"
-      case "studio_manager":
-        return "/studios/onboarding"
-      case "customer":
-      default:
-        return "/"
-    }
-  }
+function getPostSignInPath(role: UserRole | undefined): string {
   switch (role) {
     case "admin":
       return "/admin"
@@ -31,11 +21,22 @@ function getPostSignInPath(role: UserRole | undefined, isNewUser: boolean): stri
   }
 }
 
-export function SupabaseAuthForm({ defaultSignUp }: { defaultSignUp?: boolean }) {
+export function SupabaseAuthForm() {
+  const searchParams = useSearchParams()
+
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const [isSignUp, setIsSignUp] = useState(defaultSignUp ?? false)
+  const [isSignUp, setIsSignUp] = useState(false)
+
+  useEffect(() => {
+    if (searchParams.get("mode") === "signup") setIsSignUp(true)
+    const urlRole = searchParams.get("role")
+    if (urlRole === "artist" || urlRole === "studio_manager" || urlRole === "customer") {
+      setRole(urlRole as UserRole)
+      setIsSignUp(true)
+    }
+  }, [searchParams])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error", text: string } | null>(null)
 
@@ -57,7 +58,6 @@ export function SupabaseAuthForm({ defaultSignUp }: { defaultSignUp?: boolean })
       }
 
       if (isSignUp) {
-        // Sign up with role selection and pass metadata for the signup trigger
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -69,10 +69,9 @@ export function SupabaseAuthForm({ defaultSignUp }: { defaultSignUp?: boolean })
             },
           },
         })
-        
+
         if (error) throw error
 
-        // Redirect new artists/studios to onboarding, customers to home
         if (role === "artist") {
           window.location.href = "/artist/onboarding"
         } else if (role === "studio_manager") {
@@ -81,14 +80,12 @@ export function SupabaseAuthForm({ defaultSignUp }: { defaultSignUp?: boolean })
           window.location.href = "/"
         }
       } else {
-        // Sign in
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
         if (error) throw error
 
-        // Get user role and redirect accordingly
         if (data.user) {
           const { data: profile } = await supabase
             .from("profiles")
@@ -97,8 +94,8 @@ export function SupabaseAuthForm({ defaultSignUp }: { defaultSignUp?: boolean })
             .single()
 
           const userRole = profile?.role as UserRole | undefined
-          
-          window.location.href = getPostSignInPath(userRole, false)
+
+          window.location.href = getPostSignInPath(userRole)
         } else {
           window.location.href = "/"
         }
@@ -318,8 +315,8 @@ export function SupabaseAuthForm({ defaultSignUp }: { defaultSignUp?: boolean })
         }}
         className="w-full text-sm text-muted-foreground hover:text-foreground"
       >
-        {isSignUp 
-          ? "Already have an account? Sign In" 
+        {isSignUp
+          ? "Already have an account? Sign In"
           : "Don't have an account? Sign Up"
         }
       </button>
