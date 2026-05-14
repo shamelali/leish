@@ -23,7 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq("id", user.id)
     .maybeSingle()
 
-  if (!profile || !["admin", "studio_manager"].includes(profile.role)) {
+  if (!profile || profile.role !== "admin") {
     redirect("/")
   }
 
@@ -32,7 +32,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {children}
       <div className="mx-auto max-w-7xl px-6 pb-12 lg:px-8">
         <div className="rounded-xl border border-border bg-secondary p-4 text-sm text-muted-foreground">
-          Admin access is enforced with Supabase session + admin-equivalent roles (`admin` / `studio_manager`).
+          Admin access is enforced with Supabase session. Requires admin role.
           <Link href="/sign-in" className="ml-2 text-accent hover:underline">
             Sign in
           </Link>

@@ -1,5 +1,5 @@
 {
-  "name": "beaute",
+  "name": "leish",
   "installCommand": "npm install",
   "buildCommand": "npm run build",
   "framework": "nextjs",

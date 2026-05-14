@@ -10,19 +10,13 @@ import { ArtistChat } from "@/components/artist-chat"
 import { SocialShare } from "@/components/social-share"
 import { getSupabaseServerClient } from "@/lib/supabase/server"
 
-export async function generateStaticParams() {
-  // For static generation at build time
-  // Return empty array - pages will be generated on-demand
-  return []
-}
-
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const supabase = await getSupabaseServerClient()
+  const supabase = getSupabaseServerClient()
   
   if (!supabase) {
     return { title: "Artist Not Found" }
@@ -51,7 +45,7 @@ export default async function ArtistProfilePage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const supabase = await getSupabaseServerClient()
+  const supabase = getSupabaseServerClient()
   
   if (!supabase) {
     notFound()
