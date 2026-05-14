@@ -108,7 +108,7 @@ const translations = {
     auth: {
       signInTitle: "Sign In",
       signInSubtitle: "Access your account to manage bookings and availability.",
-      registerTitle: "Register",
+      registerTitle: "Sign Up",
       registerSubtitle: "Create an account to book artists or offer your services.",
       email: "Email",
       password: "Password",

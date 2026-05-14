@@ -20,11 +20,11 @@ case "artist":
   }
 }
 
-export function SupabaseAuthForm() {
+export function SupabaseAuthForm({ defaultSignUp }: { defaultSignUp?: boolean }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const [isSignUp, setIsSignUp] = useState(false)
+  const [isSignUp, setIsSignUp] = useState(defaultSignUp ?? false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error", text: string } | null>(null)
 

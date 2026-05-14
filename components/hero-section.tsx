@@ -34,7 +34,7 @@ export function HeroSection() {
                  href="/quiz"
                  className="flex items-center justify-center rounded-full border border-foreground px-6 sm:px-8 py-3 sm:py-3.5 font-serif text-sm font-semibold tracking-[-0.01em] text-foreground transition-all hover:bg-foreground hover:text-primary-foreground"
                >
-                 {lang === "ms" ? "Kwiz Kecantikan" : "Match!"}
+                 {lang === "ms" ? "Kwiz Kecantikan" : "Let's Match!"}
                </Link>
               <Link
                 href="/artists"
