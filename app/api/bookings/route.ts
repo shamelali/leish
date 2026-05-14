@@ -5,6 +5,8 @@ import {
   sendBookingConfirmationSms,
   sendBookingCancellationSms,
 } from "@/lib/services/booking-notifications";
+import { sendEmail } from "@/lib/email/resend";
+import { bookingConfirmationTemplate } from "@/lib/email/templates";
 import { enforceRateLimit } from "@/lib/ops/rate-limit";
 import { reportApiError } from "@/lib/ops/alerts";
 
@@ -224,12 +226,68 @@ export async function PATCH(req: Request) {
       }
       await bookingSupabaseService.transition(booking.id, nextStatus);
 
-      // Send confirmation SMS when provider confirms booking
+      // Send confirmation email when provider confirms booking
       if (sendConfirmSms) {
         try {
           await sendBookingConfirmationSms(booking.id);
         } catch {
           console.error("SMS confirmation failed for booking:", booking.id);
+        }
+          try {
+            const { data: customer } = await supabase
+              .from("profiles")
+              .select("full_name")
+              .eq("id", booking.customer_id)
+              .maybeSingle();
+            const { data: provider } = await supabase
+              .from("providers")
+              .select("display_name")
+              .eq("id", booking.provider_id)
+              .maybeSingle();
+            const { data: service } = await supabase
+              .from("services")
+              .select("name")
+              .eq("id", booking.service_id)
+              .maybeSingle();
+            if (customer) {
+              const emailContent = bookingConfirmationTemplate({
+                customerName: customer.full_name || "Valued Customer",
+                bookingId: booking.id.slice(0, 8),
+                serviceName: service?.name || "Service",
+                providerName: provider?.display_name || "Provider",
+                date: new Date().toLocaleDateString("en-MY"),
+                time: "Scheduled",
+                amount: booking.total_amount_myr || 0,
+                paymentType: "full",
+              });
+              await sendEmail({
+                to: booking.customer_email || "",
+                ...emailContent,
+              });
+            }
+          } catch (emailErr) {
+            console.error("Confirmation email failed:", emailErr);
+          }
+      }
+
+      // Send completion email
+      if (nextStatus === "completed") {
+        try {
+          const { data: customer } = await supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", booking.customer_id)
+            .maybeSingle();
+          if (customer) {
+            await sendEmail({
+              to: booking.customer_email || "",
+              subject: `Booking Completed - ${booking.id.slice(0, 8)}`,
+              html: `<h2>Booking Completed</h2><p>Hi ${customer.full_name},</p><p>Your booking has been marked as completed. Thank you for choosing Leish! We hope you had a great experience.</p><p><a href="https://www.leish.my/bookings">Leave a Review</a></p>`,
+              text: `Booking Completed\n\nHi ${customer.full_name},\n\nYour booking has been marked as completed. Thank you for choosing Leish!\n\nLeave a review: https://www.leish.my/bookings`,
+            });
+          }
+        } catch (emailErr) {
+          console.error("Completion email failed:", emailErr);
         }
       }
 
