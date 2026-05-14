@@ -49,8 +49,8 @@ export default function MuaDashboardPage() {
 
         <Panel title="Starter Profile Snapshot">
           <div className="space-y-2">
-            <p className="font-serif text-lg text-foreground">{data.provider.name}</p>
-            <p className="text-sm text-muted-foreground">{data.provider.location}</p>
+            <p className="font-serif text-lg text-foreground">{data.provider?.name ?? "Your Profile"}</p>
+            <p className="text-sm text-muted-foreground">{data.provider?.location ?? "Set your location in profile settings"}</p>
             <p className="text-xs text-muted-foreground">
               Upgrade to Pro to unlock payout tracking, review moderation, and deeper analytics.
             </p>
