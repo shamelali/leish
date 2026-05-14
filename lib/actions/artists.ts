@@ -1,7 +1,9 @@
 "use server"
 
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
+import { getArtistService } from "@/lib/services"
 import type { Category } from "@/lib/data"
+import type { Artist } from "@/lib/data/types"
 
 export interface ArtistListItem {
   id: string
@@ -18,12 +20,38 @@ export interface ArtistListItem {
   isVerified: boolean
 }
 
+function toListItem(a: Artist): ArtistListItem {
+  return {
+    id: a.id,
+    slug: a.slug,
+    name: a.name,
+    image: a.image,
+    specialties: a.specialties as Category[],
+    location: a.location,
+    state: a.location.split(",")[0]?.trim() || "",
+    district: a.location.split(",")[1]?.trim() || "",
+    rating: a.rating,
+    reviewCount: a.reviewCount,
+    hourlyRate: a.hourlyRate,
+    isVerified: true,
+  }
+}
+
 export async function getArtists(): Promise<ArtistListItem[]> {
+  const useDb = process.env.USE_DB === "true"
+
+  if (!useDb) {
+    const svc = getArtistService()
+    const list = await svc.list()
+    return list.map(toListItem)
+  }
+
   try {
     const supabase = await getSupabaseSsrClient()
     if (!supabase) {
-      console.error("Supabase client not initialized")
-      return []
+      const svc = getArtistService()
+      const list = await svc.list()
+      return list.map(toListItem)
     }
 
     const { data, error } = await supabase
@@ -72,13 +100,31 @@ export async function getArtists(): Promise<ArtistListItem[]> {
     )
   } catch (err) {
     console.error("Exception fetching artists:", err)
-    return []
+    const svc = getArtistService()
+    const list = await svc.list()
+    return list.map(toListItem)
   }
 }
 
 export async function getArtistStates(): Promise<
   { state: string; count: number }[]
 > {
+  const useDb = process.env.USE_DB === "true"
+
+  if (!useDb) {
+    const svc = getArtistService()
+    const list = await svc.list()
+    const counts: Record<string, number> = {}
+    for (const a of list) {
+      const parts = a.location.split(",")
+      const s = parts[0]?.trim()
+      if (s) counts[s] = (counts[s] || 0) + 1
+    }
+    return Object.entries(counts)
+      .map(([state, count]) => ({ state, count }))
+      .sort((a, b) => a.state.localeCompare(b.state))
+  }
+
   const supabase = await getSupabaseSsrClient()
   if (!supabase) return []
 
