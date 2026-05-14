@@ -27,6 +27,9 @@ build/
 
 # TypeScript
 *.tsbuildinfo
+
+# Working directories
+leish_fixes/
 builds/
 builds/
 cache/
