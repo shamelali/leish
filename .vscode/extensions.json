@@ -1,0 +1,24 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "esbenp.prettier-vscode",
+    "christian-kohler.path-intellisense",
+    "yoavbls.pretty-ts-errors",
+    "usernamehw.errorlens",
+    "DavidAnson.vscode-markdownlint",
+    "eamodio.gitlens",
+    "mikestead.dotenv",
+    "ms-vscode.vscode-typescript-next",
+    "supabase.vscode-supabase-extension",
+    "supabase-snippets.supabase-javascript-snippets",
+    "dsznajder.es7-react-js-snippets",
+    "steoates.autoimport",
+    "ckolkman.vscode-postgres",
+    "mhutchie.git-graph",
+    "gruntfuggly.todo-tree",
+    "aaron-bond.better-comments",
+    "formulahendry.auto-rename-tag",
+    "oderwat.indent-rainbow"
+  ]
+}

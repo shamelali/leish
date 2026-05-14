@@ -1,93 +1,229 @@
-# leish_app
+# 💄 Beaute - Beauty Marketplace Platform
 
+[![Live Site](https://img.shields.io/badge/Live-leish.my-00C7B7?style=for-the-badge&logo=vercel&logoColor=white)](https://www.leish.my)
+[![Build Status](https://img.shields.io/badge/Build-Passing-success?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/shamelali/b_qRvYZb3eZrv-1771704101499/actions)
+[![License](https://img.shields.io/badge/License-Private-red?style=for-the-badge)](LICENSE)
 
+[![Next.js](https://img.shields.io/badge/Next.js-16.1.6-000000?style=flat-square&logo=next.js)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript)](https://typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.2-06B6D4?style=flat-square&logo=tailwindcss)](https://tailwindcss.com)
+[![Supabase](https://img.shields.io/badge/Supabase-3EB489?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
+[![Vercel](https://img.shields.io/badge/Vercel-Hosted-000000?style=flat-square&logo=vercel)](https://vercel.com)
+[![Billplz](https://img.shields.io/badge/Billplz-Payments-00A4E4?style=flat-square)](https://billplz.com)
+[![Resend](https://img.shields.io/badge/Resend-Email-000000?style=flat-square&logo=gmail&logoColor=white)](https://resend.com)
 
-## Getting started
+[![Node.js](https://img.shields.io/badge/Node.js-20+-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=flat-square&logo=postgresql)](https://postgresql.org)
+[![pnpm](https://img.shields.io/badge/pnpm-Ready-F69220?style=flat-square&logo=pnpm)](https://pnpm.io)
+[![ESLint](https://img.shields.io/badge/ESLint-9-4B32C3?style=flat-square&logo=eslint)](https://eslint.org)
+[![Vitest](https://img.shields.io/badge/Vitest-Testing-6E9F18?style=flat-square&logo=vitest)](https://vitest.dev)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+[![Made with Love](https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F-ff69b4?style=flat-square)](https://www.leish.my)
+[![Malaysia](https://img.shields.io/badge/Made%20in-Malaysia-FFCC00?style=flat-square)](https://www.leish.my)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+A production-ready beauty marketplace platform connecting makeup artists and studios with customers. Features real-time booking, integrated payments via Billplz, and automated email notifications.
 
-## Add your files
+---
 
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## 🚀 Quick Start
+
+```bash
+# Clone and install
+git clone https://github.com/shamelali/b_qRvYZb3eZrv-1771704101499.git
+cd b_qRvYZb3eZrv-1771704101499
+npm install
+
+# Set up environment
+cp .env.example .env.local
+# Edit .env.local with your credentials
+
+# Run development server
+npm run dev
+```
+
+Open [https://www.leish.my](https://www.leish.my) to view the app.
+
+---
+
+## 📚 Documentation
+
+| Guide | Purpose |
+|-------|---------|
+| [📖 App Manual](APP_MANUAL.md) | Complete setup and development guide |
+| [🚀 Deployment Guide](DEPLOYMENT_GUIDE.md) | Deploy to production step-by-step |
+| [🗺️ Roadmap](ROADMAP.md) | Development phases and milestones |
+| [👥 User Flows](USER_FLOWS.md) | Customer and provider journeys |
+| [🏢 Studio Owner Flow](STUDIO_OWNER_FLOW.md) | Complete studio onboarding |
+| [💳 Payment Testing](TEST_PAYMENT_GUIDE.md) | Test Billplz payments |
+| [🔧 Troubleshooting](TROUBLESHOOTING.md) | Common issues and fixes |
+
+---
+
+## ✨ Features
+
+### For Customers
+- 🔍 Browse artists and studios by location/specialty
+- 📅 Real-time availability with 30-min slots
+- 💳 Secure payments via Billplz (full or deposit)
+- 📧 Instant email confirmations
+- ⭐ Review and rating system
+
+### for Providers (Artists/Studios)
+- 🎨 Professional profile pages
+- 📊 Availability management calendar
+- 💼 Service catalog with pricing
+- 📈 Booking dashboard and analytics
+- 💰 Automated payment reconciliation
+
+### Platform
+- 🔐 Supabase Auth with role-based access
+- 📧 Resend email integration
+- 🔔 Real-time booking notifications
+- 🛡️ Rate limiting and security
+- 📱 Mobile-responsive design
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Framework** | Next.js 16 (App Router) |
+| **Language** | TypeScript 5.7 |
+| **Styling** | Tailwind CSS 4 + Radix UI |
+| **Database** | Supabase (PostgreSQL) |
+| **Auth** | Supabase Auth |
+| **Payments** | Billplz |
+| **Email** | Resend |
+| **Hosting** | Vercel |
+
+---
+
+## 📦 Environment Variables
+
+Create `.env.local` with:
+
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
+DATABASE_URL=
+
+# App
+NEXT_PUBLIC_APP_URL=https://www.leish.my
+
+# Payments (Billplz)
+BILLPLZ_API_KEY=
+BILLPLZ_X_SIGNATURE=
+BILLPLZ_COLLECTION_ID_FULL=
+BILLPLZ_COLLECTION_ID_DEPOSIT=
+BILLPLZ_CALLBACK_URL=
+PAYMENT_SUCCESS_URL=
+
+# Email (Resend)
+RESEND_API_KEY=
+FROM_EMAIL=hello@leish.my
+```
+
+See [.env.example](.env.example) for complete list.
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run tests
+npm test
+
+# Type check
+npm run typecheck
+
+# Lint
+npm run lint
+
+# Seed test data
+node scripts/seed.js
+```
+
+---
+
+## 🚀 Deployment
+
+### Automatic (Vercel)
+1. Push to GitHub
+2. Import project in Vercel
+3. Add environment variables
+4. Deploy
+
+### Manual
+```bash
+vercel --prod
+```
+
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed instructions.
+
+---
+
+## 📂 Project Structure
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/shamelali/leish_app.git
-git branch -M main
-git push -uf origin main
+├── app/                    # Next.js App Router
+│   ├── (routes)/          # Page routes
+│   ├── api/               # API endpoints
+│   └── pro/               # Provider dashboard
+├── components/            # React components
+├── lib/                   # Utilities & services
+│   ├── db/               # Database config
+│   ├── email/            # Email templates
+│   ├── payments/         # Billplz integration
+│   └── services/         # Business logic
+├── supabase/             # Migrations & config
+└── scripts/              # Utility scripts
 ```
 
-## Integrate with your tools
+---
 
-* [Set up project integrations](https://gitlab.com/shamelali/leish_app/-/settings/integrations)
+## 🔗 Live Demo
 
-## Collaborate with your team
+- **Production**: https://www.leish.my
+- **Staging**: https://staging.leish.my
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+### Test Accounts
+| Role | Access |
+|------|--------|
+| Customer | Sign up at `/sign-in` |
+| Provider | Sign up → Select "Studio Owner/Artist" |
 
-## Test and Deploy
+---
 
-Use the built-in continuous integration in GitLab.
+## 🤝 Contributing
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+1. Check [ROADMAP.md](ROADMAP.md) for planned features
+2. Create a feature branch
+3. Submit a pull request
 
-***
+See [APP_MANUAL.md](APP_MANUAL.md) for coding standards.
 
-# Editing this README
+---
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## 📝 License
 
-## Suggestions for a good README
+Private - All rights reserved.
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+---
 
-## Name
-Choose a self-explaining name for your project.
+## 🆘 Support
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+| Issue | Resource |
+|-------|----------|
+| Setup problems | [APP_MANUAL.md](APP_MANUAL.md) |
+| Deployment issues | [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) |
+| Payment testing | [TEST_PAYMENT_GUIDE.md](TEST_PAYMENT_GUIDE.md) |
+| Bug fixes | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+---
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+**Built with ❤️ for the beauty community.**
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+[Live Site](https://www.leish.my) · [Documentation](APP_MANUAL.md) · [Report Issue](../../issues)

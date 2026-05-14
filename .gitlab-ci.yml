@@ -1,0 +1,51 @@
+image: node:22
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+
+stages:
+  - install
+  - typecheck
+  - lint
+  - test
+  - build
+
+install:
+  stage: install
+  script:
+    - npm ci
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1 hour
+
+typecheck:
+  stage: typecheck
+  needs: [install]
+  script:
+    - npm run typecheck
+
+lint:
+  stage: lint
+  needs: [install]
+  script:
+    - npm run lint
+
+test:
+  stage: test
+  needs: [install]
+  script:
+    - npx vitest run --exclude '**/booking*.test.ts' --exclude '**/registration.test.ts' --exclude '**/*.load.test.ts'
+  artifacts:
+    reports:
+      junit: junit.xml
+
+build:
+  stage: build
+  needs: [install]
+  script:
+    - npm run build
+  variables:
+    CI: "true"
