@@ -6,11 +6,22 @@ import { Eye, EyeOff, Loader2 } from "lucide-react"
 
 export type UserRole = "admin" | "artist" | "studio_manager" | "customer"
 
-function getPostSignInPath(role: UserRole | undefined): string {
+function getPostSignInPath(role: UserRole | undefined, isNewUser: boolean): string {
+  if (isNewUser) {
+    switch (role) {
+      case "artist":
+        return "/artist/onboarding"
+      case "studio_manager":
+        return "/studios/onboarding"
+      case "customer":
+      default:
+        return "/"
+    }
+  }
   switch (role) {
     case "admin":
       return "/admin"
-case "artist":
+    case "artist":
       return "/artist"
     case "studio_manager":
       return "/studios/dashboard"
@@ -61,13 +72,14 @@ export function SupabaseAuthForm({ defaultSignUp }: { defaultSignUp?: boolean })
         
         if (error) throw error
 
-        setMessage({ 
-          type: "success", 
-          text: role === "customer" 
-            ? "Account created! You can now sign in."
-            : "Account created! Please complete your profile to start accepting bookings." 
-        })
-        setIsSignUp(false)
+        // Redirect new artists/studios to onboarding, customers to home
+        if (role === "artist") {
+          window.location.href = "/artist/onboarding"
+        } else if (role === "studio_manager") {
+          window.location.href = "/studios/onboarding"
+        } else {
+          window.location.href = "/"
+        }
       } else {
         // Sign in
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -86,7 +98,7 @@ export function SupabaseAuthForm({ defaultSignUp }: { defaultSignUp?: boolean })
 
           const userRole = profile?.role as UserRole | undefined
           
-          window.location.href = getPostSignInPath(userRole)
+          window.location.href = getPostSignInPath(userRole, false)
         } else {
           window.location.href = "/"
         }
