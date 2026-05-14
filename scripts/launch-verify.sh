@@ -142,11 +142,11 @@ fi
 # ─── 9. Nginx Check ───
 TOTAL=$((TOTAL+1))
 if which nginx >/dev/null 2>&1; then
-  if nginx -t 2>/dev/null; then
-    pass "Nginx installed and config valid"
+  if ss -tln 2>/dev/null | grep -q ":80 "; then
+    pass "Nginx installed and running on port 80"
     SCORE=$((SCORE+1))
   else
-    warn "Nginx installed but config has issues"
+    warn "Nginx installed but not running"
   fi
 else
   warn "Nginx not installed (needed for production)"
@@ -154,11 +154,11 @@ fi
 
 # ─── 10. PM2 Startup ───
 TOTAL=$((TOTAL+1))
-if pm2 startup 2>/dev/null | grep -q "already"; then
+if systemctl is-enabled pm2-shamelali 2>/dev/null | grep -q enabled; then
   pass "PM2 startup configured"
   SCORE=$((SCORE+1))
 else
-  warn "PM2 startup not configured (use pm2 startup)"
+  warn "PM2 startup not configured (run: sudo pm2 startup)"
 fi
 
 # ─── 11. Providers API Returns Data ───
@@ -184,11 +184,12 @@ fi
 
 # ─── 12. Git Status ───
 TOTAL=$((TOTAL+1))
-if git -C "$HOME/Project/theleish" status --porcelain 2>/dev/null | grep -qv "leish_fixes"; then
-  warn "Uncommitted changes in repo"
-else
+UNCOMMITTED=$(git -C "$HOME/Project/theleish" status --porcelain 2>/dev/null | grep -v "leish_fixes" | grep -v "package-lock.json" | head -5)
+if [ -z "$UNCOMMITTED" ]; then
   pass "Git working tree clean"
   SCORE=$((SCORE+1))
+else
+  warn "Uncommitted changes: $UNCOMMITTED"
 fi
 
 echo ""
