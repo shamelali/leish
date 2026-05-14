@@ -12,6 +12,9 @@ stages:
   - test
   - build
 
+default:
+  tags: [local]
+
 install:
   stage: install
   script:
