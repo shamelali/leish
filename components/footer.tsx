@@ -125,8 +125,19 @@ export function Footer() {
         </div>
 
         <div className="mt-12 sm:mt-16 border-t border-border pt-6 sm:pt-8 text-center">
+          <nav className="mb-4 flex justify-center gap-6 text-xs text-muted-foreground">
+            <Link href="/terms" className="hover:text-accent transition-colors">
+              {t.footer.termsOfService}
+            </Link>
+            <Link href="/privacy" className="hover:text-accent transition-colors">
+              {t.footer.privacyPolicy}
+            </Link>
+          </nav>
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} Leish!. {t.footer.copyright}
+          </p>
+          <p className="mt-1 text-[10px] text-muted-foreground/60">
+            DUTA INTEGRA SOLUTIONS (TR0325441-K)
           </p>
         </div>
       </div>

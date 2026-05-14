@@ -209,6 +209,8 @@ export const translations = {
       bridalMakeup: "Bridal Makeup",
       photoshootMakeup: "Photoshoot Makeup",
       sfxLooks: "SFX Looks",
+      termsOfService: "Terms of Service",
+      privacyPolicy: "Privacy Policy",
     },
     // Errors
     errors: {
@@ -425,6 +427,8 @@ export const translations = {
       bridalMakeup: "Solek Pengantin",
       photoshootMakeup: "Solek Fotografi",
       sfxLooks: "Rupa SFX",
+      termsOfService: "Terma Perkhidmatan",
+      privacyPolicy: "Dasar Privasi",
     },
     // Errors
     errors: {

@@ -7,7 +7,7 @@
 
 Leish (`leish.my`) is a Malaysian beauty marketplace platform connecting clients with makeup artists (MUAs) and studios. Built for KL, Penang, and JB markets, with SEA expansion planned post-2028.
 
-**Business entity:** Leish LLP (pending SSM registration — hard launch blocker)
+**Business entity:** DUTA INTEGRA SOLUTIONS (TR0325441-K)
 **Legal contact:** legal@leish.my
 **Business contact:** hello@leish.my
 
