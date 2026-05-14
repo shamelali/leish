@@ -58,7 +58,7 @@ export function SupabaseAuthForm() {
       }
 
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -71,6 +71,20 @@ export function SupabaseAuthForm() {
         })
 
         if (error) throw error
+
+        // Ensure session cookie is set before redirecting
+        if (signUpData?.session) {
+          await supabase.auth.setSession(signUpData.session)
+        } else {
+          // If no session (email confirmation enabled), prompt to check email
+          setMessage({
+            type: "success",
+            text: "Account created! Please check your email to confirm your account.",
+          })
+          setIsSignUp(false)
+          setLoading(false)
+          return
+        }
 
         if (role === "artist") {
           window.location.href = "/artist/onboarding"
