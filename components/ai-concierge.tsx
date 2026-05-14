@@ -89,7 +89,7 @@ function SuggestionChips({
         <button
           key={s}
           onClick={() => onSelect(s)}
-          className="border border-border bg-secondary px-2.5 py-1 text-[10px] uppercase tracking-widest text-muted-foreground transition-all hover:border-accent hover:text-foreground"
+          className="min-h-9 border border-border bg-secondary px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-all hover:border-accent hover:text-foreground"
         >
           {s}
         </button>

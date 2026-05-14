@@ -139,7 +139,7 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
             type="button"
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
-              "flex items-center gap-2 border px-3 py-2 text-[10px] uppercase tracking-widest transition-all",
+              "flex min-h-11 items-center gap-2 border px-3 py-2 text-[10px] uppercase tracking-widest transition-all",
               showFilters
                 ? "border-foreground bg-foreground text-primary-foreground"
                 : "border-border text-muted-foreground hover:border-accent hover:text-foreground",
@@ -157,7 +157,7 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
               setPriceRange([0, 1000]);
               setMinRating(0);
             }}
-            className="border border-border px-3 py-2 text-[10px] uppercase tracking-widest text-muted-foreground transition-all hover:border-foreground hover:text-foreground"
+            className="flex min-h-11 items-center border border-border px-3 py-2 text-[10px] uppercase tracking-widest text-muted-foreground transition-all hover:border-foreground hover:text-foreground"
           >
             Reset Filters
           </button>
@@ -182,7 +182,7 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
                     type="button"
                     onClick={() => setPriceRange([price, price + 100])}
                     className={cn(
-                      "border px-2 py-1 text-[10px] transition-all",
+                      "min-h-9 border px-2 py-1.5 text-[10px] transition-all",
                       priceRange[0] === price
                         ? "border-foreground bg-foreground text-primary-foreground"
                         : "border-border text-muted-foreground hover:border-accent",
@@ -207,7 +207,7 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
                     type="button"
                     onClick={() => setMinRating(rating)}
                     className={cn(
-                      "flex items-center gap-1 border px-2 py-1 text-[10px] transition-all",
+                      "flex min-h-9 items-center gap-1 border px-2 py-1.5 text-[10px] transition-all",
                       minRating === rating
                         ? "border-foreground bg-foreground text-primary-foreground"
                         : "border-border text-muted-foreground hover:border-accent",
@@ -261,7 +261,7 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
                       setDistrict("All");
                     }}
                     className={cn(
-                      "border px-3 py-1.5 text-[10px] uppercase tracking-widest transition-all",
+                      "min-h-11 border px-3 py-2 text-[10px] uppercase tracking-widest transition-all",
                       state === item.state
                         ? "border-foreground bg-foreground text-primary-foreground"
                         : "border-border text-muted-foreground hover:border-accent hover:text-foreground",
@@ -289,7 +289,7 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
                 type="button"
                 onClick={() => setDistrict("All")}
                 className={cn(
-                  "border px-3 py-1.5 text-[10px] uppercase tracking-widest transition-all",
+                  "min-h-11 border px-3 py-2 text-[10px] uppercase tracking-widest transition-all",
                   district === "All"
                     ? "border-accent bg-accent/10 text-foreground"
                     : "border-border text-muted-foreground hover:border-accent hover:text-foreground",
@@ -303,7 +303,7 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
                   type="button"
                   onClick={() => setDistrict(d)}
                   className={cn(
-                    "border px-3 py-1.5 text-[10px] uppercase tracking-widest transition-all",
+                    "min-h-11 border px-3 py-2 text-[10px] uppercase tracking-widest transition-all",
                     district === d
                       ? "border-accent bg-accent/10 text-foreground"
                       : "border-border text-muted-foreground hover:border-accent hover:text-foreground",
@@ -324,7 +324,7 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
             key={f}
             onClick={() => setActive(f)}
             className={cn(
-              "px-3 sm:px-5 py-2 sm:py-2.5 text-[10px] sm:text-xs font-medium uppercase tracking-widest transition-all",
+              "min-h-11 px-3 sm:px-5 py-2.5 text-[10px] sm:text-xs font-medium uppercase tracking-widest transition-all",
               active === f
                 ? "border border-foreground bg-foreground text-primary-foreground"
                 : "border border-border bg-card text-muted-foreground hover:border-accent hover:text-foreground",
@@ -356,7 +356,7 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
                 onClick={(e) => handleToggleFavorite(e, artist.id)}
                 disabled={toggling === artist.id}
                 className={cn(
-                  "absolute right-3 top-3 flex items-center justify-center rounded-full transition-all hover:scale-110 active:scale-95",
+                  "absolute right-3 top-3 flex min-h-11 min-w-11 items-center justify-center rounded-full p-2.5 transition-all hover:scale-110 active:scale-95",
                   favoritedIds.has(artist.id)
                     ? "bg-red-500/90 text-white hover:bg-red-500"
                     : "bg-white/80 text-muted-foreground hover:bg-white hover:text-red-500",

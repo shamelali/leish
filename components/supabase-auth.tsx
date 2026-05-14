@@ -148,7 +148,7 @@ export function SupabaseAuthForm() {
               onChange={(e) => setFullName(e.target.value)}
               required={isSignUp}
               placeholder="Your full name"
-              className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2"
+              className="mt-1 block w-full min-h-11 rounded-md border border-input bg-background px-3 py-2"
             />
           </div>
           <div>
@@ -161,7 +161,7 @@ export function SupabaseAuthForm() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+60 123 456 789"
-              className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2"
+              className="mt-1 block w-full min-h-11 rounded-md border border-input bg-background px-3 py-2"
             />
           </div>
           <div>
@@ -174,7 +174,7 @@ export function SupabaseAuthForm() {
                   key={r}
                   type="button"
                   onClick={() => setRole(r)}
-                  className={`p-2 rounded-md border text-sm transition-colors ${
+                  className={`min-h-11 p-2.5 rounded-md border text-sm transition-colors ${
                     role === r
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-input bg-background text-muted-foreground hover:border-primary/50"
@@ -209,7 +209,7 @@ export function SupabaseAuthForm() {
           onChange={(e) => setEmail(e.target.value)}
           required
           placeholder="you@example.com"
-          className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2"
+          className="mt-1 block w-full min-h-11 rounded-md border border-input bg-background px-3 py-2"
         />
       </div>
       <div>
@@ -225,7 +225,7 @@ export function SupabaseAuthForm() {
             required
             minLength={6}
             placeholder="••••••••"
-            className="block w-full rounded-md border border-input bg-background px-3 py-2 pr-10"
+            className="block w-full min-h-11 rounded-md border border-input bg-background px-3 py-2 pr-10"
           />
           <button
             type="button"
@@ -249,7 +249,7 @@ export function SupabaseAuthForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-md bg-primary px-4 py-2.5 text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        className="flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-4 py-3 text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
       >
         {loading ? (
           <span className="flex items-center justify-center gap-2">
@@ -276,7 +276,7 @@ export function SupabaseAuthForm() {
         type="button"
         onClick={handleGoogleSignIn}
         disabled={loading}
-        className="w-full rounded-md border border-input bg-background px-4 py-2.5 text-foreground hover:bg-accent disabled:opacity-50 flex items-center justify-center gap-2"
+        className="flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-3 text-foreground hover:bg-accent disabled:opacity-50"
       >
         {loading ? (
           <Loader2 className="h-4 w-4 animate-spin" />

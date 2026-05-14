@@ -435,7 +435,7 @@ export function BookingCalendar({
             </div>
             <span
               className={cn(
-                "mt-1.5 sm:mt-2 text-[9px] sm:text-[10px] uppercase tracking-widest",
+                "mt-1.5 sm:mt-2 text-[10px] sm:text-xs uppercase tracking-widest",
                 step === i + 1 ? "text-foreground" : "text-muted-foreground",
               )}
             >
@@ -566,7 +566,7 @@ export function BookingCalendar({
                         setSelectedTimeId(null);
                       }}
                       className={cn(
-                        "flex min-h-9 min-w-9 sm:min-h-11 sm:min-w-11 items-center justify-center text-xs sm:text-sm transition-all",
+                        "flex min-h-11 min-w-11 items-center justify-center text-xs sm:text-sm transition-all",
                         isPastDay(day)
                           ? "cursor-not-allowed text-muted-foreground/40"
                           : selectedDate === day
@@ -594,7 +594,7 @@ export function BookingCalendar({
                       disabled={!available}
                       onClick={() => setSelectedTimeId(id)}
                       className={cn(
-                        "border py-2.5 sm:py-3.5 text-[10px] sm:text-xs transition-all",
+                        "border min-h-11 py-3 sm:py-3.5 text-xs transition-all",
                         !available
                           ? "cursor-not-allowed border-border bg-muted opacity-50 line-through text-muted-foreground"
                           : selectedTimeId === id
