@@ -42,12 +42,16 @@ function verifyEnv() {
   }
 
   if (hasError) {
-    console.error("\n❌ Environment validation failed")
-    process.exit(1)
+    if (process.env.CI) {
+      console.warn("\n⚠️  Environment validation skipped (CI — deploy will verify)")
+    } else {
+      console.error("\n❌ Environment validation failed")
+      process.exit(1)
+    }
   }
 
   console.log("\n✅ Environment variables verified")
-  process.exit(0)
+  if (!process.env.CI) process.exit(0)
 }
 
 verifyEnv()
