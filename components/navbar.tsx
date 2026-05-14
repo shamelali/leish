@@ -69,11 +69,11 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <Image 
-              src="/leish-logo.svg" 
+              src="/leish-logo.png" 
               alt="Leish! Logo" 
               width={100}
-              height={30}
-              className="h-6 w-auto"
+              height={50}
+              className="h-8 w-auto"
             />
           </Link>
          {/* Desktop links */}
@@ -138,11 +138,11 @@ export function Navbar() {
               <SheetHeader className="border-b border-border px-6 py-5">
                <SheetTitle className="flex items-center gap-2">
                 <Image 
-                  src="/leish-logo.svg" 
+                  src="/leish-logo.png" 
                   alt="Leish! Logo" 
                   width={100}
-                  height={30}
-                  className="h-7 w-auto"
+                  height={50}
+                  className="h-8 w-auto"
                 />
                  </SheetTitle>
               </SheetHeader>
