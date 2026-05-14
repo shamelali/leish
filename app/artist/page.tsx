@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { Crown, Sparkles } from "lucide-react"
 import { DashboardShell, Panel, StatGrid } from "@/components/dashboard-shell"
 import { getProDashboardData } from "@/lib/dashboard"
@@ -36,14 +37,10 @@ export default async function ProDashboardPage() {
   const providerId = prov?.id
   const isPro = prov?.tier === "pro"
   const isSuspended = prov?.is_suspended
-  
-  const data = providerId ? await getProDashboardData() : {
-    provider: { name: "", location: "", hourlyRate: 0, specialties: [] as string[] },
-    stats: [],
-    upcomingBookings: [],
-    reviews: [],
-    payouts: [],
-  }
+
+  if (!providerId) redirect("/artist/onboarding")
+
+  const data = await getProDashboardData()
   const nav = [
     { href: "/artist", label: "Overview", active: true },
     { href: "/artist/bookings", label: "Bookings" },
