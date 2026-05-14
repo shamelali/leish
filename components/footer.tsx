@@ -14,13 +14,13 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
              <Link href="/" className="flex items-center gap-2">
-               <Image
-                 src="/leish-logo.png"
-                 alt="Leish! Logo"
-                 width={80}
-                 height={27}
-                 className="h-7 w-auto"
-               />
+                <Image
+                  src="/leish-logo.svg"
+                  alt="Leish! Logo"
+                  width={100}
+                  height={30}
+                  className="h-7 w-auto"
+                />
              </Link>
             <p className="mt-3 sm:mt-4 text-sm leading-relaxed text-muted-foreground">
               {t.footer.tagline}
