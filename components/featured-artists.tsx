@@ -6,6 +6,8 @@ import { artists } from "@/lib/data";
 export function FeaturedArtists() {
   const featured = artists.slice(0, 3);
 
+  if (featured.length === 0) return null;
+
   return (
     <section className="bg-secondary py-16 sm:py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
