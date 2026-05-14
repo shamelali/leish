@@ -230,7 +230,7 @@ export function StudioOnboardingWizard({
                 value={form.studioName}
                 onChange={(e) => update({ studioName: e.target.value })}
                 placeholder="e.g. Glamour Studio KL"
-                className="mt-2 w-full border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
+                className="mt-2 w-full border border-border bg-background min-h-11 px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
               />
             </div>
             <div>
@@ -262,7 +262,7 @@ export function StudioOnboardingWizard({
                 <select
                   value={form.state}
                   onChange={(e) => update({ state: e.target.value })}
-                  className="mt-2 w-full border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
+                  className="mt-2 w-full border border-border bg-background min-h-11 px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
                 >
                   <option value="">Select state</option>
                   {STATES.map((s) => (
@@ -279,7 +279,7 @@ export function StudioOnboardingWizard({
                   value={form.district}
                   onChange={(e) => update({ district: e.target.value })}
                   placeholder="e.g. Mont Kiara"
-                  className="mt-2 w-full border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
+                  className="mt-2 w-full border border-border bg-background min-h-11 px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
                 />
               </div>
             </div>
@@ -292,7 +292,7 @@ export function StudioOnboardingWizard({
                 value={form.address}
                 onChange={(e) => update({ address: e.target.value })}
                 placeholder="e.g. No 12, Jalan Kiara 3, Mont Kiara"
-                className="mt-2 w-full border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
+                className="mt-2 w-full border border-border bg-background min-h-11 px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
               />
             </div>
             <div>
@@ -301,11 +301,14 @@ export function StudioOnboardingWizard({
               </label>
               <textarea
                 value={form.bio}
-                onChange={(e) => update({ bio: e.target.value })}
+                onChange={(e) => update({ bio: e.target.value.slice(0, 500) })}
                 rows={3}
                 placeholder="Describe your studio — what makes it special, what clients can expect..."
-                className="mt-2 w-full resize-none border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
+                className="mt-2 w-full resize-none border border-border bg-background min-h-11 px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
               />
+              <p className="mt-1 text-right text-xs text-muted-foreground">
+                {form.bio.length} / 500
+              </p>
             </div>
           </div>
         )}
@@ -422,7 +425,7 @@ export function StudioOnboardingWizard({
                       value={svc.name}
                       onChange={(e) => updateService(i, { name: e.target.value })}
                       placeholder="e.g. Full Bridal Package, Bridesmaid Glam"
-                      className="w-full border border-border bg-card px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
+                      className="w-full border border-border bg-card min-h-11 px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
                     />
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -433,7 +436,7 @@ export function StudioOnboardingWizard({
                           step={15}
                           value={svc.durationMinutes}
                           onChange={(e) => updateService(i, { durationMinutes: parseInt(e.target.value) || 60 })}
-                          className="mt-1 w-full border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none"
+                          className="mt-1 w-full border border-border bg-card min-h-11 px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none"
                         />
                       </div>
                       <div>
@@ -443,7 +446,7 @@ export function StudioOnboardingWizard({
                           min={0}
                           value={svc.priceMyr}
                           onChange={(e) => updateService(i, { priceMyr: parseInt(e.target.value) || 0 })}
-                          className="mt-1 w-full border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none"
+                          className="mt-1 w-full border border-border bg-card min-h-11 px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none"
                         />
                       </div>
                     </div>
@@ -470,7 +473,7 @@ export function StudioOnboardingWizard({
                 onChange={(e) => update({ operatingHours: e.target.value })}
                 rows={4}
                 placeholder="e.g. Mon–Fri: 9am–7pm&#10;Sat–Sun: 9am–5pm&#10;Public holidays: Closed"
-                className="mt-2 w-full resize-none border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
+                className="mt-2 w-full resize-none border border-border bg-background min-h-11 px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
               />
               <p className="mt-1 text-xs text-muted-foreground">
                 You can manage bookable time slots from the studio dashboard after publishing.

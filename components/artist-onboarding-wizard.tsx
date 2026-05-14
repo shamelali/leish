@@ -277,7 +277,7 @@ export function ArtistOnboardingWizard({
               </label>
               <textarea
                 value={form.bio}
-                onChange={(e) => update({ bio: e.target.value })}
+                onChange={(e) => update({ bio: e.target.value.slice(0, 500) })}
                 rows={4}
                 placeholder="Tell clients about your style, experience, and what makes you stand out..."
                 className="mt-2 w-full resize-none border border-border bg-background px-3 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
