@@ -69,11 +69,11 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <Image 
-              src="/leish-logo.png" 
+              src="/leish-logo.svg" 
               alt="Leish! Logo" 
-              width={60}
-              height={20}
-              className="h-5 w-auto"
+              width={120}
+              height={40}
+              className="h-8 w-auto"
             />
           </Link>
          {/* Desktop links */}
