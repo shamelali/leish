@@ -10,7 +10,7 @@
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://www.leish.my"
+          "value": "https://app.leish.my"
         },
         {
           "key": "Access-Control-Allow-Methods",
