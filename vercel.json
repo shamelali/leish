@@ -81,7 +81,7 @@
           "value": "leish.my"
         }
       ],
-      "destination": "https://www.leish.my/:path*",
+      "destination": "https://app.leish.my/:path*",
       "permanent": true
     }
   ],

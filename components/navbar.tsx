@@ -109,18 +109,18 @@ export function Navbar() {
              </button>
            ) : (
              <>
-               <Link
-                 href="/register"
-                 className="hidden rounded-full border border-border/60 px-4 py-2 font-serif text-sm font-semibold tracking-[-0.01em] text-muted-foreground transition-colors hover:text-foreground md:inline-block mr-2"
-               >
-                 {t.auth.registerTitle}
-               </Link>
-               <Link
-                 href="/sign-in"
-                 className="hidden rounded-full border border-border/60 px-4 py-2 font-serif text-sm font-semibold tracking-[-0.01em] text-muted-foreground transition-colors hover:text-foreground md:inline-block"
-               >
-                 {t.nav.signIn}
-               </Link>
+                <Link
+                  href="https://www.leish.my/register"
+                  className="hidden rounded-full border border-border/60 px-4 py-2 font-serif text-sm font-semibold tracking-[-0.01em] text-muted-foreground transition-colors hover:text-foreground md:inline-block mr-2"
+                >
+                  {t.auth.registerTitle}
+                </Link>
+                <Link
+                  href="https://www.leish.my/sign-in"
+                  className="hidden rounded-full border border-border/60 px-4 py-2 font-serif text-sm font-semibold tracking-[-0.01em] text-muted-foreground transition-colors hover:text-foreground md:inline-block"
+                >
+                  {t.nav.signIn}
+                </Link>
              </>
            )}
 
@@ -179,20 +179,20 @@ export function Navbar() {
                      </button>
                    ) : (
                      <>
-                       <Link
-                         href="/register"
-                         onClick={() => setSheetOpen(false)}
-                         className="flex min-h-12 w-full items-center justify-center rounded-full border border-border px-4 font-serif text-sm font-semibold tracking-[-0.01em] text-foreground transition-colors hover:border-foreground mb-2"
-                       >
-                         {t.auth.registerTitle}
-                       </Link>
-                       <Link
-                         href="/sign-in"
-                         onClick={() => setSheetOpen(false)}
-                         className="flex min-h-12 items-center justify-center rounded-full border border-border px-4 font-serif text-sm font-semibold tracking-[-0.01em] text-foreground transition-colors hover:border-foreground"
-                       >
-                         {t.nav.signIn}
-                       </Link>
+                        <Link
+                          href="https://www.leish.my/register"
+                          onClick={() => setSheetOpen(false)}
+                          className="flex min-h-12 w-full items-center justify-center rounded-full border border-border px-4 font-serif text-sm font-semibold tracking-[-0.01em] text-foreground transition-colors hover:border-foreground mb-2"
+                        >
+                          {t.auth.registerTitle}
+                        </Link>
+                        <Link
+                          href="https://www.leish.my/sign-in"
+                          onClick={() => setSheetOpen(false)}
+                          className="flex min-h-12 items-center justify-center rounded-full border border-border px-4 font-serif text-sm font-semibold tracking-[-0.01em] text-foreground transition-colors hover:border-foreground"
+                        >
+                          {t.nav.signIn}
+                        </Link>
                      </>
                    )}
                 </div>
