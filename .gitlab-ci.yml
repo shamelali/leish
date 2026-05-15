@@ -1,18 +1,11 @@
 # .gitlab-ci.yml
-# LEISH.MY - Instant Deployment Pipeline
-# Trigger: Push to main branch
+# LEISH.MY - Testing Pipeline (Vercel handles deployments)
 
 stages:
   - test
-  - build
-  - deploy
 
 variables:
-  NODE_VERSION: "20"
-  DEPLOY_HOST: $DEPLOY_HOST
-  DEPLOY_USER: shamelali
-  DEPLOY_PATH: /home/shamelali/Project/leish
-  PM2_APP_NAME: leish-prod
+  NODE_VERSION: "22"
 
 cache:
   key: ${CI_COMMIT_REF_SLUG}
@@ -25,80 +18,9 @@ test:
   before_script:
     - npm ci
   script:
-    - npm run lint || true
-    - npm run typecheck || true
-    - npm run test || true
-  allow_failure: true
-  only:
-    - main
-    - merge_requests
-
-build:
-  stage: build
-  image: node:${NODE_VERSION}
-  before_script:
-    - npm ci
-  script:
-    - |
-      cat > .env.local << EOF
-NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
-SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY
-DATABASE_URL=$DATABASE_URL
-NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
-STUDIO_SOURCE=external
-BILLPLZ_API_KEY=$BILLPLZ_API_KEY
-BILLPLZ_COLLECTION_ID=$BILLPLZ_COLLECTION_ID
-BILLPLZ_COLLECTION_ID_FULL=$BILLPLZ_COLLECTION_ID_FULL
-BILLPLZ_COLLECTION_ID_DEPOSIT=$BILLPLZ_COLLECTION_ID_DEPOSIT
-BILLPLZ_X_SIGNATURE=$BILLPLZ_X_SIGNATURE
-BILLPLZ_CALLBACK_URL=$BILLPLZ_CALLBACK_URL
-PAYMENT_SUCCESS_URL=$PAYMENT_SUCCESS_URL
-ALERT_WEBHOOK_URL=$ALERT_WEBHOOK_URL
-WHATSAPP_PHONE_NUMBER_ID=$WHATSAPP_PHONE_NUMBER_ID
-WHATSAPP_ACCESS_TOKEN=$WHATSAPP_ACCESS_TOKEN
-CRON_SECRET=$CRON_SECRET
-BREVO_API_KEY=$BREVO_API_KEY
-FROM_EMAIL=$FROM_EMAIL
-FROM_NAME=$FROM_NAME
-SENTRY_DSN=$SENTRY_DSN
-EOF
-    - npm run build
-  artifacts:
-    paths:
-      - .next/
-      - public/
-      - package.json
-      - package-lock.json
-      - next.config.mjs
-    expire_in: 1 hour
-  only:
-    - main
-
-deploy:
-  stage: deploy
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache openssh-client rsync bash
-    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" > ~/.ssh/config
-  script:
-    - rsync -avz --delete --exclude='.git' --exclude='node_modules' --exclude='.env.local' .next/ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/.next/
-    - rsync -avz package.json package-lock.json $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/
-    - rsync -avz public/ $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/public/ 2>/dev/null || true
-    - |
-      ssh $DEPLOY_USER@$DEPLOY_HOST << 'EOFDEPLOY'
-        cd /home/shamelali/Project/leish
-        npm ci --production
-        pm2 restart leish-prod || pm2 start npm --name "leish-prod" -- run start
-        pm2 save
-        sleep 3
-        curl -s http://localhost:3000/api/debug/env | grep -q "200" && echo "✅ Deploy healthy" || echo "⚠️ Check logs"
-      EOFDEPLOY
-  only:
-    - main
-  environment:
-    name: production
-    url: https://leish.my
+    - npm run typecheck
+    - npm run lint
+    - npm run test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
