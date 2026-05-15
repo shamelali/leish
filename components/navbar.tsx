@@ -137,13 +137,13 @@ export function Navbar() {
             <SheetContent side="right" className="w-70 bg-background p-0">
               <SheetHeader className="border-b border-border px-6 py-5">
                <SheetTitle className="flex items-center gap-2">
-                   <Image 
-                     src="/leish-logo.png" 
-                     alt="Leish! Logo" 
-                     width={64}
-                     height={22}
-                     className="h-6 w-auto"
-                   />
+<Image 
+                      src="/leish-logo.svg" 
+                      alt="Leish! Logo" 
+                      width={64}
+                      height={22}
+                      className="h-6 w-auto"
+                    />
                  </SheetTitle>
               </SheetHeader>
               <div className="flex flex-col px-6 py-6">
