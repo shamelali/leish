@@ -47,7 +47,7 @@ export function SupabaseAuthForm() {
 
       if (isSignUp) {
         // Sign up with role selection and pass metadata for the signup trigger
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -61,6 +61,16 @@ export function SupabaseAuthForm() {
 
         if (signUpError) throw signUpError
 
+        // Check if email confirmation is required
+        if (signUpData?.user?.identities?.length === 0) {
+          setMessage({
+            type: "success",
+            text: "Account created! Please sign in to continue.",
+          })
+          setIsSignUp(false)
+          return
+        }
+
         // Auto sign-in immediately after registration
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email,
@@ -68,7 +78,6 @@ export function SupabaseAuthForm() {
         })
 
         if (signInError) {
-          // Sign up succeeded but auto sign-in failed — prompt manual sign-in
           setMessage({
             type: "success",
             text: "Account created! Please sign in to continue.",
