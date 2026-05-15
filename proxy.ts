@@ -15,22 +15,33 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // Domain-based routing
-  const domains = ["leish.my", "app.leish.my", "studio.leish.my"]
+  const domains = ["leish.my", "app.leish.my", "studio.leish.my", "studios.leish.my"]
   const isLeishDomain = domains.some(d => hostname.includes(d))
 
   if (isLeishDomain) {
-    // studio.leish.my -> /studios
-    if (hostname.startsWith("studio.") || hostname === "studio.leish.my") {
+    // studio.leish.my / studios.leish.my -> /studios
+    if (hostname.startsWith("studio.") || hostname.startsWith("studios.") || hostname === "studio.leish.my" || hostname === "studios.leish.my") {
       const url = request.nextUrl.clone()
       url.pathname = "/studios" + (pathname === "/" ? "" : pathname)
       return NextResponse.rewrite(url)
     }
 
     // app.leish.my -> /artists (MUA finder)
+    // But preserve auth, admin, and API routes at root level
+    const rootOnlyPaths = [
+      "/sign-in", "/register", "/auth", "/api",
+      "/admin", "/artist", "/studios", "/about",
+      "/pricing", "/privacy", "/terms", "/quiz",
+      "/booking", "/mua", "/pro",
+    ]
+    const isRootOnly = rootOnlyPaths.some(p => pathname.startsWith(p))
+
     if (hostname.startsWith("app.") || hostname === "app.leish.my") {
-      const url = request.nextUrl.clone()
-      url.pathname = "/artists" + (pathname === "/" ? "" : pathname)
-      return NextResponse.rewrite(url)
+      if (!isRootOnly) {
+        const url = request.nextUrl.clone()
+        url.pathname = "/artists" + (pathname === "/" ? "" : pathname)
+        return NextResponse.rewrite(url)
+      }
     }
 
     // leish.my, www.leish.my -> Landing page (default) - just continue
