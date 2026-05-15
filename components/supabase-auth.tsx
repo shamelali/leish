@@ -9,8 +9,8 @@ export type UserRole = "admin" | "artist" | "studio_manager" | "customer"
 function getPostSignInPath(role: UserRole | undefined): string {
   switch (role) {
     case "admin":
-      return "/admin"
-case "artist":
+      return "/admin/dashboard"
+    case "artist":
       return "/artist"
     case "studio_manager":
       return "/studios/dashboard"
@@ -276,7 +276,7 @@ export function SupabaseAuthForm() {
             Please wait...
           </span>
         ) : isSignUp ? (
-          role === "customer" ? "Create Account" : `Sign Up as ${getRoleLabel(role)}`
+          role === "customer" ? "Create Account" : `Register as ${getRoleLabel(role)}`
         ) : (
           "Sign In"
         )}
@@ -327,7 +327,7 @@ export function SupabaseAuthForm() {
       >
         {isSignUp 
           ? "Already have an account? Sign In" 
-          : "Don't have an account? Sign Up"
+          : "Don't have an account? Register"
         }
       </button>
     </form>
