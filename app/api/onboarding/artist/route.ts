@@ -76,7 +76,7 @@ export async function POST(req: Request) {
       experience: experience?.trim() || null,
       specialties,
       hourly_rate: hourlyRate,
-      is_active: true,
+      is_active: false, // pending Leish admin approval
       rating: 0,
       review_count: 0,
     })

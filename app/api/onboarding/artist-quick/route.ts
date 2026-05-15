@@ -80,7 +80,7 @@ export async function POST(req: Request) {
       display_name: displayName.trim(),
       state: state.trim(),
       district: district.trim(),
-      is_active: true,
+      is_active: false, // pending Leish admin approval
       rating: 0,
       review_count: 0,
       tier: "free",
