@@ -15,7 +15,7 @@ export function Footer() {
           <div className="lg:col-span-1">
 <Link href="/" className="flex items-center gap-2">
                 <Image
-                  src="/leish-logo.png"
+                  src="/leish-logo.svg"
                   alt="Leish! Logo"
                   width={120}
                   height={40}

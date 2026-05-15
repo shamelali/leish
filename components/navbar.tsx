@@ -69,7 +69,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <Image 
-              src="/leish-logo.png" 
+              src="/leish-logo.svg" 
               alt="Leish! Logo" 
               width={120}
               height={40}
@@ -138,7 +138,7 @@ export function Navbar() {
               <SheetHeader className="border-b border-border px-6 py-5">
                <SheetTitle className="flex items-center gap-2">
 <Image 
-                      src="/leish-logo.png" 
+                      src="/leish-logo.svg" 
                       alt="Leish! Logo" 
                       width={64}
                       height={22}
