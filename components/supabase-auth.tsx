@@ -61,16 +61,6 @@ export function SupabaseAuthForm() {
 
         if (signUpError) throw signUpError
 
-        // Check if email confirmation is required
-        if (signUpData?.user?.identities?.length === 0) {
-          setMessage({
-            type: "success",
-            text: "Account created! Please sign in to continue.",
-          })
-          setIsSignUp(false)
-          return
-        }
-
         // Auto sign-in immediately after registration
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email,
@@ -78,11 +68,10 @@ export function SupabaseAuthForm() {
         })
 
         if (signInError) {
-          setMessage({
-            type: "success",
-            text: "Account created! Please sign in to continue.",
-          })
-          setIsSignUp(false)
+          // Account created but auto sign-in failed (e.g. email confirmation required)
+          // Still redirect so the user sees the correct dashboard after manual sign-in
+          const redirectPath = getPostSignInPath(role)
+          window.location.href = redirectPath
           return
         }
 
