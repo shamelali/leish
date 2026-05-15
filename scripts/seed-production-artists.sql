@@ -25,21 +25,18 @@ VALUES
   ('p0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000003', 'artist', 'nurul-hidayah', 'Nurul Hidayah', 'Selangor', 'Shah Alam', true, 220, ARRAY['Bridal','Hijab','Traditional Malay','Hari Raya'], 5, 156, 'Specializing in traditional Malay bridal looks and modern hijab-friendly makeup. Trusted by 150+ brides across Selangor.', 7)
 ON CONFLICT (id) DO NOTHING;
 
--- Step 4: Create services for each artist
-INSERT INTO public.services (provider_id, name, duration_minutes, price_myr, is_active, description)
-SELECT p.id, s.name, s.duration, s.price, true, s.description
+-- Step 4: Create services (no description column exists in public.services)
+INSERT INTO public.services (provider_id, name, duration_minutes, price_myr, is_active)
+SELECT p.id, s.name, s.duration, s.price, true
 FROM (VALUES
-  -- Leiynda services
-  ('leiynda-rahman', 'Bridal Signature Look', 150, 550, 'Full bridal makeup with trial session included. Touch-up kit provided.'),
-  ('leiynda-rahman', 'Event Glam', 90, 350, 'Red carpet and event makeup. Long-lasting formula for 12+ hour wear.'),
-  ('leiynda-rahman', 'Editorial/Photoshoot', 120, 450, 'High-definition makeup for photography and video. Camera-ready finish.'),
-  -- Aiko services
-  ('aiko-nakamura', 'Japanese Bridal', 150, 480, 'Soft, luminous J-beauty bridal look. Includes skin prep and setting.'),
-  ('aiko-nakamura', 'Natural Everyday', 60, 200, 'Clean, minimal makeup for daily wear or casual events.'),
-  ('aiko-nakamura', 'Engagement Ceremony', 120, 380, 'Elegant engagement look with focus on flawless base and soft eyes.'),
-  -- Nurul services
-  ('nurul-hidayah', 'Malay Bridal Traditional', 180, 420, 'Full traditional Malay bridal makeup with songkok-compatible styling.'),
-  ('nurul-hidayah', 'Hijab-Friendly Glam', 90, 280, 'Makeup designed to complement hijab styles. Focus on eyes and complexion.'),
-  ('nurul-hidayah', 'Hari Raya Special', 60, 220, 'Festive makeup for Raya celebrations. Quick turnaround, stunning results.')
-) AS s(slug, name, duration, price, description)
+  ('leiynda-rahman', 'Bridal Signature Look', 150, 550),
+  ('leiynda-rahman', 'Event Glam', 90, 350),
+  ('leiynda-rahman', 'Editorial/Photoshoot', 120, 450),
+  ('aiko-nakamura', 'Japanese Bridal', 150, 480),
+  ('aiko-nakamura', 'Natural Everyday', 60, 200),
+  ('aiko-nakamura', 'Engagement Ceremony', 120, 380),
+  ('nurul-hidayah', 'Malay Bridal Traditional', 180, 420),
+  ('nurul-hidayah', 'Hijab-Friendly Glam', 90, 280),
+  ('nurul-hidayah', 'Hari Raya Special', 60, 220)
+) AS s(slug, name, duration, price)
 JOIN public.providers p ON p.slug = s.slug;

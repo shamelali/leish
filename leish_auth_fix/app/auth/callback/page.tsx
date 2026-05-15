@@ -10,7 +10,7 @@ type UserRole = "admin" | "artist" | "studio_manager" | "customer"
 function getRedirectPath(role: UserRole): string {
   switch (role) {
     case "admin":
-      return "/admin/dashboard"
+      return "/admin"
     case "artist":
       return "/artist"
     case "studio_manager":
