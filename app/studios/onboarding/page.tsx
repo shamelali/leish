@@ -33,7 +33,15 @@ export default async function StudioOnboardingPage() {
     return redirect("/sign-in");
   }
 
-  if (!profile || profile.role !== "studio_manager") {
+  if (!profile) {
+    return redirect("/");
+  }
+
+  if (profile.role === "artist") {
+    return redirect("/artist/onboarding");
+  }
+
+  if (profile.role !== "studio_manager") {
     return redirect("/");
   }
 
