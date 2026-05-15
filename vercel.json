@@ -10,7 +10,7 @@
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://app.leish.my"
+          "value": "https://www.leish.my"
         },
         {
           "key": "Access-Control-Allow-Methods",
@@ -81,18 +81,7 @@
           "value": "leish.my"
         }
       ],
-      "destination": "https://app.leish.my/:path*",
-      "permanent": true
-    },
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.leish.my"
-        }
-      ],
-      "destination": "https://app.leish.my/:path*",
+      "destination": "https://www.leish.my/:path*",
       "permanent": true
     }
   ],
