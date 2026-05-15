@@ -36,9 +36,13 @@ export function updateSession(request: NextRequest) {
       ) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
         supabaseResponse = applyCorsHeaders(NextResponse.next({ request }))
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options as CookieOptions)
-        )
+        cookiesToSet.forEach(({ name, value, options }) => {
+          const cookieOptions = {
+            ...options,
+            domain: ".leish.my",
+          } as CookieOptions
+          supabaseResponse.cookies.set(name, value, cookieOptions)
+        })
       },
     },
   })
