@@ -6,6 +6,20 @@ import { Eye, EyeOff, Loader2 } from "lucide-react"
 
 export type UserRole = "admin" | "artist" | "studio_manager" | "customer"
 
+function getPostSignUpPath(role: UserRole | undefined): string {
+  switch (role) {
+    case "admin":
+      return "/admin/dashboard"
+    case "artist":
+      return "/artist/onboarding"
+    case "studio_manager":
+      return "/studios/onboarding"
+    case "customer":
+    default:
+      return "/"
+  }
+}
+
 function getPostSignInPath(role: UserRole | undefined): string {
   switch (role) {
     case "admin":
@@ -68,9 +82,7 @@ export function SupabaseAuthForm() {
         })
 
         if (signInError) {
-          // Account created but auto sign-in failed (e.g. email confirmation required)
-          // Still redirect so the user sees the correct dashboard after manual sign-in
-          const redirectPath = getPostSignInPath(role)
+          const redirectPath = getPostSignUpPath(role)
           window.location.href = redirectPath
           return
         }
@@ -80,7 +92,7 @@ export function SupabaseAuthForm() {
 
         // Redirect based on role
         if (data.user) {
-          const redirectPath = getPostSignInPath(role)
+          const redirectPath = getPostSignUpPath(role)
           window.location.href = redirectPath
         } else {
           window.location.href = "/"
