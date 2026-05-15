@@ -81,7 +81,7 @@
           "value": "leish.my"
         }
       ],
-      "destination": "https://www.leish.my/:path*",
+      "destination": "https://app.leish.my/:path*",
       "permanent": true
     },
     {
@@ -89,22 +89,11 @@
       "has": [
         {
           "type": "host",
-          "value": "app.leish.my"
+          "value": "www.leish.my"
         }
       ],
-      "destination": "https://www.leish.my/artists/:path*",
-      "permanent": false
-    },
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "studios.leish.my"
-        }
-      ],
-      "destination": "https://www.leish.my/studios/:path*",
-      "permanent": false
+      "destination": "https://app.leish.my/:path*",
+      "permanent": true
     }
   ],
   "crons": [
