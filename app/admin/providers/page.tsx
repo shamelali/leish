@@ -3,6 +3,8 @@ import Link from "next/link"
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { activateProvider, suspendProvider, flagProvider } from "@/lib/actions/admin"
+
+export const dynamic = "force-dynamic"
 import { AlertTriangle, CheckCircle, XCircle, Flag } from "lucide-react"
 
 export default async function AdminProvidersPage({

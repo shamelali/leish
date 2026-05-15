@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSql } from "@/lib/db/postgres";
-import { sendEmail } from "@/lib/email/resend";
+import { sendEmail } from "@/lib/email/brevo";
 import { bookingReminderTemplate } from "@/lib/email/templates";
 import { sendBookingReminder } from "@/lib/notifications/whatsapp";
 

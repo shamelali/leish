@@ -1,6 +1,8 @@
 import { DashboardShell, Panel, StatGrid } from "@/components/dashboard-shell"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { redirect } from "next/navigation"
+
+export const dynamic = "force-dynamic"
 import { AlertCircle, CheckCircle, XCircle } from "lucide-react"
 
 export const metadata = {

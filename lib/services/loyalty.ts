@@ -1,5 +1,5 @@
 import { getSql } from "@/lib/db/postgres"
-import { sendEmail } from "@/lib/email/resend"
+import { sendEmail } from "@/lib/email/brevo"
 
 export interface LoyaltyConfig {
   id: string

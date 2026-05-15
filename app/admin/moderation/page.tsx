@@ -1,5 +1,7 @@
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
 import { getSql } from "@/lib/db/postgres"
+
+export const dynamic = "force-dynamic"
 import { approveReview, hideReview, escalateReview } from "@/lib/actions/admin"
 
 const NAV = [

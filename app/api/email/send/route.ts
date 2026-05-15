@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { sendEmail } from "@/lib/email/resend"
+import { sendEmail } from "@/lib/email/brevo"
 import { bookingConfirmationTemplate, welcomeEmailTemplate, paymentReceiptTemplate } from "@/lib/email/templates"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 

@@ -1,6 +1,6 @@
 import type { Artist, Studio } from "@/lib/data"
 import { getSql, withTransaction } from "@/lib/db/postgres"
-import { sendEmail } from "@/lib/email/resend"
+import { sendEmail } from "@/lib/email/brevo"
 import { bookingConfirmationTemplate } from "@/lib/email/templates"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 

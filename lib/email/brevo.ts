@@ -1,4 +1,4 @@
-import BrevoClient from "@getbrevo/brevo"
+import { BrevoClient } from "@getbrevo/brevo"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let brevoClient: any | null = null

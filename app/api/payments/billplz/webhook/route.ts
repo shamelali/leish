@@ -3,7 +3,7 @@ import { getSql } from "@/lib/db/postgres";
 import { verifyBillplzXSignature } from "@/lib/payments/billplz";
 import { enforceRateLimit } from "@/lib/ops/rate-limit";
 import { reportApiError } from "@/lib/ops/alerts";
-import { sendEmail } from "@/lib/email/resend";
+import { sendEmail } from "@/lib/email/brevo";
 import {
   bookingConfirmationTemplate,
   paymentReceiptTemplate,

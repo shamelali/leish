@@ -1,6 +1,8 @@
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
 import { getSql } from "@/lib/db/postgres"
 
+export const dynamic = "force-dynamic"
+
 const NAV = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/providers", label: "Providers" },
