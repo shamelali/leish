@@ -8,6 +8,7 @@ import { Menu } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
+import { Logo } from "@/components/logo"
 import { useTranslation } from "@/lib/i18n/language-context"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import {
@@ -68,13 +69,7 @@ export function Navbar() {
        <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <Image 
-              src="/leish-logo.svg" 
-              alt="Leish! Logo" 
-              width={120}
-              height={40}
-              className="h-8 w-auto"
-            />
+            <Logo className="h-8 w-auto" />
           </Link>
          {/* Desktop links */}
         <div className="hidden items-center gap-8 md:flex">
@@ -137,13 +132,7 @@ export function Navbar() {
             <SheetContent side="right" className="w-70 bg-background p-0">
               <SheetHeader className="border-b border-border px-6 py-5">
                <SheetTitle className="flex items-center gap-2">
-<Image 
-                      src="/leish-logo.svg" 
-                      alt="Leish! Logo" 
-                      width={64}
-                      height={22}
-                      className="h-6 w-auto"
-                    />
+<Logo className="h-6 w-auto" />
                  </SheetTitle>
               </SheetHeader>
               <div className="flex flex-col px-6 py-6">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { Logo } from "@/components/logo";
 import { useTranslation } from "@/lib/i18n/language-context";
 
 export function Footer() {
@@ -14,13 +14,7 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
 <Link href="/" className="flex items-center gap-2">
-                <Image
-                  src="/leish-logo.svg"
-                  alt="Leish! Logo"
-                  width={120}
-                  height={40}
-                  className="h-8 w-auto"
-                />
+                <Logo className="h-8 w-auto" />
               </Link>
             <p className="mt-3 sm:mt-4 text-sm leading-relaxed text-muted-foreground">
               {t.footer.tagline}
