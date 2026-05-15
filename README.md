@@ -227,3 +227,4 @@ Private - All rights reserved.
 **Built with ❤️ for the beauty community.**
 
 [Live Site](https://www.leish.my) · [Documentation](APP_MANUAL.md) · [Report Issue](../../issues)
+# Auto-deploy test
