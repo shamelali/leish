@@ -1,12 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,400&amp;display=swap');
+    </style>
+  </defs>
+  
   <!-- Dark background -->
   <rect width="400" height="120" fill="#0F0E0D" rx="12"/>
   
   <!-- Lei in cream -->
-  <text x="20" y="85" font-family="Georgia, serif" font-size="90" font-weight="500" fill="#F5F0E8" letter-spacing="-2">Lei</text>
+  <text x="20" y="85" font-family="'Playfair Display', Georgia, serif" font-size="90" font-weight="500" fill="#F5F0E8" letter-spacing="-2">Lei</text>
   
-  <!-- sh! in red italic -->
-  <text x="178" y="85" font-family="Georgia, serif" font-size="90" font-weight="400" font-style="italic" fill="#C23B2E" letter-spacing="-2">sh!</text>
+  <!-- sh! in red italic (Positioned at x=145 to remove the gap) -->
+  <text x="145" y="85" font-family="'Playfair Display', Georgia, serif" font-size="90" font-weight="400" font-style="italic" fill="#C23B2E" letter-spacing="-2">sh!</text>
   
   <!-- Sparkle accent -->
   <path d="M 370 95 L 372 100 L 377 102 L 372 104 L 370 109 L 368 104 L 363 102 L 368 100 Z" fill="#8A8279" opacity="0.6"/>
