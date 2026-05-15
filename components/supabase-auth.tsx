@@ -60,7 +60,6 @@ export function SupabaseAuthForm() {
       }
 
       if (isSignUp) {
-        // Sign up with role selection and pass metadata for the signup trigger
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -75,28 +74,28 @@ export function SupabaseAuthForm() {
 
         if (signUpError) throw signUpError
 
-        // Auto sign-in immediately after registration
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
 
         if (signInError) {
-          const redirectPath = getPostSignUpPath(role)
-          window.location.href = redirectPath
+          window.location.href = getPostSignUpPath(role)
           return
         }
 
-        // Wait briefly for the DB trigger to create the profile row
-        await new Promise((resolve) => setTimeout(resolve, 800))
-
-        // Redirect based on role
+        // Create profile row client-side (bypass broken DB trigger)
         if (data.user) {
-          const redirectPath = getPostSignUpPath(role)
-          window.location.href = redirectPath
-        } else {
-          window.location.href = "/"
+          const { error: profileError } = await supabase.from("profiles").upsert({
+            id: data.user.id,
+            full_name: fullName,
+            role: role,
+          }, { onConflict: "id" })
+
+          if (profileError) console.error("[Leish] Profile create error:", profileError)
         }
+
+        window.location.href = getPostSignUpPath(role)
       } else {
         // Sign in
         const { data, error } = await supabase.auth.signInWithPassword({
