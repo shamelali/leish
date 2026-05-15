@@ -24,12 +24,12 @@ export default async function ProLayout({ children }: { children: React.ReactNod
     .maybeSingle()
 
   if (!profile) {
-    redirect("/")
+    redirect("/artist/onboarding")
   }
 
   const allowedRoles = ["artist", "studio_manager", "admin"]
   if (!allowedRoles.includes(profile.role)) {
-    redirect("/")
+    redirect("/artist/onboarding")
   }
 
   // Guard: if artist has no provider row yet, send to onboarding
