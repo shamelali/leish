@@ -7,28 +7,11 @@ import { Loader2 } from "lucide-react"
 
 type UserRole = "admin" | "artist" | "studio_manager" | "customer"
 
-async function getUserRole(supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>): Promise<UserRole> {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return "customer"
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle()
-
-  const role = profile?.role as UserRole
-  if (role === "admin" || role === "artist" || role === "studio_manager") {
-    return role
-  }
-  return "customer"
-}
-
 function getRedirectPath(role: UserRole): string {
   switch (role) {
     case "admin":
       return "/admin"
-case "artist":
+    case "artist":
       return "/artist"
     case "studio_manager":
       return "/studios/onboarding"
@@ -48,39 +31,74 @@ export default function AuthCallbackPage() {
 
     const supabase = getSupabaseBrowserClient()
     if (!supabase) {
+      router.replace("/sign-in")
       return
     }
 
     const handleCallback = async () => {
-      // Wait a moment for auth state to settle
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession()
-
-      if (sessionError) {
-        console.error("Session error:", sessionError)
-        router.replace("/sign-in")
-        return
-      }
-
-      if (!session) {
-        console.log("No session found, redirecting to sign-in")
-        router.replace("/sign-in")
-        return
-      }
-
       try {
-        const userRole = await getUserRole(supabase)
-        console.log("User role detected:", userRole)
-        const redirectTo = getRedirectPath(userRole)
-        console.log("Redirecting to:", redirectTo)
-        router.replace(redirectTo)
-        router.refresh()
+        // Step 1: exchange the OAuth code/hash for a real session
+        // This handles both PKCE code (search params) and implicit hash tokens
+        const hashParams = new URLSearchParams(window.location.hash.slice(1))
+        const searchParams = new URLSearchParams(window.location.search)
+        const code = searchParams.get("code")
+
+        if (code) {
+          // PKCE flow — exchange code for session
+          const { error } = await supabase.auth.exchangeCodeForSession(code)
+          if (error) {
+            console.error("Code exchange error:", error)
+            router.replace("/sign-in")
+            return
+          }
+        }
+
+        // Step 2: wait for auth state to fully propagate
+        await new Promise<void>((resolve) => {
+          const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === "SIGNED_IN" && session) {
+              subscription.unsubscribe()
+              resolve()
+            }
+          })
+          // Fallback timeout — resolve after 3s regardless
+          setTimeout(resolve, 3000)
+        })
+
+        // Step 3: get the verified user (not cached)
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+        if (userError || !user) {
+          console.error("No user after callback:", userError)
+          router.replace("/sign-in")
+          return
+        }
+
+        // Step 4: read role from profiles with retry
+        let role: UserRole = "customer"
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", user.id)
+            .maybeSingle()
+
+          if (profile?.role) {
+            const r = profile.role as UserRole
+            if (r === "admin" || r === "artist" || r === "studio_manager") {
+              role = r
+            }
+            break
+          }
+          // Profile not ready yet — wait and retry
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+
+        console.log("[Leish] Auth callback — user:", user.email, "role:", role)
+        router.replace(getRedirectPath(role))
+
       } catch (error) {
-        console.error("Error getting user role:", error)
+        console.error("[Leish] Auth callback error:", error)
         router.replace("/")
       }
     }
