@@ -47,7 +47,7 @@ export function SupabaseAuthForm() {
 
       if (isSignUp) {
         // Sign up with role selection and pass metadata for the signup trigger
-        const { error } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -58,16 +58,35 @@ export function SupabaseAuthForm() {
             },
           },
         })
-        
-        if (error) throw error
 
-        setMessage({ 
-          type: "success", 
-          text: role === "customer" 
-            ? "Account created! You can now sign in."
-            : "Account created! Please complete your profile to start accepting bookings." 
+        if (signUpError) throw signUpError
+
+        // Auto sign-in immediately after registration
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         })
-        setIsSignUp(false)
+
+        if (signInError) {
+          // Sign up succeeded but auto sign-in failed — prompt manual sign-in
+          setMessage({
+            type: "success",
+            text: "Account created! Please sign in to continue.",
+          })
+          setIsSignUp(false)
+          return
+        }
+
+        // Wait briefly for the DB trigger to create the profile row
+        await new Promise((resolve) => setTimeout(resolve, 800))
+
+        // Redirect based on role
+        if (data.user) {
+          const redirectPath = getPostSignInPath(role)
+          window.location.href = redirectPath
+        } else {
+          window.location.href = "/"
+        }
       } else {
         // Sign in
         const { data, error } = await supabase.auth.signInWithPassword({
