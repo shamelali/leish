@@ -196,7 +196,7 @@ export default async function AdminCredentialsPage() {
         </div>
       </Panel>
 
-      <Panel title="Security Notice" className="mt-6">
+      <Panel title="Security Notice">
         <div className="flex items-start gap-3">
           <svg
             className="mt-0.5 h-5 w-5 text-yellow-600"
