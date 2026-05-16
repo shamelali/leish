@@ -9,15 +9,11 @@ import type { ConversationContext } from "./types"
 
 const baseCtx: ConversationContext = {
   turnCount: 1,
-  userId: "test",
-  eventTypes: ["bridal"],
+  eventTypes: ["Bridal"],
   location: "KL",
-  budget: 500,
-  preferredStyles: [],
+  budget: { min: 300, max: 800 },
   styleNotes: [],
-  preferredProximity: undefined,
-  hasRecommendations: false,
-  topicsDiscussed: [],
+  hasInspirationPhoto: false,
 }
 
 describe("applyGuardrails", () => {
@@ -62,7 +58,7 @@ describe("getClarifyingQuestion", () => {
   })
 
   it("asks for budget when missing", () => {
-    const ctx = { ...baseCtx, budget: undefined }
+    const ctx = { ...baseCtx, budget: null }
     expect(getClarifyingQuestion(ctx)).toContain("budget")
   })
 
@@ -73,7 +69,7 @@ describe("getClarifyingQuestion", () => {
 
 describe("getSuggestions", () => {
   it("returns base suggestions when context is sparse and no recommendations", () => {
-    const sparseCtx = { ...baseCtx, eventTypes: [], location: "", budget: undefined }
+    const sparseCtx = { ...baseCtx, eventTypes: [], location: "", budget: null }
     const suggestions = getSuggestions(sparseCtx, false)
     expect(suggestions).toContain("Bridal makeup in KL")
   })
