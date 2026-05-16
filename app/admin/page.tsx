@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { DashboardShell, Panel, StatGrid } from "@/components/dashboard-shell"
 import { getAdminDashboardData } from "@/lib/dashboard-simple"
 import Link from "next/link"

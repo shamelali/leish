@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { redirect } from "next/navigation";
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr";
 import { ArtistOnboardingWizard } from "@/components/artist-onboarding-wizard";
@@ -33,15 +35,7 @@ export default async function ArtistOnboardingPage() {
     return redirect("/sign-in");
   }
 
-  if (!profile) {
-    return redirect("/");
-  }
-
-  if (profile.role === "studio_manager") {
-    return redirect("/studios/onboarding");
-  }
-
-  if (profile.role !== "artist") {
+  if (!profile || profile.role !== "artist") {
     return redirect("/");
   }
 

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { DashboardShell, Panel, StatGrid } from "@/components/dashboard-shell";
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr";
 import { surchargeService, surchargePresets } from "@/lib/services/surcharges";

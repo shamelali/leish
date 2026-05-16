@@ -1,5 +1,3 @@
-export const dynamic = "force-dynamic"
-
 import { Suspense } from "react"
 import { StudioGrid } from "@/components/studio-grid"
 import { getStudios } from "@/lib/actions/studios"

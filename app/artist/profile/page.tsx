@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { ProProfileForm } from "@/components/pro-profile-form"

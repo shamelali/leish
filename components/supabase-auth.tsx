@@ -6,25 +6,11 @@ import { Eye, EyeOff, Loader2 } from "lucide-react"
 
 export type UserRole = "admin" | "artist" | "studio_manager" | "customer"
 
-function getPostSignUpPath(role: UserRole | undefined): string {
-  switch (role) {
-    case "admin":
-      return "/admin/dashboard"
-    case "artist":
-      return "/artist/onboarding"
-    case "studio_manager":
-      return "/studios/onboarding"
-    case "customer":
-    default:
-      return "/"
-  }
-}
-
 function getPostSignInPath(role: UserRole | undefined): string {
   switch (role) {
     case "admin":
-      return "/admin/dashboard"
-    case "artist":
+      return "/admin"
+case "artist":
       return "/artist"
     case "studio_manager":
       return "/studios/dashboard"
@@ -60,7 +46,8 @@ export function SupabaseAuthForm() {
       }
 
       if (isSignUp) {
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        // Sign up with role selection and pass metadata for the signup trigger
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -74,28 +61,32 @@ export function SupabaseAuthForm() {
 
         if (signUpError) throw signUpError
 
+        // Auto sign-in immediately after registration
         const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
 
         if (signInError) {
-          window.location.href = getPostSignUpPath(role)
+          // Sign up succeeded but auto sign-in failed — prompt manual sign-in
+          setMessage({
+            type: "success",
+            text: "Account created! Please sign in to continue.",
+          })
+          setIsSignUp(false)
           return
         }
 
-        // Create profile row client-side (bypass broken DB trigger)
+        // Wait briefly for the DB trigger to create the profile row
+        await new Promise((resolve) => setTimeout(resolve, 800))
+
+        // Redirect based on role
         if (data.user) {
-          const { error: profileError } = await supabase.from("profiles").upsert({
-            id: data.user.id,
-            full_name: fullName,
-            role: role,
-          }, { onConflict: "id" })
-
-          if (profileError) console.error("[Leish] Profile create error:", profileError)
+          const redirectPath = getPostSignInPath(role)
+          window.location.href = redirectPath
+        } else {
+          window.location.href = "/"
         }
-
-        window.location.href = getPostSignUpPath(role)
       } else {
         // Sign in
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -285,7 +276,7 @@ export function SupabaseAuthForm() {
             Please wait...
           </span>
         ) : isSignUp ? (
-          role === "customer" ? "Create Account" : `Register as ${getRoleLabel(role)}`
+          role === "customer" ? "Create Account" : `Sign Up as ${getRoleLabel(role)}`
         ) : (
           "Sign In"
         )}
@@ -336,7 +327,7 @@ export function SupabaseAuthForm() {
       >
         {isSignUp 
           ? "Already have an account? Sign In" 
-          : "Don't have an account? Register"
+          : "Don't have an account? Sign Up"
         }
       </button>
     </form>
