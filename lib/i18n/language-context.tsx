@@ -28,12 +28,21 @@ function setDocumentLanguage(lang: Language) {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Language>(() => getInitialLanguage())
+  // Always start with "en" to match SSR — sync from localStorage after mount
+  const [lang, setLangState] = useState<Language>("en")
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setDocumentLanguage(lang)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const stored = window.localStorage.getItem(STORAGE_KEY)
+    const resolved: Language = stored === "ms" ? "ms" : "en"
+    setLangState(resolved)
+    setDocumentLanguage(resolved)
+    setMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (mounted) setDocumentLanguage(lang)
+  }, [lang, mounted])
 
   const setLang = (newLang: Language) => {
     setLangState(newLang)
