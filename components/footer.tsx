@@ -120,7 +120,7 @@ export function Footer() {
 
         <div className="mt-12 sm:mt-16 border-t border-border pt-6 sm:pt-8 text-center">
           <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Leish!. {t.footer.copyright}
+            <span suppressHydrationWarning>&copy; {new Date().getFullYear()} Leish!</span>. {t.footer.copyright}
           </p>
         </div>
       </div>

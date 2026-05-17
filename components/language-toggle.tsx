@@ -5,31 +5,26 @@ import { useEffect, useMemo, useState } from "react";
 type Language = "en" | "ms";
 const STORAGE_KEY = "leish:lang";
 
-function getInitialLanguage(): Language {
-  if (typeof window === "undefined") return "en";
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  return raw === "ms" ? "ms" : "en";
-}
-
 function setDocumentLanguage(lang: Language) {
   if (typeof document === "undefined") return;
   document.documentElement.lang = lang === "ms" ? "ms-MY" : "en";
 }
 
 export function LanguageToggle() {
-  const [lang, setLang] = useState<Language>(() => getInitialLanguage());
+  // Always start with "en" to match SSR — sync from localStorage after mount
+  const [lang, setLang] = useState<Language>("en");
 
   useEffect(() => {
-    setDocumentLanguage(lang);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const resolved: Language = stored === "ms" ? "ms" : "en";
+    setLang(resolved);
+    setDocumentLanguage(resolved);
   }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEY, lang);
     setDocumentLanguage(lang);
-
-    // Broadcast to any listeners (simple app-wide toggle without introducing full i18n routing).
     window.dispatchEvent(
       new CustomEvent("leish:lang-changed", { detail: lang }),
     );

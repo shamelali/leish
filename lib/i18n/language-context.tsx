@@ -16,12 +16,6 @@ const STORAGE_KEY = "leish:lang"
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
-function getInitialLanguage(): Language {
-  if (typeof window === "undefined") return "en"
-  const raw = window.localStorage.getItem(STORAGE_KEY)
-  return raw === "ms" ? "ms" : "en"
-}
-
 function setDocumentLanguage(lang: Language) {
   if (typeof document === "undefined") return
   document.documentElement.lang = lang === "ms" ? "ms-MY" : "en"
