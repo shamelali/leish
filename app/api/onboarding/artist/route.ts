@@ -41,7 +41,22 @@ export async function POST(req: Request) {
     .eq("id", user.id)
     .maybeSingle()
 
-  if (!profile || profile.role !== "artist") {
+  // If profile doesn't exist, create it with artist role
+  if (!profile) {
+    console.log("[artist-onboarding] Profile missing, creating with artist role")
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .insert({
+        id: user.id,
+        full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "User",
+        role: "artist",
+      })
+
+    if (profileError) {
+      console.error("[artist-onboarding] Failed to create profile:", JSON.stringify(profileError, null, 2))
+      return NextResponse.json({ error: "Failed to create user profile", detail: profileError?.message }, { status: 500 })
+    }
+  } else if (profile.role !== "artist") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 
