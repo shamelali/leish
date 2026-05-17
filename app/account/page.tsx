@@ -94,10 +94,14 @@ export default async function AccountPage() {
     .eq("id", user.id)
     .maybeSingle()
 
+  const role = profile?.role || "customer"
+  const fullName = profile?.full_name || user.email?.split("@")[0] || "User"
+
   // Fetch bookings for customer
   let bookings: any[] = []
-  if (profile?.role === "customer") {
-    const { data } = await supabase
+  let bookingsError: string | null = null
+  if (role === "customer") {
+    const { data, error } = await supabase
       .from("bookings")
       .select(`
         id,
@@ -112,17 +116,22 @@ export default async function AccountPage() {
       .eq("customer_id", user.id)
       .order("created_at", { ascending: false })
 
-    bookings = data || []
+    if (error) {
+      console.error("[account] bookings fetch error:", error)
+      bookingsError = error.message
+    } else {
+      bookings = data || []
+    }
   }
 
   // Fetch provider dashboard link if artist or studio_manager
   let providerSlug: string | null = null
-  if (profile?.role === "artist" || profile?.role === "studio_manager") {
+  if (role === "artist" || role === "studio_manager") {
     const { data: provider } = await supabase
       .from("providers")
       .select("slug")
       .eq("owner_id", user.id)
-      .eq("kind", profile.role === "artist" ? "artist" : "studio")
+      .eq("kind", role === "artist" ? "artist" : "studio")
       .maybeSingle()
 
     providerSlug = provider?.slug || null
@@ -145,17 +154,17 @@ export default async function AccountPage() {
               My Account
             </p>
             <h1 className="mt-3 font-serif text-3xl font-medium tracking-tight text-foreground md:text-4xl">
-              {profile?.full_name || "Welcome"}
+              {fullName}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {profile?.role === "customer" && "Customer"}
-              {profile?.role === "artist" && "Makeup Artist"}
-              {profile?.role === "studio_manager" && "Studio Manager"}
-              {profile?.role === "admin" && "Administrator"}
+              {role === "customer" && "Customer"}
+              {role === "artist" && "Makeup Artist"}
+              {role === "studio_manager" && "Studio Manager"}
+              {role === "admin" && "Administrator"}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {profile?.role === "artist" && providerSlug && (
+            {role === "artist" && providerSlug && (
               <Link
                 href={`/artists/${providerSlug}`}
                 className="inline-flex items-center gap-2 border border-border px-4 py-2 text-xs font-medium uppercase tracking-widest text-muted-foreground transition-colors hover:border-accent hover:text-accent"
@@ -163,7 +172,7 @@ export default async function AccountPage() {
                 View Profile
               </Link>
             )}
-            {profile?.role === "studio_manager" && providerSlug && (
+            {role === "studio_manager" && providerSlug && (
               <Link
                 href={`/studios/${providerSlug}`}
                 className="inline-flex items-center gap-2 border border-border px-4 py-2 text-xs font-medium uppercase tracking-widest text-muted-foreground transition-colors hover:border-accent hover:text-accent"
@@ -171,7 +180,7 @@ export default async function AccountPage() {
                 View Studio
               </Link>
             )}
-            {(profile?.role === "artist" || profile?.role === "studio_manager") && (
+            {(role === "artist" || role === "studio_manager") && (
               <Link
                 href="/studios/dashboard"
                 className="inline-flex items-center gap-2 border border-foreground bg-foreground px-4 py-2 text-xs font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-accent hover:border-accent"
@@ -183,14 +192,19 @@ export default async function AccountPage() {
         </div>
 
         {/* Customer bookings */}
-        {profile?.role === "customer" && (
+        {role === "customer" && (
           <>
             {/* Upcoming bookings */}
             <div className="mb-10">
               <h2 className="mb-6 font-serif text-xl font-medium text-foreground">
                 Upcoming Bookings
               </h2>
-              {upcomingBookings.length === 0 ? (
+              {bookingsError && (
+                <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
+                  Unable to load bookings: {bookingsError}
+                </div>
+              )}
+              {upcomingBookings.length === 0 && !bookingsError ? (
                 <div className="rounded-lg border border-border bg-card p-8 text-center">
                   <Calendar className="mx-auto mb-4 h-10 w-10 text-muted-foreground/40" />
                   <p className="text-sm text-muted-foreground">
@@ -229,7 +243,7 @@ export default async function AccountPage() {
         )}
 
         {/* Artist/Studio Manager quick links */}
-        {(profile?.role === "artist" || profile?.role === "studio_manager") && (
+        {(role === "artist" || role === "studio_manager") && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <QuickLink
               href="/studios/dashboard"
