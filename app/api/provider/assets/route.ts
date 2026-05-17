@@ -17,6 +17,9 @@ export async function POST(req: Request) {
   const file = formData.get("file") as File
   const providerId = formData.get("providerId") as string
   const assetType = formData.get("assetType") as string || "portfolio"
+  const contentType = formData.get("contentType") as string || "image"
+  const beforeFile = formData.get("beforeFile") as File | null
+  const videoUrl = formData.get("videoUrl") as string | null
 
   if (!file || !providerId) {
     return NextResponse.json({ error: "Missing file or providerId" }, { status: 400 })
@@ -68,8 +71,30 @@ export async function POST(req: Request) {
     .from("provider-assets")
     .getPublicUrl(fileName)
 
-  // Create thumbnail URL (for images)
-  const thumbnailUrl = `${publicUrl}?width=400&height=400&resize=cover`
+  // Handle before/after: upload before image if provided
+  let thumbnailUrl: string | null = null
+  if (contentType === "beforeAfter" && beforeFile) {
+    const beforeExt = beforeFile.name.split(".").pop()
+    const beforeFileName = `${providerId}/${Date.now() - 1000}_before.${beforeExt}`
+    
+    const { error: beforeUploadError } = await supabase.storage
+      .from("provider-assets")
+      .upload(beforeFileName, beforeFile, {
+        contentType: beforeFile.type,
+        upsert: false,
+      })
+
+    if (!beforeUploadError) {
+      const { data: { publicUrl: beforeUrl } } = supabase.storage
+        .from("provider-assets")
+        .getPublicUrl(beforeFileName)
+      thumbnailUrl = beforeUrl
+    }
+  } else if (contentType === "video" && videoUrl) {
+    thumbnailUrl = videoUrl
+  } else {
+    thumbnailUrl = `${publicUrl}?width=400&height=400&resize=cover`
+  }
 
   // Save to database
   const { data: asset, error: dbError } = await supabase
@@ -79,6 +104,7 @@ export async function POST(req: Request) {
       asset_type: assetType,
       url: publicUrl,
       thumbnail_url: thumbnailUrl,
+      content_type: contentType,
       file_size: file.size,
       mime_type: file.type,
     })

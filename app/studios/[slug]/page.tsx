@@ -109,16 +109,18 @@ export default async function StudioProfilePage({
 
   // Fetch portfolio
   const { data: portfolioData } = await supabase
-    .from("portfolio_items")
-    .select("id, title, description, image_url, category")
+    .from("provider_assets")
+    .select("id, url, thumbnail_url, caption, content_type")
     .eq("provider_id", studio.id)
-    .order("sort_order", { ascending: true })
+    .in("asset_type", ["portfolio", "work_sample"])
+    .order("uploaded_at", { ascending: false })
 
   const portfolioItems: PortfolioItem[] =
     portfolioData?.map((p) => ({
-      type: "image" as const,
-      src: p.image_url,
-      alt: p.title || "",
+      type: (p.content_type as PortfolioItem["type"]) || "image",
+      src: p.url,
+      alt: p.caption || "",
+      before: p.content_type === "beforeAfter" ? p.thumbnail_url : undefined,
     })) || []
 
   // Fetch testimonials

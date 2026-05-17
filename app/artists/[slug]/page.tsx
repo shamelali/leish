@@ -99,15 +99,16 @@ export default async function ArtistProfilePage({
   // Fetch portfolio images
   const { data: portfolioAssets } = await supabase
     .from('provider_assets')
-    .select('url, thumbnail_url, caption, asset_type')
+    .select('url, thumbnail_url, caption, asset_type, content_type')
     .eq('provider_id', artist.id)
     .in('asset_type', ['portfolio', 'work_sample'])
     .order('uploaded_at', { ascending: false })
 
   const portfolio: PortfolioItem[] = (portfolioAssets || []).map((a) => ({
-    type: 'image' as const,
+    type: (a.content_type as PortfolioItem["type"]) || 'image',
     src: a.url,
     alt: a.caption || 'Portfolio image',
+    before: a.content_type === 'beforeAfter' ? a.thumbnail_url : undefined,
   }))
 
   // Fetch testimonials (published reviews)
