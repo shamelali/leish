@@ -94,15 +94,23 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           <LanguageToggle />
           <ThemeToggle />
-           {isAuthenticated ? (
-             <button
-               type="button"
-               onClick={handleSignOut}
-               className="hidden rounded-full border border-border/60 px-4 py-2 font-serif text-sm font-semibold tracking-[-0.01em] text-muted-foreground transition-colors hover:text-foreground md:inline-block"
-             >
-               {t.nav.signOut}
-             </button>
-           ) : (
+            {isAuthenticated ? (
+              <>
+                <Link
+                  href="/account"
+                  className="hidden rounded-full border border-border/60 px-4 py-2 font-serif text-sm font-semibold tracking-[-0.01em] text-muted-foreground transition-colors hover:text-foreground md:inline-block mr-2"
+                >
+                  {t.nav.account}
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="hidden rounded-full border border-border/60 px-4 py-2 font-serif text-sm font-semibold tracking-[-0.01em] text-muted-foreground transition-colors hover:text-foreground md:inline-block"
+                >
+                  {t.nav.signOut}
+                </button>
+              </>
+            ) : (
              <>
                 <Link
                   href="https://www.leish.my/register"
@@ -158,15 +166,24 @@ export function Navbar() {
                     <LanguageToggle />
                     <ThemeToggle />
                   </div>
-                   {isAuthenticated ? (
-                     <button
-                       type="button"
-                       onClick={handleSignOut}
-                       className="flex min-h-12 w-full items-center justify-center rounded-full border border-border px-4 font-serif text-sm font-semibold tracking-[-0.01em] text-foreground transition-colors hover:border-foreground"
-                     >
-                       {t.nav.signOut}
-                     </button>
-                   ) : (
+                    {isAuthenticated ? (
+                      <>
+                        <Link
+                          href="/account"
+                          onClick={() => setSheetOpen(false)}
+                          className="flex min-h-12 w-full items-center justify-center rounded-full border border-border px-4 font-serif text-sm font-semibold tracking-[-0.01em] text-foreground transition-colors hover:border-foreground mb-2"
+                        >
+                          {t.nav.account}
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={handleSignOut}
+                          className="flex min-h-12 w-full items-center justify-center rounded-full border border-border px-4 font-serif text-sm font-semibold tracking-[-0.01em] text-foreground transition-colors hover:border-foreground"
+                        >
+                          {t.nav.signOut}
+                        </button>
+                      </>
+                    ) : (
                      <>
                         <Link
                           href="https://www.leish.my/register"
