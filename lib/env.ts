@@ -2,7 +2,6 @@ import { z } from "zod"
 
 const EnvSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
   DATABASE_URL: z.string().url().optional(),
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
@@ -19,9 +18,7 @@ export function getEnv(): AppEnv {
 
 export function getSupabasePublicConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const anonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!url || !anonKey) {
     return null
