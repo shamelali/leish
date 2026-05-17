@@ -56,6 +56,10 @@ const nextConfig = {
             key: "Referrer-Policy",
             value: "origin-when-cross-origin",
           },
+          {
+            key: "Content-Security-Policy",
+            value: "font-src 'self' *.vercel.com *.gstatic.com vercel.live *.blob.vercel-storage.com;",
+          },
         ],
       },
     ]
