@@ -85,7 +85,7 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
           if (role === "artist") {
             window.location.href = "/artistonboard"
           } else if (role === "studio_manager") {
-            window.location.href = "/studios/onboarding"
+            window.location.href = "/studioonboard"
           } else {
             window.location.href = getPostSignInPath(role)
           }
@@ -118,7 +118,7 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
               .eq("owner_id", data.user.id)
               .eq("kind", "studio")
               .maybeSingle()
-            window.location.href = studio ? "/studios/dashboard" : "/studios/onboarding"
+            window.location.href = studio ? "/studios/dashboard" : "/studioonboard"
           } else if (userRole === "artist") {
             const { data: provider } = await supabase
               .from("providers")

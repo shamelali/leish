@@ -25,7 +25,7 @@ export default async function OnboardingRedirectPage() {
   const role = profile?.role
 
   if (role === "studio_manager") {
-    return redirect("/studios/onboarding")
+    return redirect("/studioonboard")
   }
 
   if (role === "artist") {

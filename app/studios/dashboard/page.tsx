@@ -37,7 +37,7 @@ export default async function StudioDashboardPage() {
     .eq("kind", "studio")
     .maybeSingle();
 
-  if (!studio) redirect("/studios/onboarding");
+  if (!studio) redirect("/studioonboard");
 
   // Upcoming bookings
   const { data: bookings } = await supabase

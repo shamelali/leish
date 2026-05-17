@@ -16,7 +16,7 @@ function getRedirectPath(role: UserRole): string {
     case "artist":
       return "/artist"
     case "studio_manager":
-      return "/studios/onboarding"
+      return "/studioonboard"
     case "customer":
     default:
       return "/"
@@ -118,7 +118,7 @@ export default function AuthCallbackPage() {
             .eq("owner_id", user.id)
             .eq("kind", "studio")
             .maybeSingle()
-          redirectPath = studio ? "/studios/dashboard" : "/studios/onboarding"
+          redirectPath = studio ? "/studios/dashboard" : "/studioonboard"
         }
 
         console.log("[Leish] Auth callback — user:", user.email, "role:", role, "redirect:", redirectPath)
