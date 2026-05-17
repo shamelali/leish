@@ -29,7 +29,7 @@ export default async function OnboardingRedirectPage() {
   }
 
   if (role === "artist") {
-    return redirect("/artist/onboarding")
+    return redirect("/artistonboard")
   }
 
   return redirect("/")

@@ -80,7 +80,7 @@ export default function PricingPage() {
 
             <div className="mt-8">
               <Button asChild variant="outline" className="w-full">
-                <Link href="/artist/onboarding">Get Started Free</Link>
+                <Link href="/artistonboard">Get Started Free</Link>
               </Button>
             </div>
           </div>
