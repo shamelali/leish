@@ -92,6 +92,7 @@ export async function POST(req: Request) {
       team_size: teamSize || null,
       specialties,
       hourly_rate: startingRate,
+      starting_price: startingRate,
       operating_hours: operatingHours?.trim() || null,
       is_active: true,
       rating: 0,
@@ -101,14 +102,26 @@ export async function POST(req: Request) {
     .single()
 
   if (providerError || !provider) {
-    console.error("[studio-onboarding] provider insert error:", providerError)
+    console.error("[studio-onboarding] provider insert error:", JSON.stringify(providerError, null, 2))
+    console.error("[studio-onboarding] attempted payload:", JSON.stringify({
+      owner_id: user.id,
+      kind: "studio",
+      slug,
+      display_name: studioName.trim(),
+      state: state.trim(),
+      district: district.trim(),
+      hourly_rate: startingRate,
+      specialties,
+      rating: 0,
+      review_count: 0,
+    }, null, 2))
     if (providerError?.code === "23505") {
       return NextResponse.json(
         { error: "A studio with that name already exists. Please try a slightly different name." },
         { status: 409 }
       )
     }
-    return NextResponse.json({ error: "Failed to create studio" }, { status: 500 })
+    return NextResponse.json({ error: providerError?.message || "Failed to create studio", details: providerError?.hint }, { status: 500 })
   }
 
   // Insert services

@@ -7,8 +7,8 @@ import { AiConcierge } from '@/components/ai-concierge'
 import { ThemeProvider } from '@/components/theme-provider'
 import { LanguageProvider } from '@/lib/i18n/language-context'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { ClientInit } from '@/components/client-init'
 import './globals.css'
-import { initErrorHandlers } from "@/lib/utils/error-handler"
 
 const inter = Outfit({
   subsets: ['latin'],
@@ -83,6 +83,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${playfair.variable} ${mono.variable}`}>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <ClientInit />
           <LanguageProvider>
             <ErrorBoundary>
               <Navbar />
@@ -96,9 +97,4 @@ export default function RootLayout({
       </body>
     </html>
   )
-}
-
-// Initialize error handlers on client side
-if (typeof window !== "undefined") {
-  initErrorHandlers()
 }
