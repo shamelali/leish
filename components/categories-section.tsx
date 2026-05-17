@@ -9,55 +9,46 @@ const categories = [
     key: "bridal",
     description: "Timeless bridal beauty for your most cherished day, from natural radiance to full glam.",
     descriptionMs: "Kecantikan pengantin yang abadi untuk hari yang paling berharga, dari pancaran semula jadi hingga glam penuh.",
-    count: 180,
   },
   {
     key: "event",
     description: "Statement-ready glam for dinners, launches, galas, and celebrations that need impact.",
     descriptionMs: "Glam yang sedia untuk kenyataan untuk makan malam, pelancaran, gala, dan sambutan yang memerlukan impak.",
-    count: 240,
   },
   {
     key: "photoshoot",
     description: "Camera-ready artistry for campaigns, fashion editorials, and creative productions.",
     descriptionMs: "Kesenian yang sedia untuk kamera untuk kempen, editorial fesyen, dan produksi kreatif.",
-    count: 160,
   },
   {
     key: "sfx",
     description: "Transformational special effects artistry for film, cosplay, theatre, and concept shoots.",
     descriptionMs: "Kesenian kesan khas transformasi untuk filem, cosplay, teater, dan penggambaran konsep.",
-    count: 90,
   },
   {
     key: "lessons",
     description: "Learn makeup techniques from professional artists in personalized one-on-one sessions.",
     descriptionMs: "Pelajari teknik solek daripada artis profesional dalam sesi peribadi satu-satu.",
-    count: 45,
   },
   {
     key: "hari-raya",
     description: "Traditional Hari Raya makeup with elegant, modest looks perfect for festive celebrations.",
     descriptionMs: "Solek Hari Raya tradisional dengan penampilan yang elegan dan sederhana yang sempurna untuk sambutan perayaan.",
-    count: 85,
   },
   {
     key: "chinese-new-year",
     description: "Auspicous Chinese New Year makeup featuring red accents and traditional festive styles.",
     descriptionMs: "Solek Tahun Baru Cina yang membawa tuah dengan aksen merah dan gaya perayaan tradisional.",
-    count: 75,
   },
   {
     key: "traditional-malay",
     description: "Authentic Malay bridal makeup with traditional henna designs and cultural elements.",
     descriptionMs: "Solek pengantin Melayu yang autentik dengan corak henna tradisional dan elemen budaya.",
-    count: 65,
   },
   {
     key: "hijab",
     description: "Beautiful hijab-friendly makeup that complements modest fashion and cultural preferences.",
     descriptionMs: "Solek yang cantik dan sesuai untuk hijab yang melengkapi fesyen sederhana dan pilihan budaya.",
-    count: 95,
   },
 ]
 
@@ -101,10 +92,7 @@ export function CategoriesSection() {
               <p className="mt-3 sm:mt-4 text-sm leading-relaxed text-muted-foreground">
                 {lang === "ms" ? cat.descriptionMs : cat.description}
               </p>
-              <p className="mt-4 sm:mt-6 text-xs uppercase tracking-widest text-accent">
-                {cat.count} {t.nav.browseArtists.split(" ").pop()}
-              </p>
-            </Link>
+              </Link>
           ))}
         </div>
       </div>
