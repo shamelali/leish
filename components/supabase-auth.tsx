@@ -80,12 +80,15 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
         // Wait briefly for the DB trigger to create the profile row
         await new Promise((resolve) => setTimeout(resolve, 800))
 
-        // Redirect based on role — new studio_manager always goes to onboarding
+        // Redirect based on role — new artists/studio_managers go to onboarding
         if (data.user) {
-          const redirectPath = role === "studio_manager"
-            ? "/studios/onboarding"
-            : getPostSignInPath(role)
-          window.location.href = redirectPath
+          if (role === "artist") {
+            window.location.href = "/artistonboard"
+          } else if (role === "studio_manager") {
+            window.location.href = "/studios/onboarding"
+          } else {
+            window.location.href = getPostSignInPath(role)
+          }
         } else {
           window.location.href = "/"
         }
@@ -103,7 +106,7 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
             .from("profiles")
             .select("role")
             .eq("id", data.user.id)
-            .single()
+            .maybeSingle()
 
           const userRole = profile?.role as UserRole | undefined
 
@@ -112,10 +115,18 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
             const { data: studio } = await supabase
               .from("providers")
               .select("id")
-              .eq("profile_id", data.user.id)
+              .eq("owner_id", data.user.id)
               .eq("kind", "studio")
               .maybeSingle()
             window.location.href = studio ? "/studios/dashboard" : "/studios/onboarding"
+          } else if (userRole === "artist") {
+            const { data: provider } = await supabase
+              .from("providers")
+              .select("id")
+              .eq("owner_id", data.user.id)
+              .eq("kind", "artist")
+              .maybeSingle()
+            window.location.href = provider ? "/artist" : "/artistonboard"
           } else {
             window.location.href = getPostSignInPath(userRole)
           }

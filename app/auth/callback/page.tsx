@@ -96,8 +96,33 @@ export default function AuthCallbackPage() {
           await new Promise(resolve => setTimeout(resolve, 500))
         }
 
-        console.log("[Leish] Auth callback — user:", user.email, "role:", role)
-        router.replace(getRedirectPath(role))
+        // Step 4b: for artists, check if they have a provider row
+        let redirectPath = getRedirectPath(role)
+        if (role === "artist") {
+          const { data: provider } = await supabase
+            .from("providers")
+            .select("id")
+            .eq("owner_id", user.id)
+            .eq("kind", "artist")
+            .maybeSingle()
+          if (!provider) {
+            redirectPath = "/artistonboard"
+          }
+        }
+
+        // Step 4c: for studio managers, check if they have a studio
+        if (role === "studio_manager") {
+          const { data: studio } = await supabase
+            .from("providers")
+            .select("id")
+            .eq("owner_id", user.id)
+            .eq("kind", "studio")
+            .maybeSingle()
+          redirectPath = studio ? "/studios/dashboard" : "/studios/onboarding"
+        }
+
+        console.log("[Leish] Auth callback — user:", user.email, "role:", role, "redirect:", redirectPath)
+        router.replace(redirectPath)
 
       } catch (error) {
         console.error("[Leish] Auth callback error:", error)

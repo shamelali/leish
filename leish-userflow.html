@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leish — User Flow Reference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #1a1410;
+      --paper: #f7f4ef;
+      --cream: #ede7d5;
+      --gold: #c4891a;
+      --muted: #8a7e6e;
+      --border: rgba(26,20,16,0.1);
+      --customer: #185FA5;
+      --artist: #0F6E56;
+      --studio: #854F0B;
+      --admin: #534AB7;
+      --ok-bg: #EAF3DE; --ok: #3B6D11;
+      --warn-bg: #FAEEDA; --warn: #854F0B;
+      --err-bg: #FCEBEB; --err: #A32D2D;
+      --info-bg: #E6F1FB; --info: #185FA5;
+    }
+
+    body {
+      font-family: 'DM Mono', monospace;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 48px 24px 80px;
+      background-image:
+        radial-gradient(ellipse at 15% 10%, rgba(196,137,26,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 85%, rgba(26,20,16,0.04) 0%, transparent 50%);
+    }
+
+    .page { max-width: 780px; margin: 0 auto; }
+
+    header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 2px solid var(--ink);
+      animation: slideDown .6s ease both;
+    }
+
+    .eyebrow {
+      font-size: 10px;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 6vw, 56px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -.02em;
+    }
+
+    h1 span { color: var(--gold); font-style: italic; }
+
+    .subtitle {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: .06em;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+      animation: fadeUp .5s .1s ease both;
+    }
+
+    .tab {
+      padding: 7px 16px;
+      border-radius: 2px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+      background: rgba(255,255,255,0.4);
+      transition: all .2s;
+      user-select: none;
+    }
+
+    .tab:hover { background: rgba(255,255,255,0.7); color: var(--ink); }
+
+    .tab.active[data-role="customer"] { background: var(--customer); border-color: var(--customer); color: #fff; }
+    .tab.active[data-role="artist"]   { background: var(--artist);   border-color: var(--artist);   color: #fff; }
+    .tab.active[data-role="studio"]   { background: var(--studio);   border-color: var(--studio);   color: #fff; }
+    .tab.active[data-role="admin"]    { background: var(--admin);    border-color: var(--admin);    color: #fff; }
+
+    .flow { display: none; animation: fadeUp .35s ease both; }
+    .flow.active { display: block; }
+
+    .section-label {
+      font-size: 9px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 20px 0 10px;
+    }
+
+    .steps { display: flex; flex-direction: column; gap: 4px; }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.45);
+      transition: background .15s;
+    }
+
+    .step:hover { background: rgba(255,255,255,0.7); }
+
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 2px;
+      font-size: 11px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      color: #fff;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .step-body { flex: 1; min-width: 0; }
+
+    .step-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.4;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .step-note {
+      margin-top: 3px;
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.6;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-weight: 500;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .badge.ok   { background: var(--ok-bg);   color: var(--ok); }
+    .badge.warn { background: var(--warn-bg); color: var(--warn); }
+    .badge.err  { background: var(--err-bg);  color: var(--err); }
+    .badge.info { background: var(--info-bg); color: var(--info); }
+
+    .arrow {
+      text-align: center;
+      font-size: 14px;
+      color: var(--muted);
+      padding: 2px 0;
+      line-height: 1;
+    }
+
+    .issue {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      border: 1px solid rgba(162,45,45,.2);
+      background: rgba(162,45,45,.05);
+      border-left: 3px solid var(--err);
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    .issue-icon { flex-shrink: 0; color: var(--err); }
+
+    .cron {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      border: 1px solid rgba(196,137,26,.2);
+      background: rgba(196,137,26,.05);
+      border-left: 3px solid var(--gold);
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--muted), transparent);
+      margin: 8px 0;
+      opacity: .2;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <p class="eyebrow">Platform reference</p>
+    <h1>Leish <span>User Flows</span></h1>
+    <p class="subtitle">app.leish.my · All roles · Last updated May 2026</p>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-role="customer" onclick="show('customer')">👤 Customer</div>
+    <div class="tab" data-role="artist"   onclick="show('artist')">💄 Artist (MUA)</div>
+    <div class="tab" data-role="studio"   onclick="show('studio')">🏛️ Studio manager</div>
+    <div class="tab" data-role="admin"    onclick="show('admin')">🔐 Admin</div>
+  </div>
+
+  <!-- CUSTOMER -->
+  <div id="customer" class="flow active">
+    <p class="section-label">Discovery</p>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:var(--customer)">1</div><div class="step-body"><div class="step-title">Land on leish.my</div><div class="step-note">Homepage → hero, categories, featured artists, AI concierge widget, style quiz</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--customer)">2</div><div class="step-body"><div class="step-title">Browse artists <span class="badge info">/artists</span></div><div class="step-note">Filter by specialty, state, district. Cards show name, rating, starting rate, portfolio thumbnail.</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--customer)">3</div><div class="step-body"><div class="step-title">View artist profile <span class="badge info">/artists/[slug]</span></div><div class="step-note">Portfolio gallery with lightbox, services + pricing, availability calendar, sticky book bar, in-app chat</div></div></div>
+    </div>
+
+    <p class="section-label">Booking</p>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:var(--customer)">4</div><div class="step-body"><div class="step-title">Select date, time, service</div><div class="step-note">BookingCalendar checks MUA availability in real time — blocks taken slots</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--customer)">5</div><div class="step-body"><div class="step-title">Register or sign in <span class="badge warn">required to proceed</span></div><div class="step-note">/register → role: customer → auto sign-in → redirected back to booking</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--customer)">6</div><div class="step-body"><div class="step-title">Pay via Billplz</div><div class="step-note">POST /api/payments/billplz/create → redirect to Billplz hosted payment page</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--customer)">7</div><div class="step-body"><div class="step-title">Payment success <span class="badge info">/booking/success</span></div><div class="step-note">Reads billplz[paid] param → verifies with /api/payments/status → shows confirmation + booking details</div></div></div>
+    </div>
+
+    <p class="section-label">Post-booking</p>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:var(--customer)">8</div><div class="step-body"><div class="step-title">In-app messaging</div><div class="step-note">ArtistChat on profile page — enforces on-platform comms, off-platform detection active</div></div></div>
+      <div class="step"><div class="step-num" style="background:var(--customer)">9</div><div class="step-body"><div class="step-title">Leave review</div><div class="step-note">POST /api/reviews after booking completed — rating + comment, visible on artist profile</div></div></div>
+    </div>
+
+    <div class="issue"><span class="issue-icon">⚠</span><div>Customer dashboard not yet built — no /account page to manage bookings after sign-in. Customers land on homepage with no post-login destination.</div></div>
+  </div>
+
+  <!-- ARTIST -->
+  <div id="artist" class="flow">
+    <p class="section-label">Registration</p>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:var(--artist)">1</div><div class="step-body"><div class="step-title">Register <span class="badge info">/register</span></div><div class="step-note">Select role: Makeup Artist → email + password + full name + phone → submit</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--artist)">2</div><div class="step-body"><div class="step-title">Auto sign-in → redirect <span class="badge ok">fixed</span></div><div class="step-note">signUp() → signInWithPassword() → 800ms wait for DB trigger → getPostSignInPath("artist") → /artist</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--artist)">3</div><div class="step-body"><div class="step-title">Layout guard → onboarding <span class="badge ok">fixed</span></div><div class="step-note">/artist layout checks for provider row → none yet → redirect("/artist/onboarding")</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--artist)">4</div><div class="step-body"><div class="step-title">Onboarding wizard <span class="badge info">/artist/onboarding</span></div><div class="step-note">Step 1: display name + location → Step 2: specialties → Step 3: bio + experience → Step 4: services + pricing</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--artist)">5</div><div class="step-body"><div class="step-title">POST /api/onboarding/artist</div><div class="step-note">Creates provider row with is_active: true — live immediately, no approval needed</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--artist)">6</div><div class="step-body"><div class="step-title">Artist dashboard <span class="badge info">/artist</span></div><div class="step-note">Stats, upcoming bookings, loyalty tier card, pro upgrade prompt</div></div></div>
+    </div>
+
+    <p class="section-label">Dashboard features</p>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:var(--artist)">→</div><div class="step-body"><div class="step-title">Profile & services <span class="badge info">/artist/profile</span></div><div class="step-note">Edit bio, specialties, services + pricing. Upload portfolio photos to Supabase storage.</div></div></div>
+      <div class="step"><div class="step-num" style="background:var(--artist)">→</div><div class="step-body"><div class="step-title">Availability <span class="badge info">/artist/availability</span></div><div class="step-note">Set recurring weekly schedule. Block specific dates. Syncs with BookingCalendar on public profile.</div></div></div>
+      <div class="step"><div class="step-num" style="background:var(--artist)">→</div><div class="step-body"><div class="step-title">Bookings <span class="badge info">/artist/bookings</span></div><div class="step-note">Upcoming bookings — confirm or cancel. Brevo reminder emails sent via cron 09:00 daily.</div></div></div>
+      <div class="step"><div class="step-num" style="background:var(--artist)">→</div><div class="step-body"><div class="step-title">Payments <span class="badge info">/artist/payments</span></div><div class="step-note">Payout history, earnings stats. Escrow released after booking completed.</div></div></div>
+      <div class="step"><div class="step-num" style="background:var(--artist)">→</div><div class="step-body"><div class="step-title">Reviews <span class="badge info">/artist/reviews</span></div><div class="step-note">All client reviews received. Rating average updates on public profile.</div></div></div>
+      <div class="step"><div class="step-num" style="background:var(--artist)">→</div><div class="step-body"><div class="step-title">Pro upgrade <span class="badge info">/pro/upgrade</span></div><div class="step-note">Unlock higher client limit, featured placement in browse, analytics dashboard.</div></div></div>
+    </div>
+
+    <p class="section-label">Returning sign-in</p>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:var(--artist)">↩</div><div class="step-body"><div class="step-title">Sign in → /artist</div><div class="step-note">Layout guard: provider row exists → dashboard. No provider row → back to /artist/onboarding.</div></div></div>
+    </div>
+  </div>
+
+  <!-- STUDIO -->
+  <div id="studio" class="flow">
+    <p class="section-label">Registration</p>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:var(--studio)">1</div><div class="step-body"><div class="step-title">Register <span class="badge info">/register</span></div><div class="step-note">Select role: Studio Manager → email + password + full name + phone → submit</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--studio)">2</div><div class="step-body"><div class="step-title">Auto sign-in → onboarding <span class="badge ok">fixed</span></div><div class="step-note">New studio_manager always → /studios/onboarding (not dashboard). Bypasses dashboard guard.</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--studio)">3</div><div class="step-body"><div class="step-title">Studio onboarding wizard <span class="badge info">/studios/onboarding</span></div><div class="step-note">Step 1: studio name + type → Step 2: location + address → Step 3: bio + team size → Step 4: services + rate → Step 5: operating hours</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--studio)">4</div><div class="step-body"><div class="step-title">POST /api/onboarding/studio <span class="badge err">500 error</span></div><div class="step-note">Creates provider row with is_active: true. Currently returning 500 — check NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY in Vercel env vars.</div></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><div class="step-num" style="background:var(--studio)">5</div><div class="step-body"><div class="step-title">Studio dashboard <span class="badge info">/studios/dashboard</span></div><div class="step-note">Bookings overview, stats, team management, studio status (live / pending)</div></div></div>
+    </div>
+
+    <p class="section-label">Customer books a studio</p>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:var(--studio)">→</div><div class="step-body"><div class="step-title">Browse studios <span class="badge info">/studios</span></div><div class="step-note">Studio grid. "Browse spaces →" links to /studios/gallery (new — shows rooms + media)</div></div></div>
+      <div class="step"><div class="step-num" style="background:var(--studio)">→</div><div class="step-body"><div class="step-title">Studio gallery <span class="badge info">/studios/gallery</span></div><div class="step-note">Studio tabs, media grid with lightbox, room cards with capacity + hourly rate + book button</div></div></div>
+      <div class="step"><div class="step-num" style="background:var(--studio)">→</div><div class="step-body"><div class="step-title">Book a space <span class="badge info">/studios/[slug]/book</span></div><div class="step-note">Calendar, room selector, payment via Billplz. Same payment flow as MUA booking.</div></div></div>
+    </div>
+
+    <p class="section-label">Returning sign-in</p>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:var(--studio)">↩</div><div class="step-body"><div class="step-title">Sign in → check studio row</div><div class="step-note">Has studio row → /studios/dashboard. No studio row → /studios/onboarding.</div></div></div>
+    </div>
+
+    <div class="issue"><span class="issue-icon">⚠</span><div><strong>500 on studio onboarding submit:</strong> Vercel → Settings → Environment Variables → delete NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY if present. NEXT_PUBLIC_SUPABASE_ANON_KEY is the correct key.</div></div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="admin" class="flow">
+    <p class="section-label">Access</p>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:var(--admin)">1</div><div class="step-body"><div class="step-title">Sign in → /admin <span class="badge ok">admin role only</span></div><div class="step-note">profiles.role = "admin" required. studio_manager access removed. Redirects to / if wrong role.</div></div></div>
+    </div>
+
+    <p class="section-label">Provider management</p>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:var(--admin)">→</div><div class="step-body"><div class="step-title">Providers <span class="badge info">/admin/providers</span></div><div class="step-note">View all MUAs and studios. Toggle is_active to suspend or reinstate. View full profile.</div></div></div>
+      <div class="step"><div class="step-num" style="background:var(--admin)">→</div><div class="step-body"><div class="step-title">Placeholders <span class="badge info">/admin/placeholders</span></div><div class="step-note">Seed demo MUA profiles before real supply is onboarded. Use to test browse page.</div></div></div>
+    </div>
+
+    <p class="section-label">Platform oversight</p>
+    <div class="steps">
+      <div class="step"><div class="step-num" style="background:var(--admin)">→</div><div class="step-body"><div class="step-title">Bookings <span class="badge info">/admin/bookings</span></div><div class="step-note">All platform bookings — status, amounts, dispute flags, customer + artist info</div></div></div>
+      <div class="step"><div class="step-num" style="background:var(--admin)">→</div><div class="step-body"><div class="step-title">Payments <span class="badge info">/admin/payments</span></div><div class="step-note">Billplz webhook health, payout tracking, escrow status per booking</div></div></div>
+      <div class="step"><div class="step-num" style="background:var(--admin)">→</div><div class="step-body"><div class="step-title">Moderation <span class="badge info">/admin/moderation</span></div><div class="step-note">Off-platform contact violations flagged by concierge guardrails and in-app chat detection</div></div></div>
+      <div class="step"><div class="step-num" style="background:var(--admin)">→</div><div class="step-body"><div class="step-title">System monitoring <span class="badge info">/admin/monitoring</span></div><div class="step-note">Webhook health checks, cron job status, Sentry error feed</div></div></div>
+    </div>
+
+    <p class="section-label">Background jobs</p>
+    <div class="cron">⏰ &nbsp;<div><strong>booking-cleanup</strong> — 06:00 daily — cancels expired unpaid bookings<br><strong>reminders</strong> — 09:00 daily — sends Brevo reminder emails to MUAs + customers<br><strong>webhook-monitor</strong> — 12:00 daily — checks Billplz webhook health</div></div>
+  </div>
+
+</div>
+
+<script>
+  function show(role) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.role === role));
+    document.querySelectorAll('.flow').forEach(f => f.classList.toggle('active', f.id === role));
+  }
+</script>
+</body>
+</html>
