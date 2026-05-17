@@ -77,6 +77,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "At least one valid service is required" }, { status: 400 })
   }
 
+  // Studios go live only after Leish review — is_active: false
   const { data: provider, error: providerError } = await supabase
     .from("providers")
     .insert({
@@ -92,9 +93,8 @@ export async function POST(req: Request) {
       team_size: teamSize || null,
       specialties,
       hourly_rate: startingRate,
-      starting_price: startingRate,
       operating_hours: operatingHours?.trim() || null,
-      is_active: true,
+      is_active: false, // pending Leish review
       rating: 0,
       review_count: 0,
     })
@@ -102,26 +102,15 @@ export async function POST(req: Request) {
     .single()
 
   if (providerError || !provider) {
-    console.error("[studio-onboarding] provider insert error:", JSON.stringify(providerError, null, 2))
-    console.error("[studio-onboarding] attempted payload:", JSON.stringify({
-      owner_id: user.id,
-      kind: "studio",
-      slug,
-      display_name: studioName.trim(),
-      state: state.trim(),
-      district: district.trim(),
-      hourly_rate: startingRate,
-      specialties,
-      rating: 0,
-      review_count: 0,
-    }, null, 2))
+    console.error("[studio-onboarding] provider insert error:", JSON.stringify(providerError))
+    console.error("[studio-onboarding] user:", user.id, "slug:", slug, "state:", state)
     if (providerError?.code === "23505") {
       return NextResponse.json(
         { error: "A studio with that name already exists. Please try a slightly different name." },
         { status: 409 }
       )
     }
-    return NextResponse.json({ error: providerError?.message || "Failed to create studio", details: providerError?.hint }, { status: 500 })
+    return NextResponse.json({ error: "Failed to create studio", detail: providerError?.message }, { status: 500 })
   }
 
   // Insert services
