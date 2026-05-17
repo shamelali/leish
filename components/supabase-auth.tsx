@@ -20,11 +20,11 @@ case "artist":
   }
 }
 
-export function SupabaseAuthForm() {
+export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "signin" | "signup" }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const [isSignUp, setIsSignUp] = useState(false)
+  const [isSignUp, setIsSignUp] = useState(defaultMode === "signup")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error", text: string } | null>(null)
 
@@ -289,7 +289,7 @@ export function SupabaseAuthForm() {
             Please wait...
           </span>
         ) : isSignUp ? (
-          role === "customer" ? "Create Account" : `Sign Up as ${getRoleLabel(role)}`
+          defaultMode === "signup" ? "Register" : (role === "customer" ? "Create Account" : `Sign Up as ${getRoleLabel(role)}`)
         ) : (
           "Sign In"
         )}
