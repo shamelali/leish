@@ -80,9 +80,11 @@ export function SupabaseAuthForm() {
         // Wait briefly for the DB trigger to create the profile row
         await new Promise((resolve) => setTimeout(resolve, 800))
 
-        // Redirect based on role
+        // Redirect based on role — new studio_manager always goes to onboarding
         if (data.user) {
-          const redirectPath = getPostSignInPath(role)
+          const redirectPath = role === "studio_manager"
+            ? "/studios/onboarding"
+            : getPostSignInPath(role)
           window.location.href = redirectPath
         } else {
           window.location.href = "/"
@@ -104,8 +106,19 @@ export function SupabaseAuthForm() {
             .single()
 
           const userRole = profile?.role as UserRole | undefined
-          
-          window.location.href = getPostSignInPath(userRole)
+
+          // For studio_manager: check if they have a studio yet
+          if (userRole === "studio_manager") {
+            const { data: studio } = await supabase
+              .from("providers")
+              .select("id")
+              .eq("profile_id", data.user.id)
+              .eq("kind", "studio")
+              .maybeSingle()
+            window.location.href = studio ? "/studios/dashboard" : "/studios/onboarding"
+          } else {
+            window.location.href = getPostSignInPath(userRole)
+          }
         } else {
           window.location.href = "/"
         }
