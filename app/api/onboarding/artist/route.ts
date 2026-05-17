@@ -57,7 +57,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Failed to create user profile", detail: profileError?.message }, { status: 500 })
     }
   } else if (profile.role !== "artist") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    // Profile exists but wrong role — upgrade to artist
+    console.log("[artist-onboarding] Upgrading role from", profile.role, "to artist")
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ role: "artist" })
+      .eq("id", user.id)
+
+    if (updateError) {
+      console.error("[artist-onboarding] Failed to update role:", JSON.stringify(updateError, null, 2))
+      return NextResponse.json({ error: "Failed to update user role", detail: updateError?.message }, { status: 500 })
+    }
   }
 
   let payload: OnboardingPayload

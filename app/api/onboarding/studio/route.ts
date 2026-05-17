@@ -59,7 +59,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Failed to create user profile", detail: profileError?.message }, { status: 500 })
     }
   } else if (profile.role !== "studio_manager") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    // Profile exists but wrong role — upgrade to studio_manager
+    console.log("[studio-onboarding] Upgrading role from", profile.role, "to studio_manager")
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ role: "studio_manager" })
+      .eq("id", user.id)
+
+    if (updateError) {
+      console.error("[studio-onboarding] Failed to update role:", JSON.stringify(updateError, null, 2))
+      return NextResponse.json({ error: "Failed to update user role", detail: updateError?.message }, { status: 500 })
+    }
   }
 
   let payload: StudioOnboardingPayload
