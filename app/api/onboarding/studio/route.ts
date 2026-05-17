@@ -78,39 +78,49 @@ export async function POST(req: Request) {
   }
 
   // Studios go live immediately on onboarding
+  const insertPayload = {
+    owner_id: user.id,
+    kind: "studio" as const,
+    slug,
+    display_name: studioName.trim(),
+    state: state.trim(),
+    district: district.trim(),
+    address: address?.trim() || null,
+    bio: bio?.trim() || null,
+    studio_type: studioType || null,
+    team_size: teamSize || null,
+    specialties,
+    hourly_rate: startingRate,
+    starting_price: startingRate,
+    operating_hours: operatingHours?.trim() || null,
+    is_active: true,
+    rating: 0,
+    review_count: 0,
+  }
+
+  console.log("[studio-onboarding] Attempting insert:", JSON.stringify(insertPayload, null, 2))
+
   const { data: provider, error: providerError } = await supabase
     .from("providers")
-    .insert({
-      owner_id: user.id,
-      kind: "studio",
-      slug,
-      display_name: studioName.trim(),
-      state: state.trim(),
-      district: district.trim(),
-      address: address?.trim() || null,
-      bio: bio?.trim() || null,
-      studio_type: studioType || null,
-      team_size: teamSize || null,
-      specialties,
-      hourly_rate: startingRate,
-      operating_hours: operatingHours?.trim() || null,
-      is_active: true,
-      rating: 0,
-      review_count: 0,
-    })
+    .insert(insertPayload)
     .select("id")
     .single()
 
   if (providerError || !provider) {
-    console.error("[studio-onboarding] provider insert error:", JSON.stringify(providerError))
-    console.error("[studio-onboarding] user:", user.id, "slug:", slug, "state:", state)
+    console.error("[studio-onboarding] Error:", JSON.stringify(providerError, null, 2))
     if (providerError?.code === "23505") {
       return NextResponse.json(
         { error: "A studio with that name already exists. Please try a slightly different name." },
         { status: 409 }
       )
     }
-    return NextResponse.json({ error: "Failed to create studio", detail: providerError?.message }, { status: 500 })
+    if (providerError?.code === "23503") {
+      return NextResponse.json({ error: "Account not found. Please sign in again." }, { status: 400 })
+    }
+    if (providerError?.code === "42501") {
+      return NextResponse.json({ error: "Permission denied. Please ensure you have a studio manager account." }, { status: 403 })
+    }
+    return NextResponse.json({ error: `Database error: ${providerError?.message || "Unknown"}`, hint: providerError?.hint, code: providerError?.code }, { status: 500 })
   }
 
   // Insert services
