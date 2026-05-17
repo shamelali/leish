@@ -84,28 +84,15 @@ export async function POST(req: Request) {
     .single()
 
   if (providerError || !provider) {
-    console.error("[artist-onboarding] provider insert error:", JSON.stringify(providerError, null, 2))
-    console.error("[artist-onboarding] attempted payload:", JSON.stringify({
-      owner_id: user.id,
-      kind: "artist",
-      slug,
-      display_name: displayName.trim(),
-      state: state.trim(),
-      district: district.trim(),
-    }, null, 2))
+    console.error("[artist-onboarding] provider insert error:", providerError)
+    // Handle duplicate slug
     if (providerError?.code === "23505") {
       return NextResponse.json(
         { error: "A profile with that name already exists. Please try a slightly different display name." },
         { status: 409 }
       )
     }
-    if (providerError?.code === "23503") {
-      return NextResponse.json({ error: "Account not found. Please sign in again." }, { status: 400 })
-    }
-    if (providerError?.code === "42501") {
-      return NextResponse.json({ error: "Permission denied. Please ensure you have an artist account." }, { status: 403 })
-    }
-    return NextResponse.json({ error: `Failed to create profile: ${providerError?.message || "Unknown error"}` }, { status: 500 })
+    return NextResponse.json({ error: "Failed to create profile" }, { status: 500 })
   }
 
   // Insert services

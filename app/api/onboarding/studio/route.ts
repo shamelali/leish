@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "At least one valid service is required" }, { status: 400 })
   }
 
-  // Studios go live only after Leish review — is_active: false
+  // Studios go live immediately on onboarding
   const { data: provider, error: providerError } = await supabase
     .from("providers")
     .insert({
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
       specialties,
       hourly_rate: startingRate,
       operating_hours: operatingHours?.trim() || null,
-      is_active: false, // pending Leish review
+      is_active: true,
       rating: 0,
       review_count: 0,
     })
