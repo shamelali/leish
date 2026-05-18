@@ -174,18 +174,27 @@ export default async function StudioDashboardPage() {
 
           <Panel title="Quick Actions">
             <div className="space-y-2">
-              <div className="flex w-full items-center justify-between border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
+              <a
+                href={`/studios/${studio.id}`}
+                className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
+              >
+                View public page
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0 0L12 12" /></svg>
+              </a>
+              <a
+                href="/studios/onboarding"
+                className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
+              >
                 Manage services
-                <span>Coming soon</span>
-              </div>
-              <div className="flex w-full items-center justify-between border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
-                Set availability
-                <span>Coming soon</span>
-              </div>
-              <div className="flex w-full items-center justify-between border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              </a>
+              <a
+                href="/studios/onboarding"
+                className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
+              >
                 Edit profile
-                <span>Coming soon</span>
-              </div>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              </a>
             </div>
           </Panel>
         </div>
