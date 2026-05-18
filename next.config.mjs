@@ -35,6 +35,10 @@ const nextConfig = {
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
+  optimizePackageImports: ["lucide-react", "@radix-ui/react-*"],
+  experimental: {
+    optimizeCss: true,
+  },
   async headers() {
     return [
       {

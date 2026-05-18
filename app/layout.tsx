@@ -13,17 +13,20 @@ import './globals.css'
 const inter = Outfit({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
 })
 
 const playfair = Outfit({
   subsets: ['latin'],
   variable: '--font-playfair',
+  display: 'swap',
 })
 
 const mono = Space_Mono({
   subsets: ['latin'],
   variable: '--font-space-mono',
   weight: ['400', '700'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
