@@ -1,21 +1,12 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import { type NextRequest, NextResponse } from "next/server"
 
-const CANONICAL_ORIGIN = "https://www.leish.my"
-
-function applyCorsHeaders(response: NextResponse) {
-  response.headers.set("Access-Control-Allow-Origin", CANONICAL_ORIGIN)
-  response.headers.set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-  return response
-}
-
-export function updateSession(request: NextRequest) {
-  let supabaseResponse = applyCorsHeaders(NextResponse.next({
+export async function updateSession(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({
     request: {
       headers: request.headers,
     },
-  }))
+  })
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -33,20 +24,16 @@ export function updateSession(request: NextRequest) {
         cookiesToSet: Array<{ name: string; value: string; options?: CookieOptions }>
       ) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-        supabaseResponse = applyCorsHeaders(NextResponse.next({ request }))
+        supabaseResponse = NextResponse.next({ request })
         cookiesToSet.forEach(({ name, value, options }) => {
-          const cookieOptions = {
-            ...options,
-            domain: ".leish.my",
-          } as CookieOptions
-          supabaseResponse.cookies.set(name, value, cookieOptions)
+          supabaseResponse.cookies.set(name, value, options)
         })
       },
     },
   })
 
-  // Refresh/authenticate session cookies for subsequent server components/routes.
-  void supabase.auth.getUser()
+  // IMPORTANT: Await getUser() to refresh the session cookie before returning
+  await supabase.auth.getUser()
 
   return supabaseResponse
 }
