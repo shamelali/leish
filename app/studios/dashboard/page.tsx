@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 
+import Link from "next/link"
 import { redirect } from "next/navigation";
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr";
 import { DashboardShell, Panel, StatGrid } from "@/components/dashboard-shell";
@@ -31,7 +32,7 @@ export default async function StudioDashboardPage() {
   const { data: studio } = await supabase
     .from("providers")
     .select(
-      "id, display_name, state, district, is_active, specialties, hourly_rate, rating, review_count",
+      "id, slug, display_name, state, district, is_active, specialties, hourly_rate, rating, review_count",
     )
     .eq("owner_id", user.id)
     .eq("kind", "studio")
@@ -174,27 +175,27 @@ export default async function StudioDashboardPage() {
 
           <Panel title="Quick Actions">
             <div className="space-y-2">
-              <a
-                href={`/studios/${studio.id}`}
+              <Link
+                href={`/studios/${studio.slug}`}
                 className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
               >
                 View public page
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0 0L12 12" /></svg>
-              </a>
-              <a
-                href="/studios/onboarding"
+              </Link>
+              <Link
+                href="/studioonboard"
                 className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
               >
-                Manage services
+                Edit profile & services
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-              </a>
-              <a
-                href="/studios/onboarding"
+              </Link>
+              <Link
+                href="/account"
                 className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground transition-colors hover:border-accent hover:text-accent"
               >
-                Edit profile
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-              </a>
+                My account
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              </Link>
             </div>
           </Panel>
         </div>
