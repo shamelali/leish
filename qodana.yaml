@@ -11,8 +11,9 @@ version: "1.0"
 profile:
   name: qodana.starter
 #Enable inspections
-#include:
-#  - name: <SomeEnabledInspectionId>
+include:
+  - name: DuplicatedCode
+  - name: UnnecessaryLocalVariableJS
 #Disable inspections
 #exclude:
 #  - name: <SomeDisabledInspectionId>
@@ -36,6 +37,3 @@ profile:
 #    total: 50
 #Specify Qodana linter for analysis (Applied in CI/CD pipeline)
 linter: jetbrains/qodana-js:2026.1
-include:
-  - name: DuplicatedCode
-  - name: UnnecessaryLocalVariableJS
