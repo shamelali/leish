@@ -176,7 +176,7 @@ export default async function StudioProfilePage({
     reviewCount: studio.review_count || 0,
     startingPrice: startingPrice,
     teamSize: studio.team_size || 0,
-    image: studio.profile_image_url || "/studios/placeholder.jpg",
+    image: studio.profile_image_url || "/studios/placeholder.png",
     bio: studio.bio || "",
     specialties: (studio.specialties || []) as Category[],
     amenities: amenities,

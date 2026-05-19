@@ -59,7 +59,7 @@ export async function getArtists(): Promise<ArtistListItem[]> {
         id: String(artist.id),
         slug: String(artist.slug),
         name: String(artist.display_name),
-        image: "/artists/placeholder.jpg",
+        image: "/artists/placeholder.png",
         specialties: (artist.specialties || []) as Category[],
         location: `${artist.state}, ${artist.district}`,
         state: String(artist.state),

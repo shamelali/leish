@@ -120,7 +120,7 @@ export default async function AdminDashboardPage() {
                         <circle cx="12" cy="7" r="4" />
                       </svg>
                     </div>
-                    <span className="text-xs font-mono text-muted-foreground">/artists/placeholder.jpg</span>
+                    <span className="text-xs font-mono text-muted-foreground">/artists/placeholder.png</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
@@ -134,7 +134,7 @@ export default async function AdminDashboardPage() {
                         <path d="M9 18v.01" />
                       </svg>
                     </div>
-                    <span className="text-xs font-mono text-muted-foreground">/studios/placeholder.jpg</span>
+                    <span className="text-xs font-mono text-muted-foreground">/studios/placeholder.png</span>
                   </div>
                 </div>
               </div>

@@ -28,28 +28,28 @@ const PLACEHOLDER_OPTIONS: PlaceholderOption[] = [
     id: "artist-default",
     name: "Artist Default",
     description: "Default placeholder for individual makeup artists",
-    defaultImage: "/artists/placeholder.jpg",
+    defaultImage: "/artists/placeholder.png",
     colors: ["#fce7f3", "#fbcfe8", "#f9a8d4"],
   },
   {
     id: "studio-default",
     name: "Studio Default",
     description: "Default placeholder for beauty studios",
-    defaultImage: "/studios/placeholder.jpg",
+    defaultImage: "/studios/placeholder.png",
     colors: ["#e0e7ff", "#c7d2fe", "#a5b4fc"],
   },
   {
     id: "team-placeholder",
     name: "Team Placeholder",
     description: "Placeholder for studio team photos",
-    defaultImage: "/artists/placeholder.jpg",
+    defaultImage: "/artists/placeholder.png",
     colors: ["#fef3c7", "#fde68a", "#fcd34d"],
   },
   {
     id: "portfolio-placeholder",
     name: "Portfolio Placeholder",
     description: "Placeholder for portfolio images",
-    defaultImage: "/studios/placeholder.jpg",
+    defaultImage: "/studios/placeholder.png",
     colors: ["#d1fae5", "#a7f3d0", "#6ee7b7"],
   },
 ]
@@ -230,7 +230,7 @@ export default function AdminPlaceholdersPage() {
                     </div>
                     <div>
                       <p className="text-xs font-medium text-foreground">Artist</p>
-                      <p className="text-[10px] text-muted-foreground">/artists/placeholder.jpg</p>
+                      <p className="text-[10px] text-muted-foreground">/artists/placeholder.png</p>
                     </div>
                   </div>
                 </div>
@@ -245,7 +245,7 @@ export default function AdminPlaceholdersPage() {
                     </div>
                     <div>
                       <p className="text-xs font-medium text-foreground">Studio</p>
-                      <p className="text-[10px] text-muted-foreground">/studios/placeholder.jpg</p>
+                      <p className="text-[10px] text-muted-foreground">/studios/placeholder.png</p>
                     </div>
                   </div>
                 </div>

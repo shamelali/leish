@@ -65,7 +65,7 @@ async function getStudioBookingData(slug: string): Promise<Studio | null> {
     reviewCount: studio.review_count || 0,
     startingPrice,
     teamSize: studio.team_size || 0,
-    image: "/studios/placeholder.jpg",
+    image: "/studios/placeholder.png",
     bio: studio.bio || "",
     specialties: (studio.specialties || []) as Category[],
     amenities: ["Private Rooms", "Free Parking", "WiFi"],

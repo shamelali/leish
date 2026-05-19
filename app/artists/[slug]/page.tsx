@@ -145,7 +145,7 @@ export default async function ArtistProfilePage({
     rating: artist.rating || 0,
     reviewCount: artist.review_count || 0,
     hourlyRate: artist.hourly_rate || 0,
-    image: artist.avatar_url || "/artists/placeholder.jpg",
+    image: artist.avatar_url || "/artists/placeholder.png",
     bio: artist.bio || "",
     experience: experienceText,
     specialties: artist.specialties || [],
