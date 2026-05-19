@@ -1,6 +1,7 @@
+import type { Metadata } from "next"
 import { SupabaseAuth } from "@/components/supabase-auth"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Register | Leish!",
   description: "Create an account to book artists or offer your services.",
 }

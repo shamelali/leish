@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { DashboardShell, Panel, StatGrid } from "@/components/dashboard-shell"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { redirect } from "next/navigation"
@@ -5,7 +6,7 @@ import { redirect } from "next/navigation"
 export const dynamic = "force-dynamic"
 import { AlertCircle, CheckCircle, XCircle } from "lucide-react"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "System Monitoring | Leish Admin",
   description: "Monitor system health, webhooks, and cron jobs.",
 }

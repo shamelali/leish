@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 export const dynamic = "force-dynamic"
 
 import Link from "next/link"
@@ -6,7 +7,7 @@ import { getSupabaseSsrClient } from "@/lib/supabase/ssr";
 import { DashboardShell, Panel, StatGrid } from "@/components/dashboard-shell";
 import { StudioOnboardingBanner } from "@/components/studio-onboarding-banner";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Studio Dashboard | Leish!",
   description: "Manage your studio, services, and bookings.",
 };

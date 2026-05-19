@@ -1,10 +1,11 @@
+import type { Metadata } from "next"
 export const dynamic = "force-dynamic"
 
 import Link from "next/link"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { StudioOnboardingWizard } from "@/components/studio-onboarding-wizard"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Set Up Your Studio | Leish!",
   description: "Complete your studio profile to start receiving bookings.",
 }

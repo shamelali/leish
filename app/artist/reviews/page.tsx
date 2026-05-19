@@ -1,10 +1,11 @@
+import type { Metadata } from "next"
 export const dynamic = "force-dynamic"
 
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { getProDashboardData } from "@/lib/dashboard"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Pro Reviews | Leish!",
   description: "Manage reviews and responses.",
 }

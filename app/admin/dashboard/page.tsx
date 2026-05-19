@@ -1,8 +1,9 @@
+import type { Metadata } from "next"
 import { DashboardShell, Panel, StatGrid } from "@/components/dashboard-shell"
 import { getAdminDashboardData } from "@/lib/dashboard-simple"
 import Link from "next/link"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Admin Dashboard | Leish!",
   description: "Marketplace operations dashboard for admins.",
 }

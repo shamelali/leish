@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 export const dynamic = "force-dynamic"
 
 import { Suspense } from "react"
@@ -5,7 +6,7 @@ import { ArtistGrid } from "@/components/artist-grid"
 import { getArtists } from "@/lib/actions/artists"
 import { getFavorites } from "@/lib/actions/favorites"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Browse Artists | Leish!",
   description:
     "Discover elite freelance makeup artists for weddings, events, and editorial shoots. Filter by specialty and find your perfect match.",

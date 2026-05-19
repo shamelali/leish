@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 export const dynamic = "force-dynamic"
 
 import { Suspense } from "react"
@@ -10,7 +11,7 @@ import { LoyaltyStatusCard } from "@/components/loyalty-status-card"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { Button } from "@/components/ui/button"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Pro Dashboard | Leish!",
   description: "Manage profile, services, bookings, and reviews.",
 }

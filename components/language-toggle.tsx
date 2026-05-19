@@ -11,9 +11,9 @@ function setDocumentLanguage(lang: Language) {
 }
 
 function getInitialLang(): Language {
-  if (typeof window === "undefined") return "en";
+  if (typeof window === "undefined") return "ms";
   const stored = window.localStorage.getItem(STORAGE_KEY);
-  return stored === "ms" ? "ms" : "en";
+  return stored === "en" ? "en" : "ms";
 }
 
 export function LanguageToggle() {

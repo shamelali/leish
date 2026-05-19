@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 export const dynamic = "force-dynamic"
 
 import { Suspense } from "react"
@@ -6,7 +7,7 @@ import { ArrowRight } from "lucide-react"
 import { StudioGrid } from "@/components/studio-grid"
 import { getStudios } from "@/lib/actions/studios"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Browse Studios | Leish!",
   description:
     "Discover elite beauty studios for weddings, events, and editorial shoots. Full-service teams, luxury amenities, and seamless booking.",

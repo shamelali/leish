@@ -14,7 +14,7 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
 <Link href="/" className="flex items-center gap-2">
-                <Logo className="h-8 w-auto" />
+                <Logo className="h-10 w-auto" />
               </Link>
             <p className="mt-3 sm:mt-4 text-sm leading-relaxed text-muted-foreground">
               {t.footer.tagline}

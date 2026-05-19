@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 
+import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, CalendarClock, CheckCircle2, MapPin, ShieldCheck, Users } from "lucide-react"
@@ -81,7 +82,7 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>
-}) {
+}): Promise<Metadata> {
   const { slug } = await params
   const studio = await getStudioBookingData(slug)
 

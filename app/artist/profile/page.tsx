@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 export const dynamic = "force-dynamic"
 
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
@@ -5,7 +6,7 @@ import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { ProProfileForm } from "@/components/pro-profile-form"
 import { ProServiceManager } from "@/components/pro-service-manager"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Pro Profile | Leish!",
   description: "Manage provider profile and services.",
 }

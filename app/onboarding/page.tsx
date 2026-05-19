@@ -1,10 +1,11 @@
+import type { Metadata } from "next"
 export const dynamic = "force-dynamic"
 
 import Link from "next/link"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { ArrowRight, Brush, Building2, Sparkles } from "lucide-react"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Get Started | Leish!",
   description: "Choose how you want to use Leish! — as a customer, artist, or studio.",
 }

@@ -1,8 +1,9 @@
+import type { Metadata } from "next"
 import { DashboardShell, Panel, StatGrid } from "@/components/dashboard-shell"
 import { MuaUpgradeCard } from "@/components/mua-upgrade-card"
 import { getProDashboardMock } from "@/lib/dashboard-mocks"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "MUA Dashboard | Leish!",
   description: "Manage bookings and upgrade to Leish Pro for advanced tools.",
 }
