@@ -17,8 +17,7 @@ export default function GatePage() {
 
     if (password === "leish788") {
       document.cookie = "leish_access=granted; path=/; max-age=86400; SameSite=Lax"
-      router.push("/")
-      router.refresh()
+      window.location.href = "/"
     } else {
       setError("Incorrect password")
       setLoading(false)
