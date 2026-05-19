@@ -1,26 +1,19 @@
-# .gitlab-ci.yml
-# LEISH.MY - Testing Pipeline (Vercel handles deployments)
-
-stages:
-  - test
-
 variables:
-  NODE_VERSION: "22"
+  DOCKER_DRIVER: overlay2
 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - node_modules/
+services:
+  - docker:dind
 
-test:
-  stage: test
-  image: node:${NODE_VERSION}
-  before_script:
-    - npm ci
+run_uploader:
+  image: docker:latest
+  variables:
+    QODANA_CONFIGURATIONS_TOKEN: $QODANA_CONFIGURATIONS_TOKEN
   script:
-    - npm run typecheck
-    - npm run lint
-    - npm run test
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
+    - |
+      docker run --rm \
+      -v $(pwd):/workspace \
+      -w /workspace \
+      -e QODANA_CONFIGURATIONS_TOKEN=$QODANA_CONFIGURATIONS_TOKEN \
+      jetbrains/qodana-configuration-uploader:latest \
+      --global-configs-file qodana-global-configurations.yaml \
+      --qodana-host https://qodana.cloud
