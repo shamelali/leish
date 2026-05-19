@@ -1,8 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react"
-// Translation datasets imported for future use
-// import { malayDatasetExtended, beautySpecificTranslations } from "./malay-dataset-extended"
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react"
 
 export type Language = "en" | "ms"
 
@@ -21,31 +19,27 @@ function setDocumentLanguage(lang: Language) {
   document.documentElement.lang = lang === "ms" ? "ms-MY" : "en"
 }
 
+function getInitialLang(): Language {
+  if (typeof window === "undefined") return "en"
+  const stored = window.localStorage.getItem(STORAGE_KEY)
+  return stored === "ms" ? "ms" : "en"
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  // Always start with "en" to match SSR — sync from localStorage after mount
-  const [lang, setLangState] = useState<Language>("en")
-  const [mounted, setMounted] = useState(false)
+  const [lang, setLangState] = useState<Language>(getInitialLang)
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY)
-    const resolved: Language = stored === "ms" ? "ms" : "en"
-    setLangState(resolved)
-    setDocumentLanguage(resolved)
-    setMounted(true)
-  }, [])
+    setDocumentLanguage(lang)
+  }, [lang])
 
-  useEffect(() => {
-    if (mounted) setDocumentLanguage(lang)
-  }, [lang, mounted])
-
-  const setLang = (newLang: Language) => {
+  const setLang = useCallback((newLang: Language) => {
     setLangState(newLang)
     if (typeof window !== "undefined") {
       window.localStorage.setItem(STORAGE_KEY, newLang)
       setDocumentLanguage(newLang)
       window.dispatchEvent(new CustomEvent("leish:lang-changed", { detail: newLang }))
     }
-  }
+  }, [])
 
   const value: LanguageContextType = {
     lang,

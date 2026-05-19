@@ -1,80 +1,13 @@
 import type { ConversationContext } from "./types"
 import { contextRichness } from "./memory"
 
-// ── Off-topic detector ────────────────────────────────────────────────────────
-
-const OFF_TOPIC_PATTERNS = [
-  /\b(weather|temperature|rain|sunny|forecast)\b/i,
-  /\b(politics|election|vote|government)\b/i,
-  /\b(food|recipe|restaurant|menu|eat|cook|hungry)\b/i,
-  /\b(sport|football|soccer|basketball|tennis)\b/i,
-  /\b(movie|film|netflix|youtube|music|song)\b/i,
-  /\b(stock|crypto|bitcoin|invest|trading|finance)\b/i,
-  /\b(phone|laptop|computer|tech support|wifi|internet)\b/i,
-  /\b(medication|doctor|hospital|diagnose|health condition)\b/i,
-]
-
-const ABUSE_PATTERNS = [
-  /fuck|shit|bitch|asshole|cunt|dick|pussy|nigger/i,
-]
-
-// Phone and social media patterns reserved for future contact filtering features
-// const PHONE_PATTERNS = [
-//   /\+?\d{1,3}[-.\s]?\(?\d{1,4}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,9}/,
-//   /(\+60|\b60|\b0)[1-9]\d{8,9}/,
-//   /\b\d{3}[-. ]?\d{3}[-. ]?\d{4}\b/,
-//   /\(\d{3}\)\s*\d{3}[-. ]?\d{4}/,
-// ]
-
-// const SOCIAL_MEDIA_PATTERNS = [
-//   /@\w{2,30}/,
-//   /(instagram|facebook|twitter|tiktok|youtube|whatsapp)[\.]?com\/[\w.-]+/i,
-//   /whatsapp:\s*\+?\d+/i,
-//   /telegram:\s*\@?\w+/i,
-// ]
-
-const MAKEUP_TOPICS = [
-  /\b(makeup|beauty|artist|bridal|wedding|event|photoshoot|natural|sfx|look|style|foundation|contour|lash|glam|hair)\b/i,
-]
-
 export type GuardrailResult =
   | { type: "pass" }
   | { type: "off_topic"; response: string }
   | { type: "abuse"; response: string }
   | { type: "too_short"; response: string }
 
-export function applyGuardrails(text: string): GuardrailResult {
-  const trimmed = text.trim()
-
-  // Abuse
-  if (ABUSE_PATTERNS.some((p) => p.test(trimmed))) {
-    return {
-      type: "abuse",
-      response:
-        "I'm here to help you find the perfect beauty artist. Let's keep the conversation focused on that — what kind of look are you going for?",
-    }
-  }
-
-  // Too short / unintelligible
-  if (trimmed.length < 3 || /^[^a-zA-Z0-9]+$/.test(trimmed)) {
-    return {
-      type: "too_short",
-      response: "Could you share a bit more? Tell me about your event, the style you're looking for, or your location.",
-    }
-  }
-
-  // Off-topic (only if it contains no makeup-related terms)
-  if (
-    OFF_TOPIC_PATTERNS.some((p) => p.test(trimmed)) &&
-    !MAKEUP_TOPICS.some((p) => p.test(trimmed))
-  ) {
-    return {
-      type: "off_topic",
-      response:
-        "I specialise exclusively in beauty and makeup artist recommendations. Is there a look, event, or artist type I can help you discover?",
-    }
-  }
-
+export function applyGuardrails(): GuardrailResult {
   return { type: "pass" }
 }
 

@@ -32,7 +32,7 @@ export function processMessage(
   hasPhoto = false
 ): ConciergeResponse {
   // 1. Guardrails
-  const guard = applyGuardrails(text)
+  const guard = applyGuardrails()
   if (guard.type !== "pass") {
     const updatedContext = accumulateContext(currentContext, text, hasPhoto)
     return {

@@ -144,7 +144,9 @@ export async function PATCH(req: Request) {
   try {
     // Fetch booking to enforce auth
     const booking = await bookingSupabaseService.getById(payload.bookingId);
-    if (!booking) throw new Error("Booking not found");
+    if (!booking) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
 
     // check permissions
     const { data: prov } = await supabase

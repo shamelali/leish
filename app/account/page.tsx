@@ -2,7 +2,32 @@ export const dynamic = "force-dynamic"
 
 import Link from "next/link"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
-import { Calendar, Clock, MapPin, User } from "lucide-react"
+import { Calendar, Clock, User } from "lucide-react"
+
+interface BookingService {
+  name: string
+  duration_minutes: number
+  price_myr: number
+}
+
+interface BookingProvider {
+  display_name: string
+  kind: string
+  slug: string
+  state: string
+  district: string
+}
+
+interface Booking {
+  id: string
+  status: string
+  total_amount_myr: number
+  paid_amount_myr: number
+  notes: string | null
+  created_at: string
+  services: BookingService[] | null
+  providers: BookingProvider[] | null
+}
 
 export const metadata = {
   title: "My Account | Leish!",
@@ -98,7 +123,7 @@ export default async function AccountPage() {
   const fullName = profile?.full_name || user.email?.split("@")[0] || "User"
 
   // Fetch bookings for customer
-  let bookings: any[] = []
+  let bookings: Booking[] = []
   let bookingsError: string | null = null
   if (role === "customer") {
     const { data, error } = await supabase
@@ -274,7 +299,7 @@ function BookingCard({
   booking,
   muted = false,
 }: {
-  booking: any
+  booking: Booking
   muted?: boolean
 }) {
   const statusLabel = STATUS_LABELS[booking.status] || booking.status
@@ -289,13 +314,13 @@ function BookingCard({
       <div className="flex items-start justify-between">
         <div>
           <h3 className="font-serif text-lg font-medium text-foreground">
-            {booking.providers?.display_name || "Unknown Provider"}
+            {booking.providers?.[0]?.display_name || "Unknown Provider"}
           </h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            {booking.providers?.kind === "studio" ? "Studio" : "Artist"} ·{" "}
-            {booking.providers?.state}
-            {booking.providers?.district
-              ? `, ${booking.providers.district}`
+            {booking.providers?.[0]?.kind === "studio" ? "Studio" : "Artist"} ·{" "}
+            {booking.providers?.[0]?.state}
+            {booking.providers?.[0]?.district
+              ? `, ${booking.providers[0].district}`
               : ""}
           </p>
         </div>
@@ -305,14 +330,14 @@ function BookingCard({
           {statusLabel}
         </span>
       </div>
-      {booking.services && (
+      {booking.services && booking.services.length > 0 && (
         <div className="mt-4 border-t border-border pt-4">
           <p className="text-sm font-medium text-foreground">
-            {booking.services.name}
+            {booking.services[0].name}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {booking.services.duration_minutes} minutes · MYR{" "}
-            {booking.services.price_myr}
+            {booking.services[0].duration_minutes} minutes · MYR{" "}
+            {booking.services[0].price_myr}
           </p>
         </div>
       )}

@@ -33,7 +33,7 @@ describe("surchargePresets", () => {
   })
 
   it("all presets have required fields", () => {
-    for (const [key, preset] of Object.entries(surchargePresets)) {
+    for (const [, preset] of Object.entries(surchargePresets)) {
       expect(preset.name).toBeTruthy()
       expect(preset.description).toBeTruthy()
       expect(["fixed", "percentage", "per_km", "per_person"]).toContain(preset.surchargeType)

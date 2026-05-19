@@ -10,21 +10,22 @@ function setDocumentLanguage(lang: Language) {
   document.documentElement.lang = lang === "ms" ? "ms-MY" : "en";
 }
 
+function getInitialLang(): Language {
+  if (typeof window === "undefined") return "en";
+  const stored = window.localStorage.getItem(STORAGE_KEY);
+  return stored === "ms" ? "ms" : "en";
+}
+
 export function LanguageToggle() {
-  // Always start with "en" to match SSR — sync from localStorage after mount
-  const [lang, setLang] = useState<Language>("en");
+  const [lang, setLang] = useState<Language>(getInitialLang);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    const resolved: Language = stored === "ms" ? "ms" : "en";
-    setLang(resolved);
-    setDocumentLanguage(resolved);
-  }, []);
+    setDocumentLanguage(lang);
+  }, [lang]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEY, lang);
-    setDocumentLanguage(lang);
     window.dispatchEvent(
       new CustomEvent("leish:lang-changed", { detail: lang }),
     );

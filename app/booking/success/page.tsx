@@ -9,23 +9,26 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useTranslation } from "@/lib/i18n/language-context"
 
+function getInitialStatus(searchParams: URLSearchParams): "loading" | "success" | "error" {
+  const billplzPaid = searchParams.get("billplz[paid]")
+  if (billplzPaid === "true") return "success"
+  
+  const billplzBillId = searchParams.get("billplz[id]")
+  const bookingId = searchParams.get("booking_id")
+  if (billplzBillId || bookingId) return "loading"
+  
+  return "success"
+}
+
 export default function PaymentSuccessPage() {
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
-  const { lang } = useTranslation()
   const searchParams = useSearchParams()
+  const [status, setStatus] = useState<"loading" | "success" | "error">(() => getInitialStatus(searchParams))
+  const { lang } = useTranslation()
 
   useEffect(() => {
     const billplzBillId = searchParams.get("billplz[id]")
-    const billplzPaid = searchParams.get("billplz[paid]")
     const bookingId = searchParams.get("booking_id")
 
-    // Billplz redirects with billplz[paid]=true on success
-    if (billplzPaid === "true") {
-      setStatus("success")
-      return
-    }
-
-    // If we have a bill ID, verify server-side
     if (billplzBillId || bookingId) {
       const id = billplzBillId || bookingId
       fetch(`/api/payments/status?id=${id}`)
@@ -34,11 +37,7 @@ export default function PaymentSuccessPage() {
           setStatus(data.paid ? "success" : "error")
         })
         .catch(() => setStatus("error"))
-      return
     }
-
-    // No payment params — assume success (direct nav or HitPay redirect)
-    setStatus("success")
   }, [searchParams])
 
   if (status === "loading") {

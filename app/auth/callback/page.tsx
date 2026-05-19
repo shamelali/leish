@@ -41,7 +41,6 @@ export default function AuthCallbackPage() {
       try {
         // Step 1: exchange the OAuth code/hash for a real session
         // This handles both PKCE code (search params) and implicit hash tokens
-        const hashParams = new URLSearchParams(window.location.hash.slice(1))
         const searchParams = new URLSearchParams(window.location.search)
         const code = searchParams.get("code")
 

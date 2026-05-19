@@ -45,6 +45,10 @@ const nextConfig = {
         source: "/(.*)",
         headers: [
           {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
+          {
             key: "X-Content-Type-Options",
             value: "nosniff",
           },
@@ -63,6 +67,24 @@ const nextConfig = {
           {
             key: "Content-Security-Policy",
             value: "font-src 'self' *.vercel.com *.gstatic.com vercel.live *.blob.vercel-storage.com;",
+          },
+        ],
+      },
+      {
+        source: "/_next/static/(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/api/(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "private, no-cache, no-store, must-revalidate",
           },
         ],
       },

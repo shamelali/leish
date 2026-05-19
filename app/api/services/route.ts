@@ -23,10 +23,6 @@ type ServiceDeletePayload = {
   providerId?: string
 }
 
-function isNotPermError(err: unknown) {
-  return err instanceof Error && err.message === "not-perm"
-}
-
 export async function GET(req: Request) {
   const url = new URL(req.url)
   const providerId = url.searchParams.get("provider_id")
@@ -45,9 +41,9 @@ export async function GET(req: Request) {
   }
 }
 
-async function ensureOwner(userId: string, providerId: string) {
+async function ensureOwner(userId: string, providerId: string): Promise<boolean> {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) throw new Error("not-auth")
+  if (!supabase) return false
   const { data: prov } = await supabase
     .from("providers")
     .select("owner_id")
@@ -60,9 +56,7 @@ async function ensureOwner(userId: string, providerId: string) {
     .eq("id", userId)
     .maybeSingle()
   const isAdmin = profile?.role === "admin"
-  if (ownerId !== userId && !isAdmin) {
-    throw new Error("not-perm")
-  }
+  return ownerId === userId || isAdmin
 }
 
 export async function POST(req: Request) {
@@ -84,7 +78,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 })
   }
   try {
-    await ensureOwner(user.id, providerId)
+    const isOwner = await ensureOwner(user.id, providerId)
+    if (!isOwner) {
+      return NextResponse.json({ error: "Not allowed" }, { status: 403 })
+    }
     const created = await serviceService.create({
       provider_id: providerId,
       name,
@@ -93,9 +90,6 @@ export async function POST(req: Request) {
     })
     return NextResponse.json({ ok: true, service: created })
   } catch (err: unknown) {
-    if (isNotPermError(err)) {
-      return NextResponse.json({ error: "Not allowed" }, { status: 403 })
-    }
     const message = err instanceof Error ? err.message : "Create failed"
     return NextResponse.json({ ok: false, error: message }, { status: 400 })
   }
@@ -120,13 +114,13 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Missing id/updates/providerId" }, { status: 400 })
   }
   try {
-    await ensureOwner(user.id, providerId)
+    const isOwner = await ensureOwner(user.id, providerId)
+    if (!isOwner) {
+      return NextResponse.json({ error: "Not allowed" }, { status: 403 })
+    }
     const updated = await serviceService.update(id, updates)
     return NextResponse.json({ ok: true, service: updated })
   } catch (err: unknown) {
-    if (isNotPermError(err)) {
-      return NextResponse.json({ error: "Not allowed" }, { status: 403 })
-    }
     const message = err instanceof Error ? err.message : "Update failed"
     return NextResponse.json({ ok: false, error: message }, { status: 400 })
   }
@@ -151,13 +145,13 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Missing id/providerId" }, { status: 400 })
   }
   try {
-    await ensureOwner(user.id, providerId)
+    const isOwner = await ensureOwner(user.id, providerId)
+    if (!isOwner) {
+      return NextResponse.json({ error: "Not allowed" }, { status: 403 })
+    }
     await serviceService.delete(id)
     return NextResponse.json({ ok: true })
   } catch (err: unknown) {
-    if (isNotPermError(err)) {
-      return NextResponse.json({ error: "Not allowed" }, { status: 403 })
-    }
     const message = err instanceof Error ? err.message : "Delete failed"
     return NextResponse.json({ ok: false, error: message }, { status: 400 })
   }
