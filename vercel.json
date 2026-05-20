@@ -93,7 +93,7 @@
         }
       ],
       "destination": "https://www.leish.my/:path*",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/:path*",
@@ -104,7 +104,7 @@
         }
       ],
       "destination": "https://www.leish.my/studios/:path*",
-      "permanent": false
+      "permanent": true
     }
   ],
   "crons": [
