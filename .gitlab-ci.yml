@@ -5,6 +5,7 @@ stages:
   - typecheck
   - test
   - build
+  - deploy
 
 cache:
   key:
@@ -54,3 +55,12 @@ build:
     - lint
     - typecheck
     - test
+
+deploy:
+  stage: deploy
+  script:
+    - curl -X POST "$VERCEL_DEPLOY_HOOK"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  needs:
+    - build
