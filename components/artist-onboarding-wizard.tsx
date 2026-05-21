@@ -122,6 +122,7 @@ export function ArtistOnboardingWizard({
     setError(null)
 
     const baseSlug = slugify(form.displayName)
+    // eslint-disable-next-line sonarjs/pseudo-random
     const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`
 
     try {
@@ -173,17 +174,20 @@ export function ArtistOnboardingWizard({
 
       {/* Step indicator */}
       <div className="mb-10 flex items-center gap-0">
-        {STEPS.map((s, idx) => (
+        {STEPS.map((s, idx) => {
+          let stepClassName: string;
+          if (step > s.number) {
+            stepClassName = "border-accent bg-accent text-accent-foreground";
+          } else if (step === s.number) {
+            stepClassName = "border-foreground bg-foreground text-primary-foreground";
+          } else {
+            stepClassName = "border-border bg-background text-muted-foreground";
+          }
+          return (
           <div key={s.number} className="flex flex-1 items-center">
             <div className="flex flex-col items-center">
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full border text-xs font-medium transition-colors ${
-                  step > s.number
-                    ? "border-accent bg-accent text-accent-foreground"
-                    : step === s.number
-                    ? "border-foreground bg-foreground text-primary-foreground"
-                    : "border-border bg-background text-muted-foreground"
-                }`}
+                className={`flex h-8 w-8 items-center justify-center rounded-full border text-xs font-medium transition-colors ${stepClassName}`}
               >
                 {step > s.number ? <Check className="h-4 w-4" /> : s.number}
               </div>
@@ -203,7 +207,8 @@ export function ArtistOnboardingWizard({
               />
             )}
           </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Step content */}

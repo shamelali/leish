@@ -48,7 +48,7 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout)
 }
 
-export const reducer = (state: ToasterToastState, action: ToasterToastAction): ToasterToastState => {
+export const reducer = (state: ToasterToastState, action: ToastActionType): ToasterToastState => {
   switch (action.type) {
     case 'ADD_TOAST':
       if (!action.toast) return state
@@ -102,7 +102,7 @@ const listeners: Array<(state: ToasterToastState) => void> = []
 
 let memoryState: ToasterToastState = { toasts: [] }
 
-function dispatch(action: ToasterToastAction) {
+function dispatch(action: ToastActionType) {
   memoryState = reducer(memoryState, action)
   listeners.forEach((listener) => {
     listener(memoryState)
@@ -115,7 +115,6 @@ type ToastActionType = {
   toastId?: string
 }
 
-type ToasterToastAction = ToastActionType
 
 function toast({ ...props }: Toast) {
   const id = genId()

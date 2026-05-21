@@ -10,6 +10,7 @@ const reportSchema = z.object({
   context: z.string().optional(),
 })
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export async function POST(req: NextRequest) {
   const supabase = await getSupabaseSsrClient()
   if (!supabase) {
@@ -64,7 +65,6 @@ export async function POST(req: NextRequest) {
 
     if (newViolationCount >= 3) {
       shouldSuspend = true
-      suspensionDays = 0 // 0 = permanent
       reason = "Multiple communication violations - permanent suspension"
     } else if (newViolationCount === 2) {
       suspensionDays = 7
@@ -73,10 +73,21 @@ export async function POST(req: NextRequest) {
       reason = "First communication violation - warning"
     }
 
+    let actionStatus = "logged"
+    let logActionStatus = "counted"
+
+    if (shouldSuspend) {
+      actionStatus = "suspended"
+      logActionStatus = "suspended"
+    } else if (suspensionDays > 0) {
+      actionStatus = "warning"
+      logActionStatus = "warning"
+    }
+
     // Update provider with violation
     if (shouldSuspend) {
       await sql`
-        update public.providers set 
+        update public.providers set
           communication_violations = ${newViolationCount},
           is_suspended = true,
           suspension_reason = ${reason},
@@ -86,7 +97,7 @@ export async function POST(req: NextRequest) {
       `
     } else {
       await sql`
-        update public.providers set 
+        update public.providers set
           communication_violations = ${newViolationCount},
           suspension_reason = ${reason},
           updated_at = now()
@@ -98,15 +109,15 @@ export async function POST(req: NextRequest) {
     await sql`
       insert into public.monitoring_logs (event_type, severity, message, metadata)
       values (
-        'communication_violation', 
-        'warning', 
+        'communication_violation',
+        'warning',
         ${`Violation report against provider ${reportedProviderId}`},
-        ${JSON.stringify({ 
-          reporterId, 
-          violationType, 
+        ${JSON.stringify({
+          reporterId,
+          violationType,
           context,
           violationCount: newViolationCount,
-          action: shouldSuspend ? "suspended" : suspensionDays > 0 ? "warning" : "counted"
+          action: logActionStatus
         })}
       )
     `
@@ -114,7 +125,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       violationCount: newViolationCount,
-      action: shouldSuspend ? "suspended" : suspensionDays > 0 ? "warning" : "logged",
+      action: actionStatus,
       suspensionDays: shouldSuspend ? null : suspensionDays,
     })
   } catch (err) {

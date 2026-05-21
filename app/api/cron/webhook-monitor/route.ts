@@ -27,6 +27,7 @@ interface WebhookAlert {
   details: Record<string, unknown>
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export async function GET(req: Request) {
   // Verify cron secret
   const authHeader = req.headers.get("authorization")

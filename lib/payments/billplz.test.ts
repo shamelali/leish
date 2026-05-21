@@ -11,7 +11,7 @@ describe("verifyBillplzXSignature", () => {
     vi.stubEnv("BILLPLZ_X_SIGNATURE", "test-secret")
 
     const rawBody = "id=abc123&paid=true&reference_1=booking-1"
-    const signature = crypto.createHmac("sha256", "test-secret").update(rawBody).digest("hex")
+    const signature = crypto.createHmac("sha256", process.env.BILLPLZ_X_SIGNATURE!).update(rawBody).digest("hex")
 
     expect(verifyBillplzXSignature(rawBody, signature)).toBe(true)
   })

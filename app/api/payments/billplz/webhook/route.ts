@@ -14,6 +14,7 @@ function getValue(params: URLSearchParams, key: string) {
   return params.get(key) ?? params.get(`billplz[${key}]`) ?? undefined;
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export async function POST(req: Request) {
   const limit = enforceRateLimit(req, "payments:billplz:webhook", 120, 60_000);
   if (!limit.ok) {
@@ -54,12 +55,10 @@ export async function POST(req: Request) {
     `;
     const previousStatus = existingPayment[0]?.status ?? null;
     const isDuplicateSuccess = paid && previousStatus === "succeeded";
-    const nextPaymentStatus =
-      previousStatus === "succeeded"
-        ? "succeeded"
-        : paid
-          ? "succeeded"
-          : "failed";
+    let nextPaymentStatus = "failed";
+    if (previousStatus === "succeeded" || paid) {
+      nextPaymentStatus = "succeeded";
+    }
 
     await sql`
       update public.payments
@@ -172,19 +171,18 @@ export async function POST(req: Request) {
       }
     }
 
+    let eventType = "payment_failed";
+    if (isDuplicateSuccess) {
+      eventType = "payment_duplicate_ignored";
+    } else if (paid) {
+      eventType = paymentType === "deposit" ? "payment_deposit_succeeded" : "payment_full_succeeded";
+    }
+
     await sql`
       insert into public.booking_events (booking_id, event_type, event_payload)
       values (
         ${bookingId},
-        ${
-          isDuplicateSuccess
-            ? "payment_duplicate_ignored"
-            : paid
-              ? paymentType === "deposit"
-                ? "payment_deposit_succeeded"
-                : "payment_full_succeeded"
-              : "payment_failed"
-        },
+        ${eventType},
         ${JSON.stringify(Object.fromEntries(params.entries()))}::jsonb
       )
     `;

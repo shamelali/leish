@@ -104,6 +104,46 @@ export function PortfolioGallery({ items }: { items: PortfolioItem[] }) {
     { key: "video", label: "Videos", show: hasVideo },
   ]
 
+  const renderLightboxContent = () => {
+    if (lightboxIndex === null) return null;
+    const item = filteredItems[lightboxIndex];
+    if (!item) return null;
+
+    if (item.type === "beforeAfter" && item.before) {
+      return (
+        <BeforeAfterSlider
+          before={item.before}
+          after={item.src}
+          alt={item.alt}
+        />
+      );
+    }
+    if (item.type === "video" && item.videoUrl) {
+      return (
+        <div className="relative aspect-video w-full overflow-hidden bg-foreground">
+          <iframe
+            src={item.videoUrl}
+            title={item.alt}
+            className="h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      );
+    }
+    return (
+      <div className="relative aspect-[3/4] w-full overflow-hidden">
+        <Image
+          src={item.src}
+          alt={item.alt}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 90vw, 512px"
+        />
+      </div>
+    );
+  };
+
   return (
     <>
       {/* Filter tabs */}
@@ -184,33 +224,7 @@ export function PortfolioGallery({ items }: { items: PortfolioItem[] }) {
           </button>
 
           <div className="relative w-full max-w-lg">
-            {filteredItems[lightboxIndex].type === "beforeAfter" && filteredItems[lightboxIndex].before ? (
-              <BeforeAfterSlider
-                before={filteredItems[lightboxIndex].before!}
-                after={filteredItems[lightboxIndex].src}
-                alt={filteredItems[lightboxIndex].alt}
-              />
-            ) : filteredItems[lightboxIndex].type === "video" && filteredItems[lightboxIndex].videoUrl ? (
-              <div className="relative aspect-video w-full overflow-hidden bg-foreground">
-                <iframe
-                  src={filteredItems[lightboxIndex].videoUrl}
-                  title={filteredItems[lightboxIndex].alt}
-                  className="h-full w-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            ) : (
-              <div className="relative aspect-[3/4] w-full overflow-hidden">
-                <Image
-                  src={filteredItems[lightboxIndex].src}
-                  alt={filteredItems[lightboxIndex].alt}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 90vw, 512px"
-                />
-              </div>
-            )}
+            {renderLightboxContent()}
           </div>
 
           <button

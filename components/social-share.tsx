@@ -25,7 +25,7 @@ export function SocialShare({ url, title, description, hashtags = [] }: SocialSh
   const shareLinks = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
     twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}&hashtags=${hashtags.join(",")}`,
-    whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`,
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
   }
 
   const handleCopyLink = async () => {
@@ -63,6 +63,13 @@ export function SocialShare({ url, title, description, hashtags = [] }: SocialSh
     }
   }
 
+  let shareLabel = "";
+  if (copied) {
+    shareLabel = lang === "ms" ? "Disalin!" : "Copied!";
+  } else {
+    shareLabel = lang === "ms" ? "Kongsi" : "Share";
+  }
+
   return (
     <div className="flex items-center gap-2">
       {/* Native Share / Copy Link */}
@@ -78,10 +85,7 @@ export function SocialShare({ url, title, description, hashtags = [] }: SocialSh
           <Share2 className="h-4 w-4" />
         )}
         <span className="hidden sm:inline">
-          {copied
-            ? (lang === "ms" ? "Disalin!" : "Copied!")
-            : (lang === "ms" ? "Kongsi" : "Share")
-          }
+          {shareLabel}
         </span>
       </Button>
 

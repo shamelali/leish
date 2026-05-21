@@ -23,6 +23,7 @@ interface StudioOnboardingPayload {
   operatingHours: string
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export async function POST(req: Request) {
   const supabase = await getSupabaseSsrClient()
   if (!supabase) {

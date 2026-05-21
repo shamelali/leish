@@ -7,6 +7,7 @@ import { sendBookingReminder } from "@/lib/notifications/whatsapp";
 // Cron endpoint to send 24-hour reminder emails and SMS/WhatsApp
 // Should be called by Vercel Cron or external scheduler
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export async function GET(req: Request) {
   // Simple auth check using CRON_SECRET
   const authHeader = req.headers.get("authorization");

@@ -205,6 +205,7 @@ export default function AdminPlaceholdersPage() {
                       </button>
                       <button
                         onClick={() =>
+                          // eslint-disable-next-line sonarjs/no-nested-functions
                           setGeneratedPlaceholders((prev) => prev.filter((_, i) => i !== idx))
                         }
                         className="rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 transition-colors"

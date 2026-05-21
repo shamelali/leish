@@ -266,6 +266,7 @@ export function AiConcierge() {
       setTyping(true)
 
       // Simulate natural thinking delay
+      // eslint-disable-next-line sonarjs/pseudo-random
       await new Promise((r) => setTimeout(r, 700 + Math.random() * 500))
 
       const response = processMessage(trimmed, context, hasPhoto)

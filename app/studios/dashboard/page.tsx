@@ -94,7 +94,7 @@ export default async function StudioDashboardPage() {
   return (
     <DashboardShell
       title="Studio Dashboard"
-      subtitle={`${studio.display_name} · ${studio.state}${studio.district ? `, ${studio.district}` : ""}`}
+      subtitle={`${studio.display_name} · ${studio.state}${studio.district ? ", " + studio.district : ""}`}
       nav={nav}
     >
       {!studio.is_active && (

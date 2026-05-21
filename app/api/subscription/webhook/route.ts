@@ -5,6 +5,7 @@ import crypto from "crypto"
 // Billplz configuration
 const BILLPLZ_X_SIGNATURE = process.env.BILLPLZ_X_SIGNATURE || ""
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export async function POST(req: Request) {
   const payload = await req.text()
   const signature = req.headers.get("x-signature")
@@ -59,13 +60,22 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Database error" }, { status: 500 })
       }
 
+      let amountMyr: number
+      if (paid_amount) {
+        amountMyr = parseInt(paid_amount) / 100
+      } else if (billingCycle === "yearly") {
+        amountMyr = 999
+      } else {
+        amountMyr = 99
+      }
+
       // Log the subscription
       await supabase.from("subscription_history").insert({
         provider_id: providerId,
         tier: "pro",
         action: "upgrade",
         stripe_subscription_id: billId, // Using bill ID as reference
-        amount_myr: paid_amount ? parseInt(paid_amount) / 100 : (billingCycle === "yearly" ? 999 : 99),
+        amount_myr: amountMyr,
         billing_period_start: tierStartedAt.toISOString(),
         billing_period_end: tierExpiresAt.toISOString(),
       })

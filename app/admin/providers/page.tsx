@@ -180,93 +180,98 @@ export default async function AdminProvidersPage({
 
       <Panel title={`Providers (${filteredProviders.length})`}>
         <div className="space-y-3">
-          {filteredProviders.map((provider) => (
-            <div
-              key={provider.id}
-              className="grid grid-cols-1 gap-3 border border-border bg-background p-4 md:grid-cols-12"
-            >
-              {/* Provider Info */}
-              <div className="md:col-span-3">
-                <div className="flex items-center gap-2">
-                  <p className="font-serif text-base font-medium text-foreground">
-                    {provider.display_name || "Unnamed"}
+          {filteredProviders.map((provider) => {
+            let statusLabel: string;
+            if (provider.is_suspended) {
+              statusLabel = "Suspended";
+            } else if (provider.is_active) {
+              statusLabel = "Active";
+            } else {
+              statusLabel = "Inactive";
+            }
+            return (
+              <div
+                key={provider.id}
+                className="grid grid-cols-1 gap-3 border border-border bg-background p-4 md:grid-cols-12"
+              >
+                {/* Provider Info */}
+                <div className="md:col-span-3">
+                  <div className="flex items-center gap-2">
+                    <p className="font-serif text-base font-medium text-foreground">
+                      {provider.display_name || "Unnamed"}
+                    </p>
+                    {provider.tier === "pro" && (
+                      <span className="rounded bg-accent px-1.5 py-0.5 text-[10px] font-bold text-accent-foreground">
+                        PRO
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-mono text-[10px] uppercase text-muted-foreground">
+                    {provider.kind}
                   </p>
-                  {provider.tier === "pro" && (
-                    <span className="rounded bg-accent px-1.5 py-0.5 text-[10px] font-bold text-accent-foreground">
-                      PRO
-                    </span>
-                  )}
+                  <div className="mt-1 flex items-center gap-1">
+                    {provider.alertCount > 0 && (
+                      <>
+                        {provider.highSeverityAlerts > 0 && (
+                          <span className="flex items-center gap-1 text-[10px] text-red-600">
+                            <AlertTriangle className="h-3 w-3" />
+                            {provider.highSeverityAlerts} high
+                          </span>
+                        )}
+                        {provider.mediumSeverityAlerts > 0 && (
+                          <span className="flex items-center gap-1 text-[10px] text-yellow-600">
+                            <AlertTriangle className="h-3 w-3" />
+                            {provider.mediumSeverityAlerts} medium
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
-                <p className="font-mono text-[10px] uppercase text-muted-foreground">
-                  {provider.kind}
-                </p>
-                <div className="mt-1 flex items-center gap-1">
-                  {provider.alertCount > 0 && (
-                    <>
-                      {provider.highSeverityAlerts > 0 && (
-                        <span className="flex items-center gap-1 text-[10px] text-red-600">
-                          <AlertTriangle className="h-3 w-3" />
-                          {provider.highSeverityAlerts} high
-                        </span>
-                      )}
-                      {provider.mediumSeverityAlerts > 0 && (
-                        <span className="flex items-center gap-1 text-[10px] text-yellow-600">
-                          <AlertTriangle className="h-3 w-3" />
-                          {provider.mediumSeverityAlerts} medium
-                        </span>
-                      )}
-                    </>
-                  )}
+
+                {/* Location */}
+                <div className="md:col-span-2">
+                  <p className="text-sm text-muted-foreground">
+                    {[provider.district, provider.state].filter(Boolean).join(", ") || "—"}
+                  </p>
                 </div>
-              </div>
 
-              {/* Location */}
-              <div className="md:col-span-2">
-                <p className="text-sm text-muted-foreground">
-                  {[provider.district, provider.state].filter(Boolean).join(", ") || "—"}
-                </p>
-              </div>
+                {/* Date */}
+                <div className="md:col-span-2">
+                  <p className="font-mono text-xs text-muted-foreground">
+                    {new Date(provider.created_at).toLocaleDateString()}
+                  </p>
+                </div>
 
-              {/* Date */}
-              <div className="md:col-span-2">
-                <p className="font-mono text-xs text-muted-foreground">
-                  {new Date(provider.created_at).toLocaleDateString()}
-                </p>
-              </div>
-
-              {/* Status */}
-              <div className="md:col-span-2">
-                <div className="flex flex-wrap gap-1">
-                  <span
-                    className={`inline-block px-2 py-0.5 font-mono text-[10px] uppercase ${
-                      provider.is_active && !provider.is_suspended
-                        ? "bg-emerald-50 text-emerald-600"
-                        : "bg-red-50 text-red-600"
-                    }`}
-                  >
-                    {provider.is_suspended
-                      ? "Suspended"
-                      : provider.is_active
-                      ? "Active"
-                      : "Inactive"}
-                  </span>
-                  {provider.alertCount > 0 && (
+                {/* Status */}
+                <div className="md:col-span-2">
+                  <div className="flex flex-wrap gap-1">
                     <span
                       className={`inline-block px-2 py-0.5 font-mono text-[10px] uppercase ${
-                        provider.highSeverityAlerts > 0
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
+                        provider.is_active && !provider.is_suspended
+                          ? "bg-emerald-50 text-emerald-600"
+                          : "bg-red-50 text-red-600"
                       }`}
                     >
-                      {provider.alertCount} Alert{provider.alertCount > 1 ? "s" : ""}
+                      {statusLabel}
                     </span>
-                  )}
+                    {provider.alertCount > 0 && (
+                      <span
+                        className={`inline-block px-2 py-0.5 font-mono text-[10px] uppercase ${
+                          provider.highSeverityAlerts > 0
+                            ? "bg-red-100 text-red-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {provider.alertCount} Alert{provider.alertCount > 1 ? "s" : ""}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Actions */}
-              <div className="flex flex-wrap gap-2 md:col-span-3 md:justify-end">
-                <Link
+                {/* Actions */}
+                <div className="flex flex-wrap gap-2 md:col-span-3 md:justify-end">
+                  <Link
                   href={`/admin/providers/${provider.id}`}
                   className="rounded border border-border px-3 py-1.5 text-xs text-foreground transition-colors hover:border-accent"
                 >
@@ -306,7 +311,8 @@ export default async function AdminProvidersPage({
                 )}
               </div>
             </div>
-          ))}
+          )
+          })}
 
           {filteredProviders.length === 0 && (
             <div className="py-12 text-center">

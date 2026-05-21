@@ -33,6 +33,7 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
   const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -176,6 +177,19 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
     }
   }
 
+  let buttonLabel: string;
+  if (isSignUp) {
+    if (defaultMode === "signup") {
+      buttonLabel = "Register";
+    } else if (role === "customer") {
+      buttonLabel = "Create Account";
+    } else {
+      buttonLabel = `Sign Up as ${getRoleLabel(role)}`;
+    }
+  } else {
+    buttonLabel = "Sign In";
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {isSignUp && (
@@ -299,10 +313,8 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
             <Loader2 className="h-4 w-4 animate-spin" />
             Please wait...
           </span>
-        ) : isSignUp ? (
-          defaultMode === "signup" ? "Register" : (role === "customer" ? "Create Account" : `Sign Up as ${getRoleLabel(role)}`)
         ) : (
-          "Sign In"
+          buttonLabel
         )}
       </button>
 

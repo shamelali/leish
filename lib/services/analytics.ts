@@ -126,16 +126,25 @@ export async function getAnalyticsOverview(filters?: AnalyticsFilters): Promise<
 
   const avgOrderValue = currentBookings > 0 ? currentRevenue / currentBookings : 0
 
+  let periodLabel: string
+  if (period === "day") {
+    periodLabel = "vs yesterday"
+  } else if (period === "week") {
+    periodLabel = "vs last 7 days"
+  } else {
+    periodLabel = "vs last month"
+  }
+
   return {
     totalRevenue: {
       value: currentRevenue,
       change: prevRevenue > 0 ? ((currentRevenue - prevRevenue) / prevRevenue) * 100 : 0,
-      period: period === "day" ? "vs yesterday" : period === "week" ? "vs last 7 days" : "vs last month",
+      period: periodLabel,
     },
     totalBookings: {
       value: currentBookings,
       change: prevBookings > 0 ? ((currentBookings - prevBookings) / prevBookings) * 100 : 0,
-      period: period === "day" ? "vs yesterday" : period === "week" ? "vs last 7 days" : "vs last month",
+      period: periodLabel,
     },
     activeProviders: {
       value: providersResult.count || 0,
@@ -160,7 +169,14 @@ export async function getRevenueTimeSeries(filters?: AnalyticsFilters): Promise<
   const supabase = getSupabaseClient()
   const period = filters?.period || "week"
   
-  const days = period === "day" ? 1 : period === "week" ? 7 : 30
+  let days: number
+  if (period === "day") {
+    days = 1
+  } else if (period === "week") {
+    days = 7
+  } else {
+    days = 30
+  }
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
 
@@ -286,7 +302,14 @@ export async function getBookingTrends(filters?: AnalyticsFilters): Promise<Book
   const supabase = getSupabaseClient()
   const period = filters?.period || "week"
   
-  const days = period === "day" ? 1 : period === "week" ? 7 : 30
+  let days: number
+  if (period === "day") {
+    days = 1
+  } else if (period === "week") {
+    days = 7
+  } else {
+    days = 30
+  }
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
 

@@ -57,6 +57,7 @@ const quizQuestions: QuizQuestion[] = [
   },
 ]
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export function BeautyQuiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
@@ -85,6 +86,7 @@ export function BeautyQuiz() {
 
   const generateRecommendation = (answers: Record<string, string>) => {
     const categories = Object.values(answers).map(answerId => {
+      // eslint-disable-next-line sonarjs/no-nested-functions
       const question = quizQuestions.find(q => q.options.some(o => o.id === answerId))
       return question?.options.find(o => o.id === answerId)?.category
     }).filter(Boolean)

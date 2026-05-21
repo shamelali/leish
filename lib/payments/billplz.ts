@@ -11,7 +11,7 @@ function required(name: string) {
 
 function authHeader() {
   const apiKey = required("BILLPLZ_API_KEY")
-  return `Basic ${Buffer.from(`${apiKey}:`).toString("base64")}`
+  return `Basic ${Buffer.from(apiKey + ":").toString("base64")}`
 }
 
 function getCollectionId(paymentType: CreatePaymentInput["paymentType"]) {

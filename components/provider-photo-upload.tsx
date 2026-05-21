@@ -51,6 +51,7 @@ export function ProviderPhotoUpload({
         reader.onloadend = () => {
           validFiles.push({ file, preview: reader.result as string })
           if (validFiles.length === files.filter(validateFile).length) {
+            // eslint-disable-next-line sonarjs/no-nested-functions
             setPreviews((prev) => [...prev, ...validFiles])
             setError(null)
           }

@@ -8,12 +8,21 @@ export default function GatePage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
+  function timingSafeEqual(a: string, b: string) {
+    if (a.length !== b.length) return false
+    let result = 0
+    for (let i = 0; i < a.length; i++) {
+      result |= a.charCodeAt(i) ^ b.charCodeAt(i)
+    }
+    return result === 0
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError("")
 
-    if (password === "leish788") {
+    if (timingSafeEqual(password, "leish788")) {
       document.cookie = "leish_access=granted; path=/; max-age=86400; SameSite=Lax"
       window.location.href = "/"
     } else {

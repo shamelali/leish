@@ -20,6 +20,7 @@ function getInitialStatus(searchParams: URLSearchParams): "loading" | "success" 
   return "success"
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export default function PaymentSuccessPage() {
   const searchParams = useSearchParams()
   const [status, setStatus] = useState<"loading" | "success" | "error">(() => getInitialStatus(searchParams))

@@ -57,6 +57,7 @@ const monthNames = [
 
 type PaymentOption = "full" | "deposit" | "bnpl";
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export function BookingCalendar({
   artist,
   studio,
@@ -109,7 +110,7 @@ export function BookingCalendar({
     if (!supabase) return;
 
     let active = true;
-    void supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }) => {
       if (!active) return;
       setIsAuthenticated(!!data.user);
       setAuthUserId(data.user?.id ?? null);
@@ -146,6 +147,7 @@ export function BookingCalendar({
         setSelectedTimeId((current) => {
           if (
             current &&
+            // eslint-disable-next-line sonarjs/no-nested-functions
             slots.some((slot) => slot.id === current && slot.available)
           ) {
             return current;
@@ -270,12 +272,14 @@ export function BookingCalendar({
       return;
     }
 
-    const payableAmount =
-      paymentOption === "full"
-        ? totalPrice
-        : paymentOption === "deposit"
-          ? depositAmount
-          : bnplAmount;
+    let payableAmount: number;
+    if (paymentOption === "full") {
+      payableAmount = totalPrice;
+    } else if (paymentOption === "deposit") {
+      payableAmount = depositAmount;
+    } else {
+      payableAmount = bnplAmount;
+    }
 
     try {
       const response = await fetch(`/api/payments/billplz/create`, {
@@ -332,11 +336,35 @@ export function BookingCalendar({
   const totalPrice = service?.price ?? 0;
   const depositAmount = Math.round(totalPrice * 0.3);
   const bnplAmount = Math.round(totalPrice / 4);
+  let payableAmountDisplay: number;
+  if (paymentOption === "full") {
+    payableAmountDisplay = totalPrice;
+  } else if (paymentOption === "deposit") {
+    payableAmountDisplay = depositAmount;
+  } else {
+    payableAmountDisplay = bnplAmount;
+  }
   const selectedSlot =
     availableSlots.find((slot) => slot.id === selectedTimeId) ?? null;
 
   // ── Confirmation screen ──
   if (confirmed && service) {
+    let paymentLabel: string;
+    if (paymentOption === "full") {
+      paymentLabel = "Paid";
+    } else if (paymentOption === "deposit") {
+      paymentLabel = "Deposit Paid";
+    } else {
+      paymentLabel = "1st Installment";
+    }
+    let formattedPaymentOption: number;
+    if (paymentOption === "full") {
+      formattedPaymentOption = totalPrice;
+    } else if (paymentOption === "deposit") {
+      formattedPaymentOption = depositAmount;
+    } else {
+      formattedPaymentOption = bnplAmount;
+    }
     return (
       <div className="border border-border bg-card p-5 sm:p-8 text-center">
         <div className="mx-auto flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center border-2 border-accent">
@@ -375,19 +403,11 @@ export function BookingCalendar({
           <div className="my-2 border-t border-border" />
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">
-              {paymentOption === "full"
-                ? "Paid"
-                : paymentOption === "deposit"
-                  ? "Deposit Paid"
-                  : "1st Installment"}
+              {paymentLabel}
             </span>
             <span className="font-serif text-base sm:text-lg font-medium text-accent">
               MYR{" "}
-              {paymentOption === "full"
-                ? totalPrice
-                : paymentOption === "deposit"
-                  ? depositAmount
-                  : bnplAmount}
+              {formattedPaymentOption}
             </span>
           </div>
         </div>
@@ -409,7 +429,16 @@ export function BookingCalendar({
     <div className="border border-border bg-card">
       {/* ── Step indicator ── */}
       <div className="flex border-b border-border">
-        {stepLabels.map((label, i) => (
+        {stepLabels.map((label, i) => {
+          let stepCircleClassName: string;
+          if (step > i + 1) {
+            stepCircleClassName = "bg-accent text-accent-foreground";
+          } else if (step === i + 1) {
+            stepCircleClassName = "border border-foreground bg-foreground text-primary-foreground";
+          } else {
+            stepCircleClassName = "border border-border text-muted-foreground";
+          }
+          return (
           <div
             key={label}
             className={cn(
@@ -420,11 +449,7 @@ export function BookingCalendar({
             <div
               className={cn(
                 "flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center text-xs font-medium",
-                step > i + 1
-                  ? "bg-accent text-accent-foreground"
-                  : step === i + 1
-                    ? "border border-foreground bg-foreground text-primary-foreground"
-                    : "border border-border text-muted-foreground",
+                stepCircleClassName,
               )}
             >
               {step > i + 1 ? (
@@ -442,7 +467,8 @@ export function BookingCalendar({
               {label}
             </span>
           </div>
-        ))}
+          )
+        })}
       </div>
 
       <div className="p-4 sm:p-6 lg:p-8">
@@ -554,8 +580,18 @@ export function BookingCalendar({
                     {d}
                   </span>
                 ))}
-                {calendarDays.map((day, i) =>
-                  day === null ? (
+                {calendarDays.map((day, i) => {
+                  let dayClassName = "";
+                  if (day !== null) {
+                    if (isPastDay(day)) {
+                      dayClassName = "cursor-not-allowed text-muted-foreground/40";
+                    } else if (selectedDate === day) {
+                      dayClassName = "bg-foreground text-primary-foreground";
+                    } else {
+                      dayClassName = "text-foreground hover:bg-secondary";
+                    }
+                  }
+                  return day === null ? (
                     <span key={`empty-${i}`} />
                   ) : (
                     <button
@@ -567,17 +603,13 @@ export function BookingCalendar({
                       }}
                       className={cn(
                         "flex min-h-9 min-w-9 sm:min-h-11 sm:min-w-11 items-center justify-center text-xs sm:text-sm transition-all",
-                        isPastDay(day)
-                          ? "cursor-not-allowed text-muted-foreground/40"
-                          : selectedDate === day
-                            ? "bg-foreground text-primary-foreground"
-                            : "text-foreground hover:bg-secondary",
+                        dayClassName,
                       )}
                     >
                       {day}
                     </button>
-                  ),
-                )}
+                  );
+                })}
               </div>
             </div>
 
@@ -588,18 +620,23 @@ export function BookingCalendar({
                   Available Times
                 </p>
                 <div className="mt-3 grid grid-cols-3 gap-1.5 sm:gap-2 sm:grid-cols-4">
-                  {availableSlots.map(({ id, slot, available }) => (
+                  {availableSlots.map(({ id, slot, available }) => {
+                    let slotClassName: string;
+                    if (!available) {
+                      slotClassName = "cursor-not-allowed border-border bg-muted opacity-50 line-through text-muted-foreground";
+                    } else if (selectedTimeId === id) {
+                      slotClassName = "border-foreground bg-foreground text-primary-foreground";
+                    } else {
+                      slotClassName = "border-border text-muted-foreground hover:border-accent hover:text-foreground";
+                    }
+                    return (
                     <button
                       key={id}
                       disabled={!available}
                       onClick={() => setSelectedTimeId(id)}
                       className={cn(
                         "border py-2.5 sm:py-3.5 text-[10px] sm:text-xs transition-all",
-                        !available
-                          ? "cursor-not-allowed border-border bg-muted opacity-50 line-through text-muted-foreground"
-                          : selectedTimeId === id
-                            ? "border-foreground bg-foreground text-primary-foreground"
-                            : "border-border text-muted-foreground hover:border-accent hover:text-foreground",
+                        slotClassName,
                       )}
                     >
                       {available ? (
@@ -611,7 +648,8 @@ export function BookingCalendar({
                       )}
                       {!available && <span className="sm:hidden">{slot}</span>}
                     </button>
-                  ))}
+                    )
+                  })}
                 </div>
                 {availableSlots.length === 0 ? (
                   <div className="mt-3 space-y-3">
@@ -1008,7 +1046,7 @@ export function BookingCalendar({
                     Processing...
                   </>
                 ) : (
-                  `Pay MYR ${paymentOption === "full" ? totalPrice : paymentOption === "deposit" ? depositAmount : bnplAmount}`
+                  `Pay MYR ${payableAmountDisplay}`
                 )}
               </button>
             </div>

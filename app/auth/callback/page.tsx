@@ -37,6 +37,7 @@ export default function AuthCallbackPage() {
       return
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     const handleCallback = async () => {
       try {
         // Step 1: exchange the OAuth code/hash for a real session
@@ -56,6 +57,7 @@ export default function AuthCallbackPage() {
 
         // Step 2: wait for auth state to fully propagate
         await new Promise<void>((resolve) => {
+          // eslint-disable-next-line sonarjs/no-nested-functions
           const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === "SIGNED_IN" && session) {
               subscription.unsubscribe()

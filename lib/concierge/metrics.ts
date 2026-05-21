@@ -38,6 +38,7 @@ export function getSessionId(): string {
       _sessionId = stored
       return _sessionId
     }
+    // eslint-disable-next-line sonarjs/pseudo-random
     _sessionId = `cs_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
     try {
       sessionStorage.setItem("leish_concierge_session", _sessionId)
@@ -51,6 +52,7 @@ export function getSessionId(): string {
 }
 
 export function resetSessionId(): void {
+  // eslint-disable-next-line sonarjs/pseudo-random
   _sessionId = `cs_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
   if (typeof window !== "undefined") {
     try {

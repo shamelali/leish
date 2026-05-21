@@ -125,7 +125,7 @@ export function LoyaltyStatusCard() {
             <CardTitle className="text-lg capitalize flex items-center gap-2">
               {status.tier} {lang === "ms" ? "Tahap" : "Tier"}
               <Badge variant="secondary" className="text-xs">
-                {status.currentTierBonus}% {lang === "ms" ? "Bonus" : "Bonus"}
+                {status.currentTierBonus}% Bonus
               </Badge>
             </CardTitle>
             <CardDescription>

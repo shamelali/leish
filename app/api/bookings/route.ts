@@ -122,6 +122,7 @@ export async function GET(req: Request) {
   }
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export async function PATCH(req: Request) {
   const supabase = await getSupabaseSsrClient();
   if (!supabase) {

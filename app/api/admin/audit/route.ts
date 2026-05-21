@@ -29,34 +29,34 @@ export async function GET(req: NextRequest) {
   const offset = parseInt(searchParams.get("offset") || "0")
   const actionFilter = searchParams.get("action")
 
-  let query = sql<{
-    id: string
-    actor_id: string | null
-    action: string
-    target: string
-    meta: unknown
-    created_at: string
-  }[]>`
-    select id, actor_id, action, target, meta, created_at
-    from public.admin_audit_log
-  `
-
-  if (actionFilter) {
-    query = sql`
-      select id, actor_id, action, target, meta, created_at
-      from public.admin_audit_log
-      where action = ${actionFilter}
-      order by created_at desc
-      limit ${limit} offset ${offset}
-    `
-  } else {
-    query = sql`
-      select id, actor_id, action, target, meta, created_at
-      from public.admin_audit_log
-      order by created_at desc
-      limit ${limit} offset ${offset}
-    `
-  }
+  const query = actionFilter
+    ? sql<{
+        id: string
+        actor_id: string | null
+        action: string
+        target: string
+        meta: unknown
+        created_at: string
+      }[]>`
+        select id, actor_id, action, target, meta, created_at
+        from public.admin_audit_log
+        where action = ${actionFilter}
+        order by created_at desc
+        limit ${limit} offset ${offset}
+      `
+    : sql<{
+        id: string
+        actor_id: string | null
+        action: string
+        target: string
+        meta: unknown
+        created_at: string
+      }[]>`
+        select id, actor_id, action, target, meta, created_at
+        from public.admin_audit_log
+        order by created_at desc
+        limit ${limit} offset ${offset}
+      `
 
   return NextResponse.json({ logs: query })
 }
