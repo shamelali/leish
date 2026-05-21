@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { Eye, EyeOff, Loader2, ShieldAlert } from "lucide-react"
+import { isPasswordLeaked } from "@/lib/password-check"
 
 export type UserRole = "admin" | "artist" | "studio_manager" | "customer"
 
@@ -26,6 +27,7 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
   const [showPassword, setShowPassword] = useState(false)
   const [isSignUp, setIsSignUp] = useState(defaultMode === "signup")
   const [loading, setLoading] = useState(false)
+  const [leakedWarning, setLeakedWarning] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error", text: string } | null>(null)
 
   // Sign up specific fields
@@ -47,7 +49,16 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
       }
 
       if (isSignUp) {
-        // Sign up with role selection and pass metadata for the signup trigger
+        // Check password against HIBP before submitting
+        if (!leakedWarning && password.length >= 6) {
+          const leaked = await isPasswordLeaked(password)
+          if (leaked) {
+            setLeakedWarning(true)
+            setLoading(false)
+            return
+          }
+        }
+
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -296,6 +307,29 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
           Must be at least 6 characters
         </p>
       </div>
+
+      {leakedWarning && (
+        <div className="p-3 rounded-md text-sm bg-yellow-100 text-yellow-800 border border-yellow-300">
+          <div className="flex items-start gap-2">
+            <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium">Password found in data breach</p>
+              <p className="mt-1 text-xs">
+                This password has appeared in a known data breach. Using it puts your account at risk.
+              </p>
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setLeakedWarning(false)}
+                  className="text-xs underline hover:no-underline"
+                >
+                  I understand, create account anyway
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {message && (
         <div className={`p-3 rounded-md text-sm ${message.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
