@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Outfit, Space_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { AiConcierge } from '@/components/ai-concierge'
@@ -90,6 +91,7 @@ export default function RootLayout({
               <Footer />
               <AiConcierge />
               <Analytics />
+              <SpeedInsights />
             </ErrorBoundary>
           </LanguageProvider>
         </ThemeProvider>
