@@ -32,6 +32,17 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setDocumentLanguage(lang)
   }, [lang])
 
+  useEffect(() => {
+    const handler = (e: CustomEvent) => {
+      const newLang = e.detail as Language
+      if (newLang !== lang) {
+        setLangState(newLang)
+      }
+    }
+    window.addEventListener("leish:lang-changed", handler as EventListener)
+    return () => window.removeEventListener("leish:lang-changed", handler as EventListener)
+  }, [lang])
+
   const setLang = useCallback((newLang: Language) => {
     setLangState(newLang)
     if (typeof window !== "undefined") {

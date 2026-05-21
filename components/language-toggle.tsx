@@ -1,41 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-
-type Language = "en" | "ms";
-const STORAGE_KEY = "leish:lang";
-
-function setDocumentLanguage(lang: Language) {
-  if (typeof document === "undefined") return;
-  document.documentElement.lang = lang === "ms" ? "ms-MY" : "en";
-}
-
-function getInitialLang(): Language {
-  if (typeof window === "undefined") return "ms";
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  return stored === "en" ? "en" : "ms";
-}
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export function LanguageToggle() {
-  const [lang, setLang] = useState<Language>(getInitialLang);
-
-  useEffect(() => {
-    setDocumentLanguage(lang);
-  }, [lang]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(STORAGE_KEY, lang);
-    window.dispatchEvent(
-      new CustomEvent("leish:lang-changed", { detail: lang }),
-    );
-  }, [lang]);
-
-  const isEnglish = useMemo(() => lang === "en", [lang]);
+  const { setLang, isEnglish } = useLanguage();
 
   return (
     <div className="flex items-center gap-2">
-      {/* English Button */}
       <button
         type="button"
         onClick={() => setLang("en")}
@@ -49,7 +20,6 @@ export function LanguageToggle() {
       >
         EN
       </button>
-      {/* Bahasa Melayu Button */}
       <button
         type="button"
         onClick={() => setLang("ms")}
