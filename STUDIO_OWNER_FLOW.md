@@ -8,11 +8,11 @@ Complete journey for a new studio owner from signup to accepting bookings.
 
 ### Option 1: Direct Signup
 
-- URL: [https://www.leish.my/sign-in](https://www.leish.my/sign-in)
+- URL: [https://leish.my/sign-in](https://leish.my/sign-in)
 
 ### Option 2: MUA/Studio Registration Page
 
-- URL: [https://www.leish.my/mua](https://www.leish.my/mua)
+- URL: [https://leish.my/mua](https://leish.my/mua)
 
 ---
 
@@ -20,7 +20,7 @@ Complete journey for a new studio owner from signup to accepting bookings.
 
 ### Step 1: Landing Page
 
-**URL**: [https://www.leish.my](https://www.leish.my)
+**URL**: [https://leish.my](https://leish.my)
 
 User sees:
 
@@ -33,7 +33,7 @@ User sees:
 
 ### Step 2: Sign In / Sign Up
 
-**URL**: [https://www.leish.my/sign-in](https://www.leish.my/sign-in)
+**URL**: [https://leish.my/sign-in](https://leish.my/sign-in)
 
 Current UI shows:
 
@@ -76,7 +76,7 @@ Supabase sends verification email:
 
 - From: `hello@leish.my`
 - Subject: "Verify your email address"
-- Link: `https://www.leish.my/auth/callback?token=xxx`
+- Link: `https://leish.my/auth/callback?token=xxx`
 
 **Action**: User clicks verification link
 
@@ -86,7 +86,7 @@ Supabase sends verification email:
 
 After verification, redirect to:
 
-- URL: [https://www.leish.my/pro/profile](https://www.leish.my/pro/profile)
+- URL: [https://leish.my/pro/profile](https://leish.my/pro/profile)
 
 **Pro Dashboard - Profile Tab**:
 
@@ -125,7 +125,7 @@ After verification, redirect to:
 
 ### Step 6: Add Services
 
-**URL**: [https://www.leish.my/pro/services](https://www.leish.my/pro/services) (or profile page)
+**URL**: [https://leish.my/pro/services](https://leish.my/pro/services) (or profile page)
 
 ```text
 ┌─────────────────────────────────────────┐
@@ -163,7 +163,7 @@ Description: [Complete bridal makeup...]
 
 ### Step 7: Set Availability
 
-**URL**: [https://www.leish.my/pro/availability](https://www.leish.my/pro/availability)
+**URL**: [https://leish.my/pro/availability](https://leish.my/pro/availability)
 
 ```text
 ┌─────────────────────────────────────────┐
@@ -194,7 +194,7 @@ Description: [Complete bridal makeup...]
 
 ### Step 8: Connect Payment (Billplz)
 
-**URL**: [https://www.leish.my/pro/payments](https://www.leish.my/pro/payments)
+**URL**: [https://leish.my/pro/payments](https://leish.my/pro/payments)
 
 ```text
 ┌─────────────────────────────────────────┐
@@ -223,7 +223,7 @@ Description: [Complete bridal makeup...]
 
 ### Step 9: Go Live
 
-**Studio Profile Page**: `https://www.leish.my/studios/[studio-slug]`
+**Studio Profile Page**: `https://leish.my/studios/[studio-slug]`
 
 ```text
 ┌─────────────────────────────────────────┐
@@ -248,7 +248,7 @@ Description: [Complete bridal makeup...]
 
 ## 📊 Dashboard Overview
 
-**URL**: [https://www.leish.my/pro](https://www.leish.my/pro)
+**URL**: [https://leish.my/pro](https://leish.my/pro)
 
 ```text
 ┌─────────────────────────────────────────┐
@@ -361,11 +361,11 @@ Studio owner can accept bookings when:
 
 | Step | URL |
 | ---- | --- |
-| Homepage | [https://www.leish.my](https://www.leish.my) |
-| Sign In | [https://www.leish.my/sign-in](https://www.leish.my/sign-in) |
-| Pro Dashboard | [https://www.leish.my/pro](https://www.leish.my/pro) |
-| Artists List | [https://www.leish.my/artists](https://www.leish.my/artists) |
-| Studios List | [https://www.leish.my/studios](https://www.leish.my/studios) |
+| Homepage | [https://leish.my](https://leish.my) |
+| Sign In | [https://leish.my/sign-in](https://leish.my/sign-in) |
+| Pro Dashboard | [https://leish.my/pro](https://leish.my/pro) |
+| Artists List | [https://leish.my/artists](https://leish.my/artists) |
+| Studios List | [https://leish.my/studios](https://leish.my/studios) |
 
 ---
 
@@ -387,5 +387,5 @@ const artist = await dbArtistService.getBySlug(slug) // Database
 
 **Workaround**: Use existing seeded data:
 
-- Artist: [https://www.leish.my/artists/aiko-nakamura](https://www.leish.my/artists/aiko-nakamura)
-- Studio: [https://www.leish.my/studios/maison-leish](https://www.leish.my/studios/maison-leish)
+- Artist: [https://leish.my/artists/aiko-nakamura](https://leish.my/artists/aiko-nakamura)
+- Studio: [https://leish.my/studios/maison-leish](https://leish.my/studios/maison-leish)

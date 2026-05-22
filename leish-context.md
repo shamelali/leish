@@ -52,13 +52,15 @@ Leish (`leish.my`) is a Malaysian beauty marketplace platform connecting clients
 
 ## 5. Domain Architecture
 
-| Subdomain | Purpose |
-|---|---|
-| `leish.my` | Main landing page |
-| `app.leish.my` | MUA finder app |
-| `studios.leish.my` | Studio finder app |
+`leish.my` is the canonical domain (no `www`). All routes are path-based:
 
-CNAME records for `app` and `studios` point to `cname.vercel-dns.com` with Cloudflare proxy **disabled** (grey cloud).
+| Route | Purpose |
+|---|---|
+| `/` | Main landing page |
+| `/artists` | MUA finder |
+| `/studios` | Studio finder |
+| `/artist/*` | Artist dashboard |
+| `/studios/dashboard` | Studio dashboard |
 
 ---
 
@@ -158,9 +160,9 @@ Studios go live only after Leish approval (`is_active: false` by default).
 
 ## 11. Infrastructure Notes
 
-- Cloudflare DNS: when adding CNAME subdomain records, enter only the prefix (`app`, not `app.leish.my`) — Cloudflare appends root domain automatically. Proxy must be disabled for Vercel CNAMEs.
+- Cloudflare DNS: `leish.my` A/AAAA records point to Vercel. Proxy must be disabled for Vercel.
 - Brevo: MX, SPF, DKIM, DMARC records live in Cloudflare DNS.
-- Next step for hosting: add `app.leish.my` and `studios.leish.my` in each respective Vercel project's domain settings.
+- All routes are path-based under `leish.my` — no subdomains.
 
 ---
 

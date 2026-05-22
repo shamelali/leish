@@ -1,6 +1,6 @@
 # 💄 Beaute - Beauty Marketplace Platform
 
-[![Live Site](https://img.shields.io/badge/Live-leish.my-00C7B7?style=for-the-badge&logo=vercel&logoColor=white)](https://www.leish.my)
+[![Live Site](https://img.shields.io/badge/Live-leish.my-00C7B7?style=for-the-badge&logo=vercel&logoColor=white)](https://leish.my)
 [![Build Status](https://img.shields.io/badge/Build-Passing-success?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/shamelali/b_qRvYZb3eZrv-1771704101499/actions)
 [![License](https://img.shields.io/badge/License-Private-red?style=for-the-badge)](LICENSE)
 
@@ -19,8 +19,8 @@
 [![ESLint](https://img.shields.io/badge/ESLint-9-4B32C3?style=flat-square&logo=eslint)](https://eslint.org)
 [![Vitest](https://img.shields.io/badge/Vitest-Testing-6E9F18?style=flat-square&logo=vitest)](https://vitest.dev)
 
-[![Made with Love](https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F-ff69b4?style=flat-square)](https://www.leish.my)
-[![Malaysia](https://img.shields.io/badge/Made%20in-Malaysia-FFCC00?style=flat-square)](https://www.leish.my)
+[![Made with Love](https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F-ff69b4?style=flat-square)](https://leish.my)
+[![Malaysia](https://img.shields.io/badge/Made%20in-Malaysia-FFCC00?style=flat-square)](https://leish.my)
 
 A production-ready beauty marketplace platform connecting makeup artists and studios with customers. Features real-time booking, integrated payments via Billplz, and automated email notifications.
 
@@ -42,7 +42,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open [https://www.leish.my](https://www.leish.my) to view the app.
+Open [https://leish.my](https://leish.my) to view the app.
 
 ---
 
@@ -111,7 +111,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
 DATABASE_URL=
 
 # App
-NEXT_PUBLIC_APP_URL=https://www.leish.my
+NEXT_PUBLIC_APP_URL=https://leish.my
 
 # Payments (Billplz)
 BILLPLZ_API_KEY=
@@ -186,7 +186,7 @@ See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed instructions.
 
 ## 🔗 Live Demo
 
-- **Production**: https://www.leish.my
+- **Production**: https://leish.my
 - **Staging**: https://staging.leish.my
 
 ### Test Accounts
@@ -226,5 +226,5 @@ Private - All rights reserved.
 
 **Built with ❤️ for the beauty community.**
 
-[Live Site](https://www.leish.my) · [Documentation](APP_MANUAL.md) · [Report Issue](../../issues)
+[Live Site](https://leish.my) · [Documentation](APP_MANUAL.md) · [Report Issue](../../issues)
 # Auto-deploy test
