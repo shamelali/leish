@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 export async function GET() {
   const robotsTxt = `User-agent: *
 Allow: /
-Sitemap: https://leish.my/sitemap.xml
+Sitemap: https://www.leish.my/sitemap.xml
 
 # Disallow admin and API from search
 Disallow: /admin
