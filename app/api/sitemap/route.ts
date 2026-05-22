@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-const SITE_URL = "https://www.leish.my"
+const SITE_URL = "https://leish.my"
 
 export async function GET() {
   const pages = [

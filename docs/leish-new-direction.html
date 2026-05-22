@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leish — The New Direction</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60'%3E%3Cpath d='M28 12c-8 0-14 6-14 14s6 14 14 14 14-6 14-14-6-14-14-14zm0 24c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z' fill='%23c9a96e'/%3E%3Ctext x='65' y='34' font-family='serif' font-size='22' fill='%23e5e5e5' font-style='italic'%3ELeish!%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.2.0/dist/reveal.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --bg: #050505;
+      --surface: #111111;
+      --border: #1e1e1e;
+      --border-light: #2a2a2a;
+      --text: #e8e8e8;
+      --text-secondary: #999999;
+      --text-muted: #666666;
+      --gold: #c9a96e;
+      --gold-dim: #8a7a50;
+      --gold-subtle: rgba(201,169,110,0.07);
+    }
+    .reveal {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text); font-weight: 400; font-size: 28px;
+    }
+    .reveal h1, .reveal h2, .reveal h3 {
+      font-family: 'Playfair Display', Georgia, serif;
+      text-transform: none; letter-spacing: normal; font-weight: 600; font-style: italic;
+    }
+    .reveal h1 { font-size: 1.15em; }
+    .reveal h2 { font-size: 0.9em; color: var(--text); line-height: 1.3; }
+    .reveal h4 { font-size: 0.55em; color: var(--text); font-weight: 600; letter-spacing: 0.03em; margin: 0 0 3px 0; }
+    .reveal p { font-size: 0.48em; line-height: 1.5; color: var(--text-secondary); margin: 0; }
+    .reveal li { font-size: 0.48em; line-height: 1.5; color: var(--text-secondary); }
+    .slide-background-content { background: var(--bg) !important; }
+    .reveal .controls { color: var(--gold-dim); }
+    .reveal .controls button { opacity: 0.35; }
+    .reveal .controls button:hover { opacity: 0.8; }
+    .reveal .progress { background: rgba(201,169,110,0.05); height: 1px; }
+    .reveal .progress span { background: var(--gold); }
+    .reveal .slide-number {
+      font-size: 9px !important; color: var(--text-muted) !important;
+      font-family: 'Inter', sans-serif !important; font-weight: 400 !important;
+      bottom: 12px !important; right: 16px !important;
+    }
+    .accent-line { width: 28px; height: 1.5px; background: var(--gold); margin: 10px 0; border-radius: 1px; }
+    .accent-line.centered { margin: 10px auto; }
+    .text-muted { color: var(--text-muted) !important; }
+    .text-gold { color: var(--gold) !important; }
+    .highlight { color: var(--gold); font-weight: 500; }
+    .text-center { text-align: center; }
+    .stat { font-size: 1.05em; font-weight: 600; color: var(--text); line-height: 1.2; letter-spacing: -0.01em; }
+    .stat-label { font-size: 0.38em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; font-weight: 400; }
+    .card {
+      background: var(--surface); border-radius: 6px; padding: 12px 14px; border: 1px solid var(--border);
+    }
+    .card p { font-size: 0.42em; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+    .card-icon { font-size: 0.65em; margin-bottom: 4px; display: block; color: var(--gold); }
+    .grid-2, .grid-3, .grid-4 { display: grid; gap: 8px; margin-top: 10px; }
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .badge {
+      display: inline-block; padding: 2px 10px; border-radius: 10px;
+      font-size: 0.36em; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .badge-gold { background: var(--gold-subtle); color: var(--gold); border: 1px solid rgba(201,169,110,0.15); }
+    .badge-outline { border: 1px solid var(--border-light); color: var(--text-muted); background: transparent; }
+    .reveal ul { list-style: none; padding-left: 0; }
+    .reveal ul li { padding-left: 12px; position: relative; margin-bottom: 3px; }
+    .reveal ul li::before { content: "\2014"; color: var(--gold-dim); position: absolute; left: 0; font-size: 0.65em; }
+    .title-slide h1 { font-size: 1.6em; }
+    .title-slide .subtitle { font-size: 0.5em; color: var(--text-muted); font-weight: 300; margin-top: 6px; }
+    .title-slide .meta { margin-top: 18px; font-size: 0.36em; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    .section-label {
+      font-size: 0.36em; color: var(--gold); text-transform: uppercase; letter-spacing: 0.08em;
+      display: block; margin-bottom: 6px; font-weight: 500;
+    }
+    .flow-row {
+      display: flex; align-items: center; gap: 14px; padding: 7px 0;
+      border-bottom: 1px solid var(--border); font-size: 0.46em;
+    }
+    .flow-row:last-child { border-bottom: none; }
+    .flow-row .label { flex: 1; color: var(--text); }
+    .flow-row .pct { font-weight: 600; color: var(--gold); min-width: 48px; }
+    .flow-row .to { color: var(--text-muted); }
+    .team-card {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+      background: var(--surface); border-radius: 6px; border: 1px solid var(--border);
+    }
+    .team-avatar {
+      width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 0.45em; font-weight: 600; color: var(--bg); flex-shrink: 0; background: var(--gold-dim);
+    }
+    .team-info h4 { margin: 0; font-size: 0.48em; }
+    .team-info .role { font-size: 0.36em; color: var(--gold); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 1px; }
+    .team-info .desc { font-size: 0.36em; color: var(--text-muted); margin-top: 0; }
+    .nav-hint {
+      position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+      color: var(--text-muted); font-size: 9px; opacity: 0.2; z-index: 30;
+      pointer-events: none; transition: opacity 0.6s; letter-spacing: 0.08em;
+      font-family: 'Inter', sans-serif;
+    }
+    .divider { border: none; height: 1px; background: var(--border); margin: 12px 0; }
+    .risk-row td { padding: 6px 10px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 0.42em; }
+    .risk-row td:first-child { color: var(--text); }
+    @media (max-width: 768px) {
+      .reveal { font-size: 20px; }
+      .reveal h1 { font-size: 1em; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; gap: 6px; }
+      .title-slide h1 { font-size: 1.3em; }
+      .stat { font-size: 0.85em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- 1. TITLE -->
+      <section class="title-slide">
+        <div style="margin-bottom: 14px;">
+          <svg viewBox="0 0 200 60" fill="none" style="height: 26px;">
+            <path d="M28 12c-8 0-14 6-14 14s6 14 14 14 14-6 14-14-6-14-14-14zm0 24c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z" fill="#c9a96e"/>
+            <text x="65" y="38" font-family="Playfair Display, Georgia, serif" font-size="32" font-weight="700" fill="#e8e8e8" font-style="italic">Leish!</text>
+          </svg>
+        </div>
+        <div class="accent-line centered"></div>
+        <h1>The New Direction</h1>
+        <p class="subtitle">From marketplace to beauty ecosystem</p>
+        <p class="meta">Investor Presentation &middot; May 2026</p>
+      </section>
+
+      <!-- 2. VISION -->
+      <section>
+        <span class="section-label">Vision</span>
+        <h2 style="font-size: 0.85em; line-height: 1.4; margin: 4px 0 0 0;">
+          One platform connecting <span class="highlight">every beauty professional</span>
+          with <span class="highlight">every client</span> in Malaysia and Southeast Asia.
+        </h2>
+        <div class="accent-line"></div>
+        <p style="margin-top: 10px;">Leish is evolving beyond a marketplace into a full beauty ecosystem &mdash; booking, studio spaces, business tools, and community.</p>
+        <div style="margin-top: 22px; display: flex; gap: 28px; flex-wrap: wrap; justify-content: center;">
+          <div class="text-center">
+            <div class="stat">KL &middot; Penang &middot; JB</div>
+            <div class="stat-label">Current Markets</div>
+          </div>
+          <div class="text-center">
+            <div class="stat">SEA</div>
+            <div class="stat-label">Expansion 2028+</div>
+          </div>
+          <div class="text-center">
+            <div class="stat">RM 30B+</div>
+            <div class="stat-label">SEA Beauty TAM</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. PROBLEM -->
+      <section>
+        <span class="section-label">Problem</span>
+        <h2 style="margin: 4px 0 0;">The beauty industry is fragmented</h2>
+        <div class="accent-line"></div>
+        <div class="grid-3">
+          <div class="card">
+            <span class="card-icon">01</span>
+            <h4>Hard to discover</h4>
+            <p>Clients rely on Instagram DMs and word-of-mouth. No centralized, trustworthy directory.</p>
+          </div>
+          <div class="card">
+            <span class="card-icon">02</span>
+            <h4>No trust layer</h4>
+            <p>No ratings, reviews, or escrow. Clients pay deposits with no protection.</p>
+          </div>
+          <div class="card">
+            <span class="card-icon">03</span>
+            <h4>Fragmented tools</h4>
+            <p>MUAs juggle WhatsApp, Calendar, Excel, and multiple payment apps.</p>
+          </div>
+        </div>
+        <p style="margin-top: 14px; font-style: italic; text-align: center; font-size: 0.44em;">&ldquo;Trust and referrals don&rsquo;t scale without a platform.&rdquo;</p>
+      </section>
+
+      <!-- 4. TRACTION -->
+      <section>
+        <span class="section-label">Traction</span>
+        <h2 style="margin: 4px 0 0;">Production MVP &mdash; live since April 2026</h2>
+        <div class="accent-line"></div>
+        <div class="grid-4">
+          <div class="card text-center">
+            <div class="stat">&#10003;</div>
+            <div class="stat-label">Live Platform</div>
+            <p>leish.my deployed</p>
+          </div>
+          <div class="card text-center">
+            <div class="stat">4</div>
+            <div class="stat-label">User Roles</div>
+            <p>Client, MUA, Studio, Admin</p>
+          </div>
+          <div class="card text-center">
+            <div class="stat">3</div>
+            <div class="stat-label">Onboarding Flows</div>
+            <p>Role-based registration</p>
+          </div>
+          <div class="card text-center">
+            <div class="stat">25+</div>
+            <div class="stat-label">API Routes</div>
+            <p>Full REST API</p>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="card text-center">
+            <span class="card-icon">&#128179;</span>
+            <div class="stat-label">Billplz Payments</div>
+            <p>Deposit + full, escrow model</p>
+          </div>
+          <div class="card text-center">
+            <span class="card-icon">&#9993;</span>
+            <div class="stat-label">Notifications</div>
+            <p>Resend email confirmations</p>
+          </div>
+          <div class="card text-center">
+            <span class="card-icon">&#128241;</span>
+            <div class="stat-label">Mobile-Responsive</div>
+            <p>Tailwind CSS 4 + Radix UI</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. NEW DIRECTION -->
+      <section>
+        <span class="section-label">The New Direction</span>
+        <h2 style="margin: 4px 0 0;">Five strategic pillars</h2>
+        <div class="accent-line"></div>
+        <div class="grid-2">
+          <div class="card">
+            <span class="card-icon">&#127912;</span>
+            <h4>Rebrand &amp; Reposition</h4>
+            <p>Marketplace &rarr; ecosystem. Leish as the lifestyle brand for beauty professionals.</p>
+          </div>
+          <div class="card">
+            <span class="card-icon">&#128640;</span>
+            <h4>Product Expansion</h4>
+            <p>Studio Leish (physical spaces), MUA business suite, loyalty program.</p>
+          </div>
+          <div class="card">
+            <span class="card-icon">&#127759;</span>
+            <h4>Market Expansion</h4>
+            <p>KL &rarr; Penang &rarr; JB &rarr; SEA. Multi-market localized rollout.</p>
+          </div>
+          <div class="card">
+            <span class="card-icon">&#9889;</span>
+            <h4>Technical Modernization</h4>
+            <p>AI dev agents, Redis caching, advanced analytics, Sentry monitoring.</p>
+          </div>
+        </div>
+        <div class="card" style="margin-top: 6px; border-color: rgba(201,169,110,0.15); background: var(--gold-subtle);">
+          <h4 style="color: var(--gold);">&#128176; Fundraising &mdash; RM 250,000 for 15% equity</h4>
+          <p>Pre-money valuation ~RM 1.42M</p>
+        </div>
+      </section>
+
+      <!-- 6. PRODUCT EVOLUTION -->
+      <section>
+        <span class="section-label">Product Evolution</span>
+        <h2 style="margin: 4px 0 0;">From marketplace to ecosystem</h2>
+        <div class="accent-line"></div>
+        <div class="grid-2">
+          <div class="card">
+            <h4 style="color: var(--text-muted);">Phase 1 &mdash; Marketplace</h4>
+            <ul>
+              <li>MUA &amp; studio discovery</li>
+              <li>Real-time 30-min booking slots</li>
+              <li>Billplz escrow payments</li>
+              <li>Role-based dashboards</li>
+              <li>Review &amp; rating system</li>
+            </ul>
+          </div>
+          <div class="card" style="border-color: rgba(201,169,110,0.15);">
+            <h4 style="color: var(--gold);">Phase 2 &mdash; Ecosystem</h4>
+            <ul>
+              <li><strong style="color: var(--text);">Studio Leish</strong> &mdash; physical rental spaces</li>
+              <li><strong style="color: var(--text);">MUA Business Suite</strong> &mdash; CRM, invoicing, PDPA exports</li>
+              <li><strong style="color: var(--text);">Loyalty Program</strong> &mdash; points, discounts, referrals</li>
+              <li><strong style="color: var(--text);">Visibility Boosts</strong> &mdash; RM 20-60/mo</li>
+              <li><strong style="color: var(--text);">Studio Subscriptions</strong> &mdash; RM 99-199/mo</li>
+            </ul>
+          </div>
+        </div>
+        <hr class="divider">
+        <div style="display: flex; gap: 14px; align-items: center; justify-content: center;">
+          <span class="badge badge-outline">Marketplace</span>
+          <span style="font-size: 0.65em; color: var(--text-muted);">&rarr;</span>
+          <span class="badge badge-gold">Ecosystem</span>
+        </div>
+      </section>
+
+      <!-- 7. MARKET -->
+      <section>
+        <span class="section-label">Market Opportunity</span>
+        <h2 style="margin: 4px 0 0;">RM 30B+ SEA beauty services market</h2>
+        <div class="accent-line"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="stat">RM 2.5B+</div>
+            <div class="stat-label">Malaysia Beauty Services</div>
+            <p style="margin-top: 6px;">8-10% CAGR. Most bookings still offline.</p>
+          </div>
+          <div class="card">
+            <div class="stat">15,000+</div>
+            <div class="stat-label">MUAs in KL, Penang, JB</div>
+            <p style="margin-top: 6px;">Most operate without booking infrastructure.</p>
+          </div>
+          <div class="card">
+            <div class="stat">RM 30B+</div>
+            <div class="stat-label">SEA Beauty Target (2028+)</div>
+            <p style="margin-top: 6px;">Indonesia, Thailand, Vietnam &mdash; same fragmentation.</p>
+          </div>
+          <div class="card">
+            <div class="stat">70%</div>
+            <div class="stat-label">Bookings via Social Media</div>
+            <p style="margin-top: 6px;">Instagram, WhatsApp &mdash; no platform, no data.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. BUSINESS MODEL -->
+      <section>
+        <span class="section-label">Business Model</span>
+        <h2 style="margin: 4px 0 0;">Commission &amp; recurring revenue</h2>
+        <div class="accent-line"></div>
+        <div style="margin-top: 8px;">
+          <div class="flow-row"><span class="label">Client books MUA</span><span class="pct">12%</span><span class="to">&rarr; 88% to MUA</span></div>
+          <div class="flow-row"><span class="label">Client books Studio</span><span class="pct">15%</span><span class="to">&rarr; 85% to Studio</span></div>
+          <div class="flow-row"><span class="label">MUA rents Leish-owned Studio</span><span class="pct">100%</span><span class="to">&rarr; Leish-owned space</span></div>
+          <div class="flow-row"><span class="label">MUA rents external Studio</span><span class="pct">20%</span><span class="to">&rarr; 80% to Studio</span></div>
+        </div>
+        <div class="grid-3" style="margin-top: 12px;">
+          <div class="card text-center">
+            <span class="card-icon">&#128200;</span>
+            <div class="stat-label">Visibility Boost</div>
+            <p>RM 20-60/mo per MUA</p>
+          </div>
+          <div class="card text-center">
+            <span class="card-icon">&#127970;</span>
+            <div class="stat-label">Studio Subscriptions</div>
+            <p>RM 99-199/mo</p>
+          </div>
+          <div class="card text-center">
+            <span class="card-icon">&#128736;</span>
+            <div class="stat-label">MUA Business Tools</div>
+            <p>CRM, reports, invoicing (2026+)</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. GROWTH -->
+      <section>
+        <span class="section-label">Growth Strategy</span>
+        <h2 style="margin: 4px 0 0;">Supply + demand + loops</h2>
+        <div class="accent-line"></div>
+        <div class="grid-2">
+          <div class="card">
+            <span class="card-icon">&#128241;</span>
+            <h4>Supply-Side Recruitment</h4>
+            <p><strong style="color: var(--text);">Leiynda Rahman</strong> (Strategic Partner) leads MUA network recruitment. Cold start mitigation through seeded profiles.</p>
+          </div>
+          <div class="card">
+            <span class="card-icon">&#127919;</span>
+            <h4>Demand-Side Acquisition</h4>
+            <p>TikTok (primary), Instagram, Facebook &mdash; content-driven growth with Canva, CapCut, Meta Business Suite.</p>
+          </div>
+          <div class="card">
+            <span class="card-icon">&#128260;</span>
+            <h4>Viral Loops</h4>
+            <p>Referral system, social sharing, loyalty points. Each booking drives discoverability.</p>
+          </div>
+          <div class="card">
+            <span class="card-icon">&#129302;</span>
+            <h4>AI-Assisted Development</h4>
+            <p>Specialized AI agents for debugging, QA, observability &mdash; accelerating velocity.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 10. TECH -->
+      <section>
+        <span class="section-label">Technical Modernization</span>
+        <h2 style="margin: 4px 0 0;">Modernizing the platform</h2>
+        <div class="accent-line"></div>
+        <div class="grid-3">
+          <div class="card text-center">
+            <span class="card-icon">&#129302;</span>
+            <h4>AI Agent Team</h4>
+            <p>Specialized agents for debugging, QA, schema evolution, deployment verification</p>
+          </div>
+          <div class="card text-center">
+            <span class="card-icon">&#9889;</span>
+            <h4>Performance Layer</h4>
+            <p>Redis caching, rate limiting, CDN optimization, image optimization</p>
+          </div>
+          <div class="card text-center">
+            <span class="card-icon">&#128202;</span>
+            <h4>Observability</h4>
+            <p>Sentry monitoring, analytics dashboard, audit logging, benchmarks</p>
+          </div>
+        </div>
+        <p style="margin-top: 16px; font-size: 0.38em; color: var(--text-muted); text-align: center; letter-spacing: 0.04em;">
+          Next.js 16 &middot; TypeScript &middot; Supabase (Postgres + Auth) &middot; Tailwind CSS 4 &middot; Billplz &middot; Vercel
+        </p>
+      </section>
+
+      <!-- 11. FUNDRAISING -->
+      <section>
+        <span class="section-label">Fundraising Ask</span>
+        <h2 style="margin: 4px 0 0;">RM 250K for 15% equity</h2>
+        <div class="accent-line"></div>
+        <div style="display: flex; gap: 32px; align-items: center; margin-top: 14px; flex-wrap: wrap;">
+          <div style="flex: 1;">
+            <div class="stat text-gold" style="font-size: 2.2em;">RM 250K</div>
+            <div class="stat-label" style="font-size: 0.65em;">Pre-money valuation <strong style="color: var(--text);">~RM 1.42M</strong></div>
+          </div>
+          <div style="flex: 1.5;">
+            <div class="card" style="border-color: rgba(201,169,110,0.15);">
+              <h4 style="color: var(--gold); font-size: 0.5em; text-transform: uppercase; letter-spacing: 0.05em;">Use of Funds</h4>
+              <div class="flow-row"><span class="label">Legal &amp; Compliance</span><span class="pct">RM 50K</span><span class="to">SSM, MyIPO, PDPA</span></div>
+              <div class="flow-row"><span class="label">Product Development</span><span class="pct">RM 100K</span><span class="to">Studio Leish, MUA tools</span></div>
+              <div class="flow-row"><span class="label">Marketing &amp; Growth</span><span class="pct">RM 60K</span><span class="to">TikTok, MUA recruitment</span></div>
+              <div class="flow-row"><span class="label">Operations &amp; Reserve</span><span class="pct">RM 40K</span><span class="to">Hosting, tools, runway</span></div>
+            </div>
+          </div>
+        </div>
+        <p style="font-size: 0.42em; color: var(--text-muted); margin-top: 18px; text-align: center; font-style: italic;">&ldquo;Launch first, fundraise after. Traction data strengthens the pitch.&rdquo;</p>
+      </section>
+
+      <!-- 12. ROADMAP -->
+      <section>
+        <span class="section-label">Roadmap</span>
+        <h2 style="margin: 4px 0 0;">12-week execution plan</h2>
+        <div class="accent-line"></div>
+        <div style="display: flex; flex-direction: column; gap: 7px; margin-top: 10px;">
+          <div class="card" style="border-left: 2px solid var(--gold); padding: 10px 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h4 style="margin: 0;">Phase 1: Polish &amp; Stability</h4>
+              <span class="badge badge-gold">Weeks 1-2</span>
+            </div>
+            <p style="margin-top: 3px;">Typecheck &amp; lint fixes, search improvements, favorites, loading states</p>
+          </div>
+          <div class="card" style="border-left: 2px solid var(--gold); padding: 10px 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h4 style="margin: 0;">Phase 2: Feature Enhancements</h4>
+              <span class="badge badge-gold">Weeks 3-4</span>
+            </div>
+            <p style="margin-top: 3px;">Photo reviews, video portfolios, BM translations, Studio Leish MVP</p>
+          </div>
+          <div class="card" style="border-left: 2px solid var(--gold); padding: 10px 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h4 style="margin: 0;">Phase 3: Platform Growth</h4>
+              <span class="badge badge-gold">Weeks 5-8</span>
+            </div>
+            <p style="margin-top: 3px;">Booking reminders (WhatsApp), loyalty program, referral system</p>
+          </div>
+          <div class="card" style="border-left: 2px solid var(--border); padding: 10px 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h4 style="margin: 0;">Phase 4: Scale &amp; Optimize</h4>
+              <span class="badge badge-outline">Weeks 9-12</span>
+            </div>
+            <p style="margin-top: 3px;">Analytics dashboard, Redis caching, rate limiting, MUA business tools</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 13. TEAM -->
+      <section>
+        <span class="section-label">Team</span>
+        <h2 style="margin: 4px 0 0;">The people behind Leish</h2>
+        <div class="accent-line"></div>
+        <div class="grid-2" style="margin-top: 10px;">
+          <div class="team-card">
+            <div class="team-avatar" style="background: var(--gold); color: var(--bg);">SA</div>
+            <div class="team-info">
+              <h4>Shamel Ali</h4>
+              <div class="role">Founder &amp; CEO</div>
+              <div class="desc">Lead developer, product vision, full-stack</div>
+            </div>
+          </div>
+          <div class="team-card">
+            <div class="team-avatar" style="background: var(--gold); color: var(--bg);">LR</div>
+            <div class="team-info">
+              <h4>Leiynda Rahman</h4>
+              <div class="role">Strategic Partner</div>
+              <div class="desc">MUA network, supply-side recruitment</div>
+            </div>
+          </div>
+          <div class="team-card">
+            <div class="team-avatar" style="background: var(--gold-dim); color: var(--bg);">AW</div>
+            <div class="team-info">
+              <h4>Amar Wasilah</h4>
+              <div class="role">CMO &amp; Director</div>
+              <div class="desc">Marketing, brand strategy, growth</div>
+            </div>
+          </div>
+          <div class="team-card">
+            <div class="team-avatar" style="background: var(--text-muted); color: var(--bg);">KA</div>
+            <div class="team-info">
+              <h4>Khairil Adri Adnan</h4>
+              <div class="role">Chairman</div>
+              <div class="desc">Investor, governance, strategic oversight</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 14. RISKS -->
+      <section>
+        <span class="section-label">Risks &amp; Mitigation</span>
+        <h2 style="margin: 4px 0 0;">Clear resolution paths</h2>
+        <div class="accent-line"></div>
+        <table style="margin-top: 8px; width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr><th style="padding: 6px 10px; text-align: left; font-weight: 500; color: var(--gold); font-size: 0.42em; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border);">Risk</th><th style="padding: 6px 10px; text-align: left; font-weight: 500; color: var(--gold); font-size: 0.42em; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border);">Status</th><th style="padding: 6px 10px; text-align: left; font-weight: 500; color: var(--gold); font-size: 0.42em; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border);">Resolution</th></tr>
+          </thead>
+          <tbody>
+            <tr class="risk-row"><td>SSM Registration</td><td><span class="badge badge-outline">Pending</span></td><td style="color: var(--text-muted); font-size: 0.42em;">Hard blocker &mdash; prioritized in legal budget (RM 50K)</td></tr>
+            <tr class="risk-row"><td>MyIPO Trademark</td><td><span class="badge badge-outline">Pending</span></td><td style="color: var(--text-muted); font-size: 0.42em;">Awaiting clearance</td></tr>
+            <tr class="risk-row"><td>PDPA 2010</td><td><span class="badge badge-outline">Drafted</span></td><td style="color: var(--text-muted); font-size: 0.42em;">Final entity name substitution pending SSM</td></tr>
+            <tr class="risk-row"><td>Off-Platform Contact</td><td><span class="badge badge-outline">Not Built</span></td><td style="color: var(--text-muted); font-size: 0.42em;">In-app messaging + escrow guardrail</td></tr>
+            <tr class="risk-row"><td>BNM E-Money</td><td><span class="badge badge-outline">Unresolved</span></td><td style="color: var(--text-muted); font-size: 0.42em;">Legal counsel via fundraising allocation</td></tr>
+            <tr class="risk-row"><td>Scope vs Solo Dev</td><td><span class="badge badge-outline">Active</span></td><td style="color: var(--text-muted); font-size: 0.42em;">AI agent multiplier, team delegation</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 15. CLOSING -->
+      <section>
+        <div class="accent-line centered"></div>
+        <h2 style="font-size: 1.4em; margin-top: 8px;">Build the Future of Beauty</h2>
+        <p style="margin-top: 14px;">Leish is ready for its next chapter.</p>
+        <p style="font-size: 0.44em; color: var(--text-muted);">From marketplace to ecosystem. From KL to SEA.</p>
+        <div style="margin-top: 24px;">
+          <p><span class="badge badge-gold" style="font-size: 0.55em; padding: 6px 20px;">hello@leish.my</span></p>
+          <p style="margin-top: 10px; font-size: 0.38em; color: var(--text-muted);">leish.my &middot; app.leish.my &middot; studios.leish.my</p>
+        </div>
+        <hr class="divider" style="max-width: 200px; margin: 16px auto 10px;">
+        <p style="font-size: 0.35em; color: var(--text-muted); font-style: italic;">Built with love for the beauty community.</p>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="nav-hint">&larr; &rarr; navigate &middot; ESC overview</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.2.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      controls: true, controlsTutorial: false, controlsLayout: 'bottom-right',
+      controlsBackArrows: 'visible', progress: true, slideNumber: true,
+      hash: true, center: true, transition: 'fade', transitionSpeed: 'fast',
+      backgroundTransition: 'fade', width: 1100, height: 720, margin: 0.06,
+      minScale: 0.2, maxScale: 2.0, touch: true, loop: false, showSlideNumber: 'all',
+      plugins: []
+    });
+    document.addEventListener('keydown', () => document.querySelector('.nav-hint')?.style.setProperty('opacity', '0'));
+    document.addEventListener('touchstart', () => document.querySelector('.nav-hint')?.style.setProperty('opacity', '0'));
+    document.addEventListener('click', () => document.querySelector('.nav-hint')?.style.setProperty('opacity', '0'));
+  </script>
+</body>
+</html>

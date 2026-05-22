@@ -67,7 +67,7 @@ export function bookingConfirmationTemplate(params: {
     </div>
     
     <p style="text-align: center;">
-      <a href="https://www.leish.my/bookings" class="button">View My Bookings</a>
+      <a href="https://leish.my/bookings" class="button">View My Bookings</a>
     </p>
   </div>
   
@@ -94,7 +94,7 @@ BOOKING DETAILS:
 - Time: ${time}
 - Amount Paid: MYR ${amount} (${paymentType === "deposit" ? "30% Deposit" : "Full Payment"})
 
-View your bookings: https://www.leish.my/bookings
+View your bookings: https://leish.my/bookings
 
 If you need to reschedule or cancel, please contact us at hello@leish.my
 
@@ -132,7 +132,7 @@ export function welcomeEmailTemplate(params: { name: string }) {
     <p>Discover top makeup artists, book appointments, and find your perfect look.</p>
     
     <p style="text-align: center;">
-      <a href="https://www.leish.my/artists" class="button">Explore Artists</a>
+      <a href="https://leish.my/artists" class="button">Explore Artists</a>
     </p>
   </div>
   
@@ -152,7 +152,7 @@ Welcome to Beaute! We're thrilled to have you join our community of beauty enthu
 
 Discover top makeup artists, book appointments, and find your perfect look.
 
-Explore Artists: https://www.leish.my/artists
+Explore Artists: https://leish.my/artists
 
 © 2026 Beaute. All rights reserved.
   `
@@ -330,7 +330,7 @@ export function bookingReminderTemplate(params: {
     </div>
     
     <p style="text-align: center;">
-      <a href="https://www.leish.my/bookings" class="button">View Booking</a>
+      <a href="https://leish.my/bookings" class="button">View Booking</a>
     </p>
     
     <p style="color: #666; font-size: 14px; margin-top: 20px;">
@@ -360,7 +360,7 @@ BOOKING DETAILS:
 - Time: ${params.time}
 ${params.location ? `- Location: ${params.location}` : ''}
 
-View your booking: https://www.leish.my/bookings
+View your booking: https://leish.my/bookings
 
 Need to reschedule? Please contact us at least 24 hours in advance at hello@leish.my
 

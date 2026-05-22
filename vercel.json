@@ -10,7 +10,7 @@
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://www.leish.my"
+          "value": "https://leish.my"
         },
         {
           "key": "Access-Control-Allow-Methods",
@@ -49,7 +49,7 @@
     "remotePatterns": [
       {
         "protocol": "https",
-        "hostname": "www.leish.my"
+        "hostname": "leish.my"
       },
       {
         "protocol": "https",
@@ -78,32 +78,10 @@
       "has": [
         {
           "type": "host",
-          "value": "leish.my"
+          "value": "www.leish.my"
         }
       ],
-      "destination": "https://www.leish.my/:path*",
-      "permanent": true
-    },
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "app.leish.my"
-        }
-      ],
-      "destination": "https://www.leish.my/:path*",
-      "permanent": true
-    },
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "studios.leish.my"
-        }
-      ],
-      "destination": "https://www.leish.my/studios/:path*",
+      "destination": "https://leish.my/:path*",
       "permanent": true
     }
   ],

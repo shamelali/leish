@@ -37,12 +37,12 @@ export const metadata: Metadata = {
     title: 'Leish! | Your Beauty, Perfected',
     description: 'Discover and book elite freelance makeup artists for weddings, events, and editorial shoots. Luxury beauty services, curated for you.',
     type: 'website',
-    url: 'https://www.leish.my',
+    url: 'https://leish.my',
     siteName: 'Leish!',
     locale: 'en_MY',
     images: [
       {
-        url: 'https://www.leish.my/images/og-image.jpg',
+        url: 'https://leish.my/images/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'Leish! - Malaysia\'s Premier Beauty Marketplace',
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Leish! | Your Beauty, Perfected',
     description: 'Discover and book elite freelance makeup artists for weddings, events, and editorial shoots.',
-    images: ['https://www.leish.my/images/og-image.jpg'],
+    images: ['https://leish.my/images/og-image.jpg'],
   },
   icons: {
     icon: [
