@@ -20,6 +20,10 @@ debug.log
 *.backup
 *~
 *.swp
+*.kate-swp
+
+# IDE / AI config
+.claude/
 
 # Build outputs
 dist/
