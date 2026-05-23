@@ -149,9 +149,9 @@ export default async function AccountPage() {
     }
   }
 
-  // Fetch provider dashboard link if artist or studio_manager
+  // Fetch provider dashboard link if artist or studio owner
   let providerSlug: string | null = null
-  if (role === "artist" || role === "studio_manager") {
+  if (role === "artist" || role === "studio") {
     const { data: provider } = await supabase
       .from("providers")
       .select("slug")
@@ -184,7 +184,7 @@ export default async function AccountPage() {
             <p className="mt-2 text-sm text-muted-foreground">
               {role === "customer" && "Customer"}
               {role === "artist" && "Makeup Artist"}
-              {role === "studio_manager" && "Studio Manager"}
+              {role === "studio" && "Studio Owner"}
               {role === "admin" && "Administrator"}
             </p>
           </div>
@@ -197,7 +197,7 @@ export default async function AccountPage() {
                 View Profile
               </Link>
             )}
-            {role === "studio_manager" && providerSlug && (
+            {role === "studio" && providerSlug && (
               <Link
                 href={`/studios/${providerSlug}`}
                 className="inline-flex items-center gap-2 border border-border px-4 py-2 text-xs font-medium uppercase tracking-widest text-muted-foreground transition-colors hover:border-accent hover:text-accent"
@@ -205,7 +205,7 @@ export default async function AccountPage() {
                 View Studio
               </Link>
             )}
-            {(role === "artist" || role === "studio_manager") && (
+            {(role === "artist" || role === "studio") && (
               <Link
                 href="/studios/dashboard"
                 className="inline-flex items-center gap-2 border border-foreground bg-foreground px-4 py-2 text-xs font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-accent hover:border-accent"
@@ -267,8 +267,8 @@ export default async function AccountPage() {
           </>
         )}
 
-        {/* Artist/Studio Manager quick links */}
-        {(role === "artist" || role === "studio_manager") && (
+        {/* Artist/Studio Owner quick links */}
+        {(role === "artist" || role === "studio") && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <QuickLink
               href="/studios/dashboard"

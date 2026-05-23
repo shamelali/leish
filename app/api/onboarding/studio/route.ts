@@ -44,27 +44,27 @@ export async function POST(req: Request) {
     .eq("id", user.id)
     .maybeSingle()
 
-  // If profile doesn't exist, create it with studio_manager role
+  // If profile doesn't exist, create it with studio role
   if (!profile) {
-    console.log("[studio-onboarding] Profile missing, creating with studio_manager role")
+    console.log("[studio-onboarding] Profile missing, creating with studio role")
     const { error: profileError } = await supabase
       .from("profiles")
       .insert({
         id: user.id,
         full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "User",
-        role: "studio_manager",
+        role: "studio",
       })
 
     if (profileError) {
       console.error("[studio-onboarding] Failed to create profile:", JSON.stringify(profileError, null, 2))
       return NextResponse.json({ error: "Failed to create user profile", detail: profileError?.message }, { status: 500 })
     }
-  } else if (profile.role !== "studio_manager") {
-    // Profile exists but wrong role — upgrade to studio_manager
-    console.log("[studio-onboarding] Upgrading role from", profile.role, "to studio_manager")
+  } else if (profile.role !== "studio") {
+    // Profile exists but wrong role — upgrade to studio
+    console.log("[studio-onboarding] Upgrading role from", profile.role, "to studio")
     const { error: updateError } = await supabase
       .from("profiles")
-      .update({ role: "studio_manager" })
+      .update({ role: "studio" })
       .eq("id", user.id)
 
     if (updateError) {

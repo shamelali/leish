@@ -5,7 +5,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Eye, EyeOff, Loader2, ShieldAlert } from "lucide-react"
 import { isPasswordLeaked } from "@/lib/password-check"
 
-export type UserRole = "admin" | "artist" | "studio_manager" | "customer"
+export type UserRole = "admin" | "artist" | "studio" | "customer"
 
 function getPostSignInPath(role: UserRole | undefined): string {
   switch (role) {
@@ -13,7 +13,7 @@ function getPostSignInPath(role: UserRole | undefined): string {
       return "/admin"
 case "artist":
       return "/artist"
-    case "studio_manager":
+    case "studio":
       return "/studios/dashboard"
     case "customer":
     default:
@@ -92,11 +92,11 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
         // Wait briefly for the DB trigger to create the profile row
         await new Promise((resolve) => setTimeout(resolve, 800))
 
-        // Redirect based on role — new artists/studio_managers go to onboarding
+        // Redirect based on role — new artists/studio owners go to onboarding
         if (data.user) {
           if (role === "artist") {
             window.location.href = "/artistonboard"
-          } else if (role === "studio_manager") {
+          } else if (role === "studio") {
             window.location.href = "/studioonboard"
           } else {
             window.location.href = getPostSignInPath(role)
@@ -122,8 +122,8 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
 
           const userRole = profile?.role as UserRole | undefined
 
-          // For studio_manager: check if they have a studio yet
-          if (userRole === "studio_manager") {
+          // For studio: check if they have a studio yet
+          if (userRole === "studio") {
             const { data: studio } = await supabase
               .from("providers")
               .select("id")
@@ -182,7 +182,7 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
   const getRoleLabel = (r: UserRole) => {
     switch (r) {
       case "artist": return "Makeup Artist"
-      case "studio_manager": return "Studio Owner"
+      case "studio": return "Studio Owner"
       case "customer": return "Customer"
       default: return r
     }
@@ -237,7 +237,7 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
               I am a
             </label>
             <div className="mt-2 grid grid-cols-3 gap-2">
-              {(["customer", "artist", "studio_manager"] as UserRole[]).map((r) => (
+              {(["customer", "artist", "studio"] as UserRole[]).map((r) => (
                 <button
                   key={r}
                   type="button"
@@ -257,7 +257,7 @@ export function SupabaseAuthForm({ defaultMode = "signin" }: { defaultMode?: "si
                 As a makeup artist, you can list your services and accept bookings from customers.
               </p>
             )}
-            {role === "studio_manager" && (
+            {role === "studio" && (
               <p className="mt-2 text-xs text-muted-foreground">
                 As a studio owner, you can manage your studio and artists.
               </p>

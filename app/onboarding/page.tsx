@@ -77,7 +77,7 @@ export default async function OnboardingPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {ROLES.map((role) => {
             const Icon = role.icon
-            const isActive = userRole === role.id || (role.id === "studio" && userRole === "studio_manager")
+            const isActive = userRole === role.id
             return (
               <div
                 key={role.id}
@@ -109,7 +109,7 @@ export default async function OnboardingPage() {
         {userRole && (
           <div className="mt-12 text-center">
             <p className="text-sm text-muted-foreground">
-              Already set up as <strong>{userRole === "studio_manager" ? "Studio Owner" : userRole}</strong>?{" "}
+              Already set up as <strong>{userRole === "studio" ? "Studio Owner" : userRole}</strong>?{" "}
               <Link href="/account" className="text-accent hover:text-foreground">
                 Go to your account
               </Link>

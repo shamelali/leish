@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Loader2 } from "lucide-react"
 
-type UserRole = "admin" | "artist" | "studio_manager" | "customer"
+type UserRole = "admin" | "artist" | "studio" | "customer"
 
 function getRedirectPath(role: UserRole): string {
   switch (role) {
@@ -15,7 +15,7 @@ function getRedirectPath(role: UserRole): string {
       return "/admin"
     case "artist":
       return "/artist"
-    case "studio_manager":
+    case "studio":
       return "/studioonboard"
     case "customer":
     default:
@@ -88,7 +88,7 @@ export default function AuthCallbackPage() {
 
           if (profile?.role) {
             const r = profile.role as UserRole
-            if (r === "admin" || r === "artist" || r === "studio_manager") {
+            if (r === "admin" || r === "artist" || r === "studio") {
               role = r
             }
             break
@@ -111,8 +111,8 @@ export default function AuthCallbackPage() {
           }
         }
 
-        // Step 4c: for studio managers, check if they have a studio
-        if (role === "studio_manager") {
+        // Step 4c: for studio owners, check if they have a studio
+        if (role === "studio") {
           const { data: studio } = await supabase
             .from("providers")
             .select("id")

@@ -65,7 +65,7 @@ export default async function StudioOnboardingPage() {
     .eq("id", user.id)
     .maybeSingle()
 
-  if (!profile || profile.role !== "studio_manager") {
+  if (!profile || profile.role !== "studio") {
     return (
       <div className="mx-auto max-w-md px-4 py-24 text-center">
         <h1 className="font-serif text-2xl text-foreground">Studio access only</h1>

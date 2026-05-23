@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     .eq("id", user.id)
     .maybeSingle()
 
-  if (!profile || !["admin", "studio_manager"].includes(profile.role)) {
+  if (!profile || profile.role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 

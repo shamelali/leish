@@ -27,7 +27,7 @@ export default async function StudioDashboardPage() {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!profile || profile.role !== "studio_manager") redirect("/");
+  if (!profile || profile.role !== "studio") redirect("/");
 
   // If no studio yet, send to onboarding
   const { data: studio } = await supabase

@@ -123,7 +123,7 @@ it("should create a profile with role metadata on signup", async () => {
       await supabase.auth.admin.deleteUser(data.user!.id)
     })
 
-    it("should create profile with studio_manager role", async () => {
+    it("should create profile with studio role", async () => {
       await new Promise((r) => setTimeout(r, 1200))
       const studioEmail = `studio-${TEST_TIMESTAMP}@test.leish.my`
       const { data, error } = await supabase.auth.signUp({
@@ -131,7 +131,7 @@ it("should create a profile with role metadata on signup", async () => {
         password: TEST_PASSWORD,
         options: {
           data: {
-            role: "studio_manager",
+            role: "studio",
             full_name: "Test Studio Owner",
           },
         },
@@ -151,7 +151,7 @@ it("should create a profile with role metadata on signup", async () => {
         .eq("id", data.user!.id)
         .single()
 
-      expect(profile?.role).toBe("studio_manager")
+      expect(profile?.role).toBe("studio")
 
       await supabase.auth.admin.deleteUser(data.user!.id)
     })
@@ -319,7 +319,7 @@ it("should create a profile with role metadata on signup", async () => {
 describe("Role-based Access", () => {
     let customerUserId: string | null = null
     let artistUserId: string | null = null
-    let studioManagerUserId: string | null = null
+    let studioUserId: string | null = null
 
     beforeAll(async () => {
       await new Promise((r) => setTimeout(r, 2000))
@@ -342,13 +342,13 @@ describe("Role-based Access", () => {
       const { data: d3 } = await supabase.auth.signUp({
         email: `role-studio-${TEST_TIMESTAMP}@test.leish.my`,
         password: TEST_PASSWORD,
-        options: { data: { role: "studio_manager", full_name: "Studio User" } },
+        options: { data: { role: "studio", full_name: "Studio User" } },
       })
-      if (d3?.user) studioManagerUserId = d3.user.id
+      if (d3?.user) studioUserId = d3.user.id
     })
 
     afterAll(async () => {
-      const userIds = [customerUserId, artistUserId, studioManagerUserId]
+      const userIds = [customerUserId, artistUserId, studioUserId]
       for (const uid of userIds) {
         if (uid) {
           await supabase.auth.admin.deleteUser(uid)
@@ -382,17 +382,17 @@ describe("Role-based Access", () => {
       expect(profile?.role).toBe("artist")
     })
 
-    it("should assign studio_manager role correctly", async () => {
-      if (!studioManagerUserId) {
+    it("should assign studio role correctly", async () => {
+      if (!studioUserId) {
         return
       }
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
-        .eq("id", studioManagerUserId)
+        .eq("id", studioUserId)
         .single()
 
-      expect(profile?.role).toBe("studio_manager")
+      expect(profile?.role).toBe("studio")
     })
   })
 

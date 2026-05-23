@@ -17,7 +17,7 @@ async function requireAdminUser() {
     .eq("id", user.id)
     .maybeSingle()
 
-  if (!profile || !["admin", "studio_manager"].includes(profile.role)) {
+  if (!profile || profile.role !== "admin") {
     throw new Error("Forbidden")
   }
 

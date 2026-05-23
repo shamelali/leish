@@ -28,7 +28,7 @@ export default async function ProLayout({ children }: { children: React.ReactNod
     redirect("/")
   }
 
-  const allowedRoles = ["artist", "studio_manager", "admin"]
+  const allowedRoles = ["artist", "studio", "admin"]
   if (!allowedRoles.includes(profile.role)) {
     redirect("/")
   }

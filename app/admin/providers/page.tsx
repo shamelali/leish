@@ -25,7 +25,7 @@ export default async function AdminProvidersPage({
     .eq("id", profile.user?.id)
     .single()
 
-  if (!userProfile?.role || !["admin", "studio_manager"].includes(userProfile.role)) {
+  if (!userProfile?.role || userProfile.role !== "admin") {
     return redirect("/")
   }
 
