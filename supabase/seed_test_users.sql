@@ -86,7 +86,7 @@ VALUES (
   now(),
   now(),
   now(),
-  '{"role":"studio_manager"}',
+  '{"role":"studio"}',
   false,
   '',
   '',
@@ -95,7 +95,7 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.profiles (id, full_name, role)
-VALUES ('44444444-4444-4444-4444-444444444444'::uuid, 'Studio Owner', 'studio_manager'::public.profile_role)
+VALUES ('44444444-4444-4444-4444-444444444444'::uuid, 'Studio Owner', 'studio'::public.profile_role)
 ON CONFLICT (id) DO UPDATE SET full_name = 'Studio Owner';
 
 ---
