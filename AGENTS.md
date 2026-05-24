@@ -103,3 +103,34 @@ Install VS Code extension "GitHub Copilot Workspace" and configure in `.github/c
 - Supabase (Postgres + Auth + RLS)
 - Billplz for payments
 - Vitest for testing
+
+---
+
+## Session Anchored Summary (24 May 2026)
+
+### Goal
+Fix all Supabase performance advisor warnings and complete remaining launch-blocking code fixes.
+
+### Done
+- Fixed all `auth_rls_initplan` warnings (replaced auth.<function>() with (SELECT auth.<function>()) in RLS policies across 8 tables).
+- Consolidated all `multiple_permissive_policies` warnings (merged duplicate policies across 12 tables).
+- Connected Vercel CLI (linked `shamelalis-projects/leish`), GitLab CLI (v1.99.0 via PAT), Supabase CLI (service role key).
+- Validated all 6 tables accessible via service role key.
+- Verified 6 code fixes already in place (c1-c6), built c7 (off-platform contact detection in `lib/ops/contact-filter.ts`).
+- Added missing env vars to Vercel (`NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`).
+- Updated all tracking docs to reflect completion:
+  - `leish_launch_command_center.html` — 7/7 code tasks marked done ✅
+  - `leish-hub.html` — status card, pill, blocker, table, checklist, roadmap all updated
+  - `leish-notion-hub.md` — master status, fixes table, checklist, roadmap all updated
+  - `leish-chairman-briefing.docx` — #3 row updated from "4 fixes pending" to "Done ✅"
+
+### Key Decisions
+- Abandon Supabase CLI for RLS edits (SIGILL) → use Dashboard SQL Editor and manual policy JSON updates.
+- Use service role key for validation queries instead of user-context CLI.
+- Install GitLab CLI binary from gitlab.com releases (npm `glab` is different).
+- Docx edited via zip extraction → XML edit → re-zip.
+
+### Relevant Files
+- `lib/ops/contact-filter.ts` — new off-platform contact detection module
+- `app/api/messages/route.ts` — integrated contact filter in POST handler
+- `AGENTS.md` — this anchored summary

@@ -334,14 +334,14 @@ export function AiConcierge() {
            onPointerDown={(event) => startDrag(event, "fab")}
            onClick={handleOpenClick}
            className={cn(
-             "fixed z-40 flex items-center justify-center bg-accent text-accent-foreground shadow-lg transition-transform hover:scale-105 active:scale-95",
-             fabPosition ? "" : "bottom-6 right-6",
-             !fabPosition && "w-full lg:w-14 lg:h-14"
-           )}
+              "fixed z-40 flex items-center justify-center bg-accent text-accent-foreground shadow-lg transition-transform hover:scale-105 active:scale-95",
+              fabPosition ? "" : "bottom-4 right-4 sm:bottom-6 sm:right-6",
+              !fabPosition && "h-12 w-12 sm:h-14 sm:w-14"
+            )}
            style={fabPosition ? { left: fabPosition.x, top: fabPosition.y } : undefined}
            aria-label="Open beauty concierge"
          >
-           <Sparkles className="h-6 w-6 lg:h-8 lg:w-8" />
+           <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
          </button>
        )}
 
@@ -350,10 +350,10 @@ export function AiConcierge() {
         <div
           ref={panelRef}
           className={cn(
-            "fixed z-50 flex flex-col border-l border-border bg-background shadow-2xl",
+            "fixed z-50 flex flex-col bg-background shadow-2xl",
             panelPosition
-              ? "sm:h-[600px] sm:w-[400px] sm:border"
-              : "bottom-0 right-0 h-full w-full sm:bottom-6 sm:right-6 sm:h-[600px] sm:w-[400px] sm:border"
+              ? "border-l border-border md:h-[600px] md:w-[400px] md:border"
+              : "bottom-0 right-0 h-full w-full border-0 md:bottom-6 md:right-6 md:h-[600px] md:w-[400px] md:border md:border-border"
           )}
           style={
             panelPosition

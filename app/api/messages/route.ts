@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { reportApiError } from "@/lib/ops/alerts"
 import { enforceRateLimit } from "@/lib/ops/rate-limit"
+import { checkMessageContent } from "@/lib/ops/contact-filter"
 
 // GET /api/messages?conversationWith=xxx - Get conversation with a user
 export async function GET(req: Request) {
@@ -117,6 +118,15 @@ export async function POST(req: Request) {
 
   if (!receiver) {
     return NextResponse.json({ error: "Receiver not found" }, { status: 404 })
+  }
+
+  // Block off-platform contact info to prevent booking circumvention
+  const filterResult = checkMessageContent(payload.content.trim(), user.id)
+  if (!filterResult.allowed) {
+    return NextResponse.json(
+      { error: filterResult.reason, code: "CONTACT_INFO_BLOCKED" },
+      { status: 400 }
+    )
   }
 
   try {

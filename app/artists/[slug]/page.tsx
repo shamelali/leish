@@ -23,7 +23,8 @@ export async function generateMetadata({
 }) {
   const { slug } = await params
   const supabase = await getSupabaseServerClient()
-  
+  if (!supabase) return { title: "Leish!" }
+
   const { data: artist } = await supabase
     .from('providers')
     .select('display_name, bio')
@@ -48,7 +49,8 @@ export default async function ArtistProfilePage({
 }) {
   const { slug } = await params
   const supabase = await getSupabaseServerClient()
-  
+  if (!supabase) notFound()
+
   // Fetch artist from database
   const { data: artist, error } = await supabase
     .from('providers')
