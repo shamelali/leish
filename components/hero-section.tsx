@@ -56,12 +56,12 @@ export function HeroSection() {
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-               <Link
-                 href="/quiz"
-                 className="flex items-center justify-center rounded-full border border-foreground px-6 sm:px-8 py-3 sm:py-3.5 font-serif text-sm font-semibold tracking-[-0.01em] text-foreground transition-all hover:bg-foreground hover:text-primary-foreground"
-               >
-                 {lang === "ms" ? "Kwiz Kecantikan" : "Match!"}
-               </Link>
+              <Link
+                href="/quiz"
+                className="flex items-center justify-center rounded-full border border-foreground px-6 sm:px-8 py-3 sm:py-3.5 font-serif text-sm font-semibold tracking-[-0.01em] text-foreground transition-all hover:bg-foreground hover:text-primary-foreground"
+              >
+                {lang === "ms" ? "Kwiz Kecantikan" : "Match!"}
+              </Link>
               <Link
                 href="/artists"
                 className="flex items-center justify-center rounded-full border border-border px-6 sm:px-8 py-3 sm:py-3.5 font-serif text-sm font-semibold tracking-[-0.01em] text-muted-foreground transition-all hover:border-foreground hover:text-foreground"
