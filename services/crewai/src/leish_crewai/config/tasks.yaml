@@ -1,0 +1,18 @@
+execute_mission:
+  description: >
+    The user has given the following mission: {mission}
+
+    Analyze this mission and determine what needs to be done. Deploy the right
+    specialists from The Empire Elites to handle each aspect. Synthesize their
+    outputs into a final, polished deliverable.
+
+    IMPORTANT RULES:
+    - Work autonomously from start to finish.
+    - If the mission involves financial decisions include this exact marker:
+      `[FINANCIAL_REVIEW_REQUIRED]`
+      Followed by clear options with pros/cons and a recommendation.
+    - For non-financial missions, deliver the final output without markers.
+    - Always produce a polished, production-ready deliverable.
+  expected_output: >
+    A complete, polished deliverable based on the mission.
+  agent: commander

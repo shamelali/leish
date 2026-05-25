@@ -51,41 +51,29 @@ export function AiConcierge() {
     const startX = event.clientX
     const startY = event.clientY
 
-    if (type === "fab") {
-      const handleMove = (moveEvent: React.PointerEvent) => {
-        const dx = moveEvent.clientX - startX
-        const dy = moveEvent.clientY - startY
+    const handleMove = (moveEvent: PointerEvent) => {
+      const dx = moveEvent.clientX - startX
+      const dy = moveEvent.clientY - startY
+      if (type === "fab") {
         setFabPosition((prev) => {
           if (!prev) return { x: dx, y: dy }
           return { x: prev.x + dx, y: prev.y + dy }
         })
-      }
-
-      const handleUp = () => {
-        window.removeEventListener("pointermove", handleMove)
-        window.removeEventListener("pointerup", handleUp)
-      }
-
-      window.addEventListener("pointermove", handleMove)
-      window.addEventListener("pointerup", handleUp)
-    } else if (type === "panel") {
-      const handleMove = (moveEvent: React.PointerEvent) => {
-        const dx = moveEvent.clientX - startX
-        const dy = moveEvent.clientY - startY
+      } else {
         setPanelPosition((prev) => {
           if (!prev) return { x: dx, y: dy }
           return { x: prev.x + dx, y: prev.y + dy }
         })
       }
-
-      const handleUp = () => {
-        window.removeEventListener("pointermove", handleMove)
-        window.removeEventListener("pointerup", handleUp)
-      }
-
-      window.addEventListener("pointermove", handleMove)
-      window.addEventListener("pointerup", handleUp)
     }
+
+    const handleUp = () => {
+      window.removeEventListener("pointermove", handleMove)
+      window.removeEventListener("pointerup", handleUp)
+    }
+
+    window.addEventListener("pointermove", handleMove)
+    window.addEventListener("pointerup", handleUp)
   }
 
     const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
