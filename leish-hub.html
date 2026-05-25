@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leish — Project Command Hub</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 24px; background: #f6f1e9; color: #1a1410; }
+    .card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .link { padding: 6px 10px; border: 1px solid #bbb; border-radius: 6px; text-decoration: none; color: #1a1410; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #b5ac9e; display: inline-block; }
+    .dot.ok { background: #4a7c59; }
+    .dot.err { background: #a32d2d; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; border: 1px solid #ddd; }
+    .ok { background: #edf4e9; color: #2f6d46; border-color: #b9d6c4; }
+    .warn { background: #fdf2e4; color: #9a6210; border-color: #f0d4ab; }
+    .bad { background: #fbeaea; color: #a32d2d; border-color: #e5bcbc; }
+    ul { margin: 8px 0 0 18px; }
+    li { margin: 6px 0; }
+    small { color: #6b6258; }
+  </style>
+</head>
+<body>
+  <h1>Leish Project Hub</h1>
+  <p><small>All topics, live links, and launch readiness in one place.</small></p>
+  <div class="card">
+    <div class="row">
+      <a class="link" href="https://gitlab.com/shamelali/leish_app" target="_blank" rel="noopener noreferrer">GitLab Repo</a>
+      <a class="link" href="https://app.leish.my" target="_blank" rel="noopener noreferrer">Production App</a>
+      <a class="link" href="leish_launch_command_center.html">Launch Command Center</a>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Platform Snapshot</h3>
+      <p><span class="pill ok">Pre-launch fixes: 7/7 done</span></p>
+      <ul>
+        <li>Off-platform contact filter deployed</li>
+        <li>Password validation upgraded (zxcvbn + HIBP)</li>
+        <li>MFA enabled with challenge flow</li>
+        <li>Credential stuffing protection added</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Legal & Ops</h3>
+      <p><span class="pill warn">Sdn Bhd conversion pending</span></p>
+      <ul>
+        <li>SSM sole prop active until Jul 2026</li>
+        <li>Cancellation/dispute policy still needed</li>
+        <li>MUA supply seeding ongoing (KL/Penang/JB)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Integration Status</h3>
+      <p><span class="pill ok">Integration tests 39/39 passing</span></p>
+      <ul>
+        <li>Registration flow green</li>
+        <li>Booking flow green (compatibility patched)</li>
+        <li>System smoke green</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Today Focus</h3>
+    <ul>
+      <li>Run a real Billplz end-to-end transaction</li>
+      <li>Replace remaining placeholder profile images</li>
+      <li>Finalize cancellation and dispute policy</li>
+      <li>Post first TikTok launch content</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <span id="dot" class="dot"></span>
+      <strong id="health">Checking live health…</strong>
+    </div>
+    <small id="synced">Not synced yet</small>
+  </div>
+
+  <script>
+    function openLink(url) { window.open(url, '_blank', 'noopener,noreferrer'); }
+
+    async function checkHealth() {
+      const dot = document.getElementById('dot');
+      const health = document.getElementById('health');
+      const synced = document.getElementById('synced');
+      const now = new Date().toLocaleString('en-MY');
+
+      try {
+        const res = await fetch('https://app.leish.my/api/health', { cache: 'no-store' });
+        if (!res.ok) throw new Error('non-200');
+        dot.className = 'dot ok';
+        health.textContent = 'Live healthy';
+        synced.textContent = `Last synced: ${now}`;
+      } catch {
+        dot.className = 'dot err';
+        health.textContent = 'Health check unavailable';
+        synced.textContent = `Last checked: ${now}`;
+      }
+    }
+
+    checkHealth();
+    setInterval(checkHealth, 30000);
+  </script>
+</body>
+</html>
