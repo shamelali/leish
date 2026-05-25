@@ -20,9 +20,9 @@ function setDocumentLanguage(lang: Language) {
 }
 
 function getInitialLang(): Language {
-  if (typeof window === "undefined") return "ms"
+  if (typeof window === "undefined") return "en"
   const stored = window.localStorage.getItem(STORAGE_KEY)
-  return stored === "en" ? "en" : "ms"
+  return stored === "ms" ? "ms" : "en"
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
@@ -70,9 +70,9 @@ export function useLanguage() {
   // Return default values during SSR if context is not available
   if (context === undefined) {
     return {
-      lang: "ms" as Language,
+      lang: "en" as Language,
       setLang: () => {},
-      isEnglish: false,
+      isEnglish: true,
     }
   }
   return context

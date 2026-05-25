@@ -15,6 +15,7 @@ const config = [
       ".vercel/**",
       "supabase/functions/**",
       ".kilo/**",
+      "services/crewai/**",
       "make_pitch_ppt.py",
     ],
   },

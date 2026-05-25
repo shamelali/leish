@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import Link from "next/link"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Eye, EyeOff, Loader2, ShieldAlert } from "lucide-react"
 import { PasswordValidator } from "@/lib/password-check"
@@ -126,47 +127,31 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
     window.location.href = target
   }
 
-  async function handleSignIn(supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>) {
-    // Check credential stuffing protection before attempting sign-in
-    const checkRes = await fetch(`/api/auth/credential-stuffing?email=${encodeURIComponent(email)}`)
-    if (checkRes.ok) {
-      const check = await checkRes.json()
-      if (check.blocked) {
-        throw new Error(check.reason || "Login is temporarily blocked")
-      }
-      if (check.delay) {
-        await new Promise((resolve) => setTimeout(resolve, check.delay))
-      }
-    }
+  async function checkCredentialStuffing() {
+    const res = await fetch(`/api/auth/credential-stuffing?email=${encodeURIComponent(email)}`)
+    if (!res.ok) return
+    const check = await res.json()
+    if (check.blocked) throw new Error(check.reason || "Login is temporarily blocked")
+    if (check.delay) await new Promise((resolve) => setTimeout(resolve, check.delay))
+  }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+  function recordFailedAttempt() {
+    fetch("/api/auth/credential-stuffing", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "record", email }),
+    }).catch(() => {})
+  }
 
-    if (error) {
-      // Record failed attempt silently (fire-and-forget)
-      fetch("/api/auth/credential-stuffing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "record", email }),
-      }).catch(() => {})
-      throw error
-    }
-
-    // Clear failed attempts on success
+  function clearFailedAttempts() {
     fetch("/api/auth/credential-stuffing", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "clear", email }),
     }).catch(() => {})
+  }
 
-    if (!data.user) {
-      window.location.href = "/"
-      return
-    }
-
-    // Check if MFA is required
+  async function routeUserAfterSignIn(supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>, userId: string) {
     const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
     if (aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2") {
       window.location.href = "/sign-in/mfa"
@@ -176,7 +161,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
-      .eq("id", data.user.id)
+      .eq("id", userId)
       .maybeSingle()
 
     const userRole = profile?.role as UserRole | undefined
@@ -185,7 +170,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
       const { data: studio } = await supabase
         .from("providers")
         .select("id")
-        .eq("owner_id", data.user.id)
+        .eq("owner_id", userId)
         .eq("kind", "studio")
         .maybeSingle()
       window.location.href = studio ? "/studios/dashboard" : "/studioonboard"
@@ -193,13 +178,36 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
       const { data: provider } = await supabase
         .from("providers")
         .select("id")
-        .eq("owner_id", data.user.id)
+        .eq("owner_id", userId)
         .eq("kind", "artist")
         .maybeSingle()
       window.location.href = provider ? "/artist" : "/artistonboard"
     } else {
       window.location.href = getPostSignInPath(userRole)
     }
+  }
+
+  async function handleSignIn(supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>) {
+    await checkCredentialStuffing()
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (error) {
+      recordFailedAttempt()
+      throw error
+    }
+
+    clearFailedAttempts()
+
+    if (!data.user) {
+      window.location.href = "/"
+      return
+    }
+
+    await routeUserAfterSignIn(supabase, data.user.id)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -414,6 +422,14 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
           <p className="mt-1 text-xs text-muted-foreground">
             Must be at least 12 characters
           </p>
+        )}
+        {!isSignUp && (
+          <Link
+            href="/forgot-password"
+            className="mt-1 block text-xs text-accent hover:underline"
+          >
+            Forgot password?
+          </Link>
         )}
       </div>
 

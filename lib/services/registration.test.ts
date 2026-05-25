@@ -589,7 +589,7 @@ describe("Role-based Access", () => {
         return
       }
       const { error } = await supabase.auth.admin.updateUserById(metadataUserId, {
-        data: {
+        user_metadata: {
           full_name: "Updated Metadata Name",
         },
       })

@@ -11,7 +11,7 @@ const server = new ApolloServer({
 })
 
 const handler = startServerAndCreateNextHandler(server, {
-  context: async (req): Promise<{ user: unknown }> => {
+      context: async (_req): Promise<{ user: unknown }> => {
     const supabase = await getSupabaseSsrClient()
     const { data: { user } } = supabase ? await supabase.auth.getUser() : { data: { user: null } }
     return { user }
