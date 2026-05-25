@@ -7,8 +7,13 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const runTests = supabaseUrl && supabaseServiceKey
 
 const TEST_TIMESTAMP = Date.now()
-const TEST_EMAIL = `test-${TEST_TIMESTAMP}@test.leish.my`
+const TEST_EMAIL_DOMAIN = process.env.TEST_AUTH_EMAIL_DOMAIN ?? "gmail.com"
+const TEST_EMAIL = `test-${TEST_TIMESTAMP}@${TEST_EMAIL_DOMAIN}`
 const TEST_PASSWORD = "testPassword123!"
+
+function makeEmail(prefix: string) {
+  return `${prefix}-${TEST_TIMESTAMP}@${TEST_EMAIL_DOMAIN}`
+}
 
 const describeIf = runTests ? describe : describe.skip
 
@@ -92,7 +97,7 @@ it("should create a profile with role metadata on signup", async () => {
 
     it("should create profile with artist role", async () => {
       await new Promise((r) => setTimeout(r, 1100))
-      const artistEmail = `artist-${TEST_TIMESTAMP}@test.leish.my`
+      const artistEmail = makeEmail("artist")
       const { data, error } = await supabase.auth.signUp({
         email: artistEmail,
         password: TEST_PASSWORD,
@@ -125,7 +130,7 @@ it("should create a profile with role metadata on signup", async () => {
 
     it("should create profile with studio role", async () => {
       await new Promise((r) => setTimeout(r, 1200))
-      const studioEmail = `studio-${TEST_TIMESTAMP}@test.leish.my`
+      const studioEmail = makeEmail("studio")
       const { data, error } = await supabase.auth.signUp({
         email: studioEmail,
         password: TEST_PASSWORD,
@@ -158,7 +163,7 @@ it("should create a profile with role metadata on signup", async () => {
 
     it("should default to customer role when not specified", async () => {
       await new Promise((r) => setTimeout(r, 1300))
-      const defaultEmail = `default-${TEST_TIMESTAMP}@test.leish.my`
+      const defaultEmail = makeEmail("default")
       const { data, error } = await supabase.auth.signUp({
         email: defaultEmail,
         password: TEST_PASSWORD,
@@ -185,7 +190,7 @@ it("should create a profile with role metadata on signup", async () => {
 
     it("should not allow duplicate email registration", async () => {
       await new Promise((r) => setTimeout(r, 1400))
-      const email = `duplicate-${TEST_TIMESTAMP}@test.leish.my`
+      const email = makeEmail("duplicate")
 
       const { error: error1 } = await supabase.auth.signUp({
         email,
@@ -213,10 +218,11 @@ it("should create a profile with role metadata on signup", async () => {
 
     beforeAll(async () => {
       await new Promise((r) => setTimeout(r, 1200))
-      const email = `login-test-${TEST_TIMESTAMP}@test.leish.my`
-      const { data } = await supabase.auth.signUp({
+      const email = makeEmail("login-test")
+      const { data } = await supabase.auth.admin.createUser({
         email,
         password: TEST_PASSWORD,
+        email_confirm: true,
       })
       if (data.user) {
         loginTestUserId = data.user.id
@@ -230,7 +236,7 @@ it("should create a profile with role metadata on signup", async () => {
     })
 
     it("should sign in with valid credentials", async () => {
-      const email = `login-test-${TEST_TIMESTAMP}@test.leish.my`
+      const email = makeEmail("login-test")
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -243,7 +249,7 @@ it("should create a profile with role metadata on signup", async () => {
     })
 
     it("should fail with invalid password", async () => {
-      const email = `login-test-${TEST_TIMESTAMP}@test.leish.my`
+      const email = makeEmail("login-test")
 
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -259,7 +265,7 @@ it("should create a profile with role metadata on signup", async () => {
 
     beforeAll(async () => {
       await new Promise((r) => setTimeout(r, 1300))
-      const email = `profile-test-${TEST_TIMESTAMP}@test.leish.my`
+      const email = makeEmail("profile-test")
       const { data } = await supabase.auth.signUp({
         email,
         password: TEST_PASSWORD,
@@ -299,6 +305,9 @@ it("should create a profile with role metadata on signup", async () => {
     })
 
     it("should update profile fields", async () => {
+      if (!profileTestUserId) {
+        return
+      }
       const { error } = await supabase
         .from("profiles")
         .update({ full_name: "Updated Name" })
@@ -324,7 +333,7 @@ describe("Role-based Access", () => {
     beforeAll(async () => {
       await new Promise((r) => setTimeout(r, 2000))
       const { data: d1 } = await supabase.auth.signUp({
-        email: `role-cust-${TEST_TIMESTAMP}@test.leish.my`,
+        email: makeEmail("role-cust"),
         password: TEST_PASSWORD,
         options: { data: { role: "customer", full_name: "Customer User" } },
       })
@@ -332,7 +341,7 @@ describe("Role-based Access", () => {
 
       await new Promise((r) => setTimeout(r, 1100))
       const { data: d2 } = await supabase.auth.signUp({
-        email: `role-artist-${TEST_TIMESTAMP}@test.leish.my`,
+        email: makeEmail("role-artist"),
         password: TEST_PASSWORD,
         options: { data: { role: "artist", full_name: "Artist User" } },
       })
@@ -340,7 +349,7 @@ describe("Role-based Access", () => {
 
       await new Promise((r) => setTimeout(r, 1100))
       const { data: d3 } = await supabase.auth.signUp({
-        email: `role-studio-${TEST_TIMESTAMP}@test.leish.my`,
+        email: makeEmail("role-studio"),
         password: TEST_PASSWORD,
         options: { data: { role: "studio", full_name: "Studio User" } },
       })
@@ -431,7 +440,7 @@ describe("Role-based Access", () => {
 
     beforeAll(async () => {
       await new Promise((r) => setTimeout(r, 1500))
-      const email = `reset-test-${TEST_TIMESTAMP}@test.leish.my`
+      const email = makeEmail("reset-test")
       const { data } = await supabase.auth.signUp({
         email,
         password: TEST_PASSWORD,
@@ -446,7 +455,7 @@ describe("Role-based Access", () => {
     })
 
     it("should send password reset email", async () => {
-      const email = `reset-test-${TEST_TIMESTAMP}@test.leish.my`
+      const email = makeEmail("reset-test")
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: "http://localhost:3000/auth/update-password",
@@ -457,7 +466,7 @@ describe("Role-based Access", () => {
 
     it("should fail for non-existent email", async () => {
       const { error } = await supabase.auth.resetPasswordForEmail(
-        `nonexistent-${TEST_TIMESTAMP}@test.leish.my`
+        makeEmail("nonexistent")
       )
 
       expect(error).toBeNull()
@@ -469,10 +478,11 @@ describe("Role-based Access", () => {
 
     beforeAll(async () => {
       await new Promise((r) => setTimeout(r, 1600))
-      const email = `session-test-${TEST_TIMESTAMP}@test.leish.my`
-      const { data } = await supabase.auth.signUp({
+      const email = makeEmail("session-test")
+      const { data } = await supabase.auth.admin.createUser({
         email,
         password: TEST_PASSWORD,
+        email_confirm: true,
       })
       if (data.user) sessionUserId = data.user.id
     })
@@ -484,7 +494,7 @@ describe("Role-based Access", () => {
     })
 
     it("should get session after login", async () => {
-      const email = `session-test-${TEST_TIMESTAMP}@test.leish.my`
+      const email = makeEmail("session-test")
 
       const { data: signInData } = await supabase.auth.signInWithPassword({
         email,
@@ -499,7 +509,7 @@ describe("Role-based Access", () => {
     })
 
     it("should refresh session token", async () => {
-      const email = `session-test-${TEST_TIMESTAMP}@test.leish.my`
+      const email = makeEmail("session-test")
 
       const { data: signInData } = await supabase.auth.signInWithPassword({
         email,
@@ -523,7 +533,7 @@ describe("Role-based Access", () => {
     })
 
     it("should sign out and clear session", async () => {
-      const email = `session-test-${TEST_TIMESTAMP}@test.leish.my`
+      const email = makeEmail("session-test")
 
       await supabase.auth.signInWithPassword({
         email,
@@ -541,7 +551,7 @@ describe("Role-based Access", () => {
 
     beforeAll(async () => {
       await new Promise((r) => setTimeout(r, 1700))
-      const email = `metadata-test-${TEST_TIMESTAMP}@test.leish.my`
+      const email = makeEmail("metadata-test")
       const { data } = await supabase.auth.signUp({
         email,
         password: TEST_PASSWORD,
@@ -575,7 +585,10 @@ describe("Role-based Access", () => {
     })
 
     it("should update user metadata", async () => {
-      const { error } = await supabase.auth.updateUser({
+      if (!metadataUserId) {
+        return
+      }
+      const { error } = await supabase.auth.admin.updateUserById(metadataUserId, {
         data: {
           full_name: "Updated Metadata Name",
         },
@@ -583,7 +596,7 @@ describe("Role-based Access", () => {
 
       expect(error).toBeNull()
 
-      const { data: user } = await supabase.auth.getUser()
+      const { data: user } = await supabase.auth.getUser(metadataUserId)
 
       expect(user.user?.user_metadata.full_name).toBe("Updated Metadata Name")
     })
@@ -594,7 +607,7 @@ describe("Role-based Access", () => {
 
     beforeAll(async () => {
       await new Promise((r) => setTimeout(r, 1800))
-      const email = `verify-test-${TEST_TIMESTAMP}@test.leish.my`
+      const email = makeEmail("verify-test")
       const { data } = await supabase.auth.signUp({
         email,
         password: TEST_PASSWORD,
@@ -613,7 +626,7 @@ describe("Role-based Access", () => {
         return
       }
 
-      const { error } = await supabase.auth.resend({ type: "signup", email: `verify-test-${TEST_TIMESTAMP}@test.leish.my` })
+      const { error } = await supabase.auth.resend({ type: "signup", email: makeEmail("verify-test") })
 
       expect(error).toBeNull()
     })

@@ -2,11 +2,37 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import { useEffect, useState } from "react"
 import { ArrowRight } from "lucide-react"
 import { useTranslation } from "@/lib/i18n/language-context"
 
+const HERO_IMAGES = [
+  {
+    src: "/images/malaysia/hero/Hero2.jpeg",
+    alt: "Malaysian bridal-inspired soft glam makeup",
+  },
+  {
+    src: "/images/malaysia/hero/portfolio-1.jpg",
+    alt: "Malaysia makeup portfolio look with warm tones",
+  },
+  {
+    src: "/images/malaysia/hero/artist-5.jpg",
+    alt: "Contemporary Malaysian beauty makeup style",
+  },
+]
+
 export function HeroSection() {
   const { t, lang } = useTranslation()
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveImageIndex((current) => (current + 1) % HERO_IMAGES.length)
+    }, 4000)
+
+    return () => window.clearInterval(interval)
+  }, [])
+
   return (
     <section className="relative overflow-hidden bg-secondary">
       <div className="mx-auto flex max-w-7xl flex-col items-center px-4 sm:px-6 lg:flex-row lg:px-8">
@@ -49,14 +75,32 @@ export function HeroSection() {
         {/* Hero image */}
         <div className="relative flex-1 pb-6 sm:pb-8 lg:pb-0 w-full">
           <div className="relative mx-auto aspect-3/4 sm:aspect-4/5 w-full max-w-xs sm:max-w-md overflow-hidden lg:max-w-lg">
-            <Image
-              src="/images/malaysia/Hero1.jpeg"
-              alt="Radiant close-up beauty portrait"
-              fill
-              className="object-cover"
-              priority
-              sizes="(max-width: 640px) 100vw, (max-width: 768px) 80vw, 50vw"
-            />
+            {HERO_IMAGES.map((image, index) => (
+              <Image
+                key={image.src}
+                src={image.src}
+                alt={image.alt}
+                fill
+                className={`object-cover transition-opacity duration-700 ${
+                  activeImageIndex === index ? "opacity-100" : "opacity-0"
+                }`}
+                priority={index === 0}
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 80vw, 50vw"
+              />
+            ))}
+            <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/25 px-3 py-1.5 backdrop-blur-sm">
+              {HERO_IMAGES.map((image, index) => (
+                <button
+                  key={`${image.src}-dot`}
+                  type="button"
+                  onClick={() => setActiveImageIndex(index)}
+                  aria-label={`Show slide ${index + 1}`}
+                  className={`h-1.5 w-6 rounded-full transition-all duration-300 ${
+                    activeImageIndex === index ? "bg-white" : "bg-white/45 hover:bg-white/70"
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
