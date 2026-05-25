@@ -1,9 +1,6 @@
 "use client"
 
-import Link from "next/link"
 import { useEffect, useState, useRef } from "react"
-import { ArrowRight } from "lucide-react"
-import { useTranslation } from "@/lib/i18n/language-context"
 import { Sparkles, X, RotateCcw, Upload, Send } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ArtistCard } from "@/components/artist-card"
@@ -223,7 +220,7 @@ export function AiConcierge() {
         >
           {/* Header */}
           <div
-            onPointerDown={handlePanelDragStart}
+            onPointerDown={(e) => startDrag(e, "panel")}
             className="flex cursor-grab items-center justify-between border-b border-border bg-secondary px-5 py-4 active:cursor-grabbing sm:touch-none"
           >
             <div className="flex items-center gap-3">
@@ -250,123 +247,119 @@ export function AiConcierge() {
               </button>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="flex flex-col gap-4">
-          {messages.map((msg, i) => (
-            <div key={i} className={cn("flex flex-col", msg.role === "user" ? "items-end" : "items-start")}>
-              <div
-                className={cn(
-                  "max-w-[85%] px-4 py-3 text-sm leading-relaxed",
-                  msg.role === "user"
-                    ? "bg-foreground text-primary-foreground"
-                    : "border border-border bg-card text-foreground"
-                )}
-              >
-                {msg.text}
-              </div>
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex flex-col gap-4">
+              {messages.map((msg, i) => (
+                <div key={i} className={cn("flex flex-col", msg.role === "user" ? "items-end" : "items-start")}>
+                  <div
+                    className={cn(
+                      "max-w-[85%] px-4 py-3 text-sm leading-relaxed",
+                      msg.role === "user"
+                        ? "bg-foreground text-primary-foreground"
+                        : "border border-border bg-card text-foreground"
+                    )}
+                  >
+                    {msg.text}
+                  </div>
 
-              {/* Artist recommendation cards */}
-              {msg.recommendations && msg.recommendations.length > 0 && (
-                <div className="mt-2 flex w-full max-w-[85%] flex-col gap-2">
-                  {msg.recommendations.map((rec) => (
-                    <ArtistCard
-                      key={rec.artist.id}
-                      artist={rec.artist}
-                      reason={rec.reason}
-                      onClickTrack={handleRecommendationClick}
+                  {msg.recommendations && msg.recommendations.length > 0 && (
+                    <div className="mt-2 flex w-full max-w-[85%] flex-col gap-2">
+                      {msg.recommendations.map((rec) => (
+                        <ArtistCard
+                          key={rec.artist.id}
+                          artist={rec.artist}
+                          reason={rec.reason}
+                          onClickTrack={handleRecommendationClick}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {msg.role === "assistant" && msg.suggestions && i === messages.length - 1 && (
+                    <SuggestionChips
+                      suggestions={msg.suggestions}
+                      onSelect={(s) => {
+                        setMessages(prev => [...prev, { role: "user", text: s }]);
+                        setInput("");
+                      }}
                     />
-                  ))}
+                  )}
+                </div>
+              ))}
+
+              {typing && (
+                <div className="flex items-start">
+                  <div className="border border-border bg-card px-4 py-3">
+                    <div className="flex gap-1">
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:0ms]" />
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:150ms]" />
+                      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:300ms]" />
+                    </div>
+                  </div>
                 </div>
               )}
 
-               {/* Suggestion chips (only on last assistant message) */}
-               {msg.role === "assistant" && msg.suggestions && i === messages.length - 1 && (
-                 <SuggestionChips
-                   suggestions={msg.suggestions}
-                   onSelect={(s) => {
-                     setMessages(prev => [...prev, { role: "user", text: s }]);
-                     setInput("");
-                   }}
-                 />
-               )}
-            </div>
-          ))}
-
-          {/* Typing indicator */}
-          {typing && (
-            <div className="flex items-start">
-              <div className="border border-border bg-card px-4 py-3">
-                <div className="flex gap-1">
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:0ms]" />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:150ms]" />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:300ms]" />
+              {photoPreview && (
+                <div className="flex justify-end">
+                  <div className="relative h-24 w-24 overflow-hidden border border-border">
+                    <Image src={photoPreview} alt="Inspiration upload" fill className="object-cover" sizes="96px" />
+                  </div>
                 </div>
-              </div>
+              )}
+
+              <div ref={messagesEndRef} />
             </div>
-          )}
+          </div>
 
-          {/* Inspiration photo preview */}
-          {photoPreview && (
-            <div className="flex justify-end">
-              <div className="relative h-24 w-24 overflow-hidden border border-border">
-                <Image src={photoPreview} alt="Inspiration upload" fill className="object-cover" sizes="96px" />
-              </div>
+          {/* Input area */}
+          <div className="shrink-0 border-t border-border bg-card p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+                aria-label="Upload inspiration photo"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 border border-border px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-all hover:border-accent hover:text-foreground"
+              >
+                <Upload className="h-3 w-3" />
+                Upload Photo
+              </button>
+              <span className="text-[10px] text-muted-foreground">for personalised suggestions</span>
             </div>
-          )}
 
-          <div ref={messagesEndRef} />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Describe your event..."
+                className="flex-1 border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || typing}
+                className={cn(
+                  "flex h-[46px] w-[46px] items-center justify-center transition-all",
+                  input.trim() && !typing
+                    ? "bg-foreground text-primary-foreground hover:bg-accent hover:text-accent-foreground"
+                    : "bg-muted text-muted-foreground"
+                )}
+                aria-label="Send message"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* Input area */}
-      <div className="border-t border-border bg-card p-4">
-        <div className="mb-3 flex items-center gap-2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoUpload}
-            className="hidden"
-            aria-label="Upload inspiration photo"
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-1.5 border border-border px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-all hover:border-accent hover:text-foreground"
-          >
-            <Upload className="h-3 w-3" />
-            Upload Photo
-          </button>
-          <span className="text-[10px] text-muted-foreground">for personalised suggestions</span>
-        </div>
-
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Describe your event..."
-            className="flex-1 border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none"
-          />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || typing}
-            className={cn(
-              "flex h-[46px] w-[46px] items-center justify-center transition-all",
-              input.trim() && !typing
-                ? "bg-foreground text-primary-foreground hover:bg-accent hover:text-accent-foreground"
-                : "bg-muted text-muted-foreground"
-            )}
-            aria-label="Send message"
-          >
-            <Send className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+      )}
     </>
   )
 }

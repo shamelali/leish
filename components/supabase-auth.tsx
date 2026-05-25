@@ -71,10 +71,11 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
   }
 
   async function handleSignUp(supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>) {
-    const result = await new PasswordValidator().validate(password, userInputs)
+    const result = await validator.validate(password, userInputs)
     setPasswordResult(result)
 
     if (!result.valid) {
+      setMessage({ type: "error", text: result.errors.join(". ") })
       setLoading(false)
       return
     }
@@ -363,7 +364,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
             value={password}
             onChange={(e) => handlePasswordChange(e.target.value)}
             required
-            minLength={6}
+            minLength={12}
             placeholder="••••••••"
             className="block w-full rounded-md border border-input bg-background px-3 py-2 pr-10"
           />
@@ -411,7 +412,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
 
         {!isSignUp && (
           <p className="mt-1 text-xs text-muted-foreground">
-            Must be at least 6 characters
+            Must be at least 12 characters
           </p>
         )}
       </div>

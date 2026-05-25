@@ -17,7 +17,7 @@ export default function RegisterPage() {
           Create an account to book artists or offer your services.
         </p>
         <div className="mt-8">
-          <SupabaseAuth defaultMode="signup" hideOAuth />
+          <SupabaseAuth defaultMode="signup" />
         </div>
       </div>
     </section>
