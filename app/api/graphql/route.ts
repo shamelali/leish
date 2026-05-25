@@ -10,13 +10,11 @@ const server = new ApolloServer({
   resolvers,
 })
 
-const handler = startServerAndCreateNextHandler({
-  context: async ({ req }) => {
-    // Get Supabase SSR client
+const handler = startServerAndCreateNextHandler(server, {
+  context: async (req): Promise<{ user: unknown }> => {
     const supabase = await getSupabaseSsrClient()
-    // Get user from Supabase auth
     const { data: { user } } = supabase ? await supabase.auth.getUser() : { data: { user: null } }
-    return { req, user }
+    return { user }
   },
 })
 
