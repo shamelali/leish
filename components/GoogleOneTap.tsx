@@ -1,10 +1,9 @@
 'use client'
 
-import type { CredentialResponse } from 'google-one-tap'
 import { useRouter } from 'next/navigation'
 import Script from 'next/script'
 
-import { createClient } from '@/lib/supabase/client'
+import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
 declare const google: { accounts: { id: { initialize: (options: any) => void; prompt: () => void }; } }
 
@@ -21,7 +20,6 @@ const generateNonce = async (): Promise<string[]> => {
 }
 
 const GoogleOneTap = () => {
-  const supabase = createClient()
   const router = useRouter()
 
   const initializeGoogleOneTap = async () => {
@@ -30,14 +28,17 @@ const GoogleOneTap = () => {
     console.log('Nonce: ', nonce, hashedNonce)
 
     // check if there's already an existing session before initializing the one-tap UI
-    const {
-      data: { claims },
-      error,
-    } = await supabase.auth.getClaims()
+    const supabase = getSupabaseBrowserClient()
+    if (!supabase) {
+      console.error('Supabase client not available')
+      return
+    }
+
+    const { data, error } = await supabase.auth.getClaims()
     if (error) {
       console.error('Error getting claims', error)
     }
-    if (claims) {
+    if (data) {
       router.push('/')
       return
     }
@@ -45,7 +46,7 @@ const GoogleOneTap = () => {
     /* global google */
     google.accounts.id.initialize({
       client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-      callback: async (response: CredentialResponse) => {
+      callback: async (response: any) => {
         try {
           // send id token returned in response.credential to supabase
           const { data, error } = await supabase.auth.signInWithIdToken({
@@ -71,7 +72,7 @@ const GoogleOneTap = () => {
     google.accounts.id.prompt() // Display the One Tap UI
   }
 
-  return <Script onReady={initializeGoogleOneTap} src="https://accounts.google.com/gsi/client" />
+  return <Script onReady={() => { initializeGoogleOneTap().catch(console.error) }} src="https://accounts.google.com/gsi/client" />
 }
 
 export default GoogleOneTap

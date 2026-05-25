@@ -1,140 +1,18 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
-import Image from "next/image"
 import Link from "next/link"
-import { X, Send, Sparkles, Upload, Star, MapPin, RotateCcw } from "lucide-react"
+import { useEffect, useState, useRef } from "react"
+import { ArrowRight } from "lucide-react"
+import { useTranslation } from "@/lib/i18n/language-context"
+import { Sparkles, X, RotateCcw, Upload, Send } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { processMessage, EMPTY_CONTEXT } from "@/lib/concierge"
-import type { ConversationContext } from "@/lib/concierge"
-import type { Recommendation } from "@/lib/concierge/types"
-import { trackConciergeEvent, resetSessionId } from "@/lib/concierge/metrics"
-import type { Artist } from "@/lib/data"
-
-// ── Message model ─────────────────────────────────────────────────────────────
-
-interface Message {
-  role: "assistant" | "user"
-  text: string
-  recommendations?: Recommendation[]
-  suggestions?: string[]
-}
-
-// ── Drag types ────────────────────────────────────────────────────────────────
-
-interface DragPosition {
-  x: number
-  y: number
-}
-
-type DragTarget = "fab" | "panel" | null
-
-const FAB_SIZE = 56
-const PANEL_WIDTH = 400
-const PANEL_HEIGHT = 600
-const FAB_STORAGE_KEY = "leish_concierge_fab_position"
-const PANEL_STORAGE_KEY = "leish_concierge_panel_position"
-
-// ── Artist card ───────────────────────────────────────────────────────────────
-
-function ArtistCard({
-  artist,
-  reason,
-  onClickTrack,
-}: {
-  artist: Artist
-  reason: string
-  onClickTrack: (artistId: string) => void
-}) {
-  return (
-    <Link
-      href={`/artists/${artist.slug}`}
-      onClick={() => onClickTrack(artist.id)}
-      className="flex gap-3 border border-border bg-card p-3 transition-all hover:border-accent"
-    >
-      <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden">
-        <Image src={artist.image} alt={artist.name} fill className="object-cover" sizes="64px" />
-      </div>
-      <div className="flex flex-col justify-center">
-        <p className="font-serif text-sm font-medium text-foreground">{artist.name}</p>
-        <div className="mt-0.5 flex items-center gap-2">
-          <div className="flex items-center gap-0.5">
-            <Star className="h-3 w-3 fill-accent text-accent" />
-            <span className="text-xs text-foreground">{artist.rating}</span>
-          </div>
-          <div className="flex items-center gap-0.5 text-muted-foreground">
-            <MapPin className="h-3 w-3" />
-            <span className="text-xs">{artist.location.split(",")[0]}</span>
-          </div>
-        </div>
-        <p className="mt-1 text-[10px] text-muted-foreground">{reason}</p>
-      </div>
-    </Link>
-  )
-}
-
-// ── Suggestion chips ──────────────────────────────────────────────────────────
-
-function SuggestionChips({
-  suggestions,
-  onSelect,
-}: {
-  suggestions: string[]
-  onSelect: (s: string) => void
-}) {
-  if (suggestions.length === 0) return null
-  return (
-    <div className="mt-2 flex flex-wrap gap-1.5">
-      {suggestions.map((s) => (
-        <button
-          key={s}
-          onClick={() => onSelect(s)}
-          className="border border-border bg-secondary px-2.5 py-1 text-[10px] uppercase tracking-widest text-muted-foreground transition-all hover:border-accent hover:text-foreground"
-        >
-          {s}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-// ── Drag helpers ──────────────────────────────────────────────────────────────
-
-function clampPosition(position: DragPosition, width: number, height: number): DragPosition {
-  if (typeof window === "undefined") return position
-  return {
-    x: Math.min(Math.max(0, position.x), Math.max(0, window.innerWidth - width)),
-    y: Math.min(Math.max(0, position.y), Math.max(0, window.innerHeight - height)),
-  }
-}
-
-function readStoredPosition(key: string, width: number, height: number): DragPosition | null {
-  if (typeof window === "undefined") return null
-  try {
-    const raw = window.localStorage.getItem(key)
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as Partial<DragPosition>
-    if (typeof parsed.x !== "number" || typeof parsed.y !== "number") return null
-    return clampPosition({ x: parsed.x, y: parsed.y }, width, height)
-  } catch {
-    return null
-  }
-}
-
-function writeStoredPosition(key: string, position: DragPosition | null) {
-  if (typeof window === "undefined" || !position) return
-  try {
-    window.localStorage.setItem(key, JSON.stringify(position))
-  } catch {
-    // ignore
-  }
-}
-
-// ── Initial welcome message ───────────────────────────────────────────────────
+import { ArtistCard } from "@/components/artist-card"
+import { SuggestionChips } from "@/components/suggestion-chips"
+import Image from "next/image"
 
 const WELCOME: Message = {
   role: "assistant",
-    text: "Welcome to Leish! Tell me about your event — the style, location, and budget — and I'll match you with the perfect artist.",
+  text: "Welcome to Leish! Tell me about your event — the style, location, and budget — and I'll match you with the perfect artist.",
   suggestions: [
     "Bridal makeup in KL",
     "Natural look under MYR 300",
@@ -143,207 +21,189 @@ const WELCOME: Message = {
   ],
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
-
 export function AiConcierge() {
   const [open, setOpen] = useState(false)
+  const [panelPosition, setPanelPosition] = useState<{ x: number; y: number } | null>(null)
+  const [fabPosition, setFabPosition] = useState<{ x: number; y: number } | null>(null)
   const [messages, setMessages] = useState<Message[]>([WELCOME])
-  const [context, setContext] = useState<ConversationContext>(EMPTY_CONTEXT)
   const [input, setInput] = useState("")
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [typing, setTyping] = useState(false)
-
-  const [panelPosition, setPanelPosition] = useState<DragPosition | null>(() =>
-    readStoredPosition(PANEL_STORAGE_KEY, PANEL_WIDTH, PANEL_HEIGHT)
-  )
-  const [fabPosition, setFabPosition] = useState<DragPosition | null>(() =>
-    readStoredPosition(FAB_STORAGE_KEY, FAB_SIZE, FAB_SIZE)
-  )
-
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
-  const dragOffsetRef = useRef<DragPosition | null>(null)
-  const draggingRef = useRef<DragTarget>(null)
-  const movedDuringDragRef = useRef(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Auto-scroll
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, typing])
-
-  // Persist positions
-  useEffect(() => { writeStoredPosition(FAB_STORAGE_KEY, fabPosition) }, [fabPosition])
-  useEffect(() => { writeStoredPosition(PANEL_STORAGE_KEY, panelPosition) }, [panelPosition])
-
-  // Global pointer events for drag
-  useEffect(() => {
-    const handlePointerMove = (event: PointerEvent) => {
-      const target = draggingRef.current
-      const offset = dragOffsetRef.current
-      if (!target || !offset) return
-      if (window.innerWidth < 640) return
-
-      movedDuringDragRef.current = true
-
-      if (target === "panel") {
-        setPanelPosition(
-          clampPosition({ x: event.clientX - offset.x, y: event.clientY - offset.y }, PANEL_WIDTH, PANEL_HEIGHT)
-        )
-      }
-      if (target === "fab") {
-        setFabPosition(
-          clampPosition({ x: event.clientX - offset.x, y: event.clientY - offset.y }, FAB_SIZE, FAB_SIZE)
-        )
-      }
-    }
-
-    const handlePointerUp = () => {
-      draggingRef.current = null
-      dragOffsetRef.current = null
-      window.setTimeout(() => { movedDuringDragRef.current = false }, 0)
-    }
-
-    window.addEventListener("pointermove", handlePointerMove)
-    window.addEventListener("pointerup", handlePointerUp)
-    return () => {
-      window.removeEventListener("pointermove", handlePointerMove)
-      window.removeEventListener("pointerup", handlePointerUp)
-    }
-  }, [])
-
-  const startDrag = (event: React.PointerEvent, target: Exclude<DragTarget, null>) => {
-    if (window.innerWidth < 640) return
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
-    draggingRef.current = target
-    movedDuringDragRef.current = false
-    dragOffsetRef.current = { x: event.clientX - rect.left, y: event.clientY - rect.top }
-  }
-
-  const handlePanelDragStart = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!panelRef.current || window.innerWidth < 640) return
-    const rect = panelRef.current.getBoundingClientRect()
-    draggingRef.current = "panel"
-    movedDuringDragRef.current = false
-    dragOffsetRef.current = { x: event.clientX - rect.left, y: event.clientY - rect.top }
-  }
+  const PANEL_WIDTH = 400
+  const PANEL_HEIGHT = 600
 
   const handleOpenClick = () => {
-    if (movedDuringDragRef.current) return
     setOpen(true)
-    trackConciergeEvent({ eventType: "session_start" })
   }
 
   const handleClose = () => {
     setOpen(false)
-    trackConciergeEvent({ eventType: "session_end" })
+    setPanelPosition(null)
   }
 
   const handleReset = () => {
     setMessages([WELCOME])
-    setContext(EMPTY_CONTEXT)
-    setPhotoPreview(null)
-    resetSessionId()
-    trackConciergeEvent({ eventType: "session_start" })
+    setInput("")
   }
 
-  const handleRecommendationClick = useCallback((artistId: string) => {
-    trackConciergeEvent({
-      eventType: "recommendation_click",
-      artistId,
-      turnCount: context.turnCount,
-    })
-    trackConciergeEvent({ eventType: "booking_started", artistId })
-  }, [context.turnCount])
+  const startDrag = (event: React.PointerEvent, type: "fab" | "panel") => {
+    const startX = event.clientX
+    const startY = event.clientY
 
-  const sendMessage = useCallback(
-    async (text: string, hasPhoto = false) => {
-      const trimmed = text.trim()
-      if (!trimmed) return
-
-      setMessages((prev) => [...prev, { role: "user", text: trimmed }])
-      setInput("")
-      setTyping(true)
-
-      // Simulate natural thinking delay
-      // eslint-disable-next-line sonarjs/pseudo-random
-      await new Promise((r) => setTimeout(r, 700 + Math.random() * 500))
-
-      const response = processMessage(trimmed, context, hasPhoto)
-      setContext(response.context)
-      setTyping(false)
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          text: response.text,
-          recommendations: response.recommendations.length > 0 ? response.recommendations : undefined,
-          suggestions: response.suggestions.length > 0 ? response.suggestions : undefined,
-        },
-      ])
-
-      // Track metrics
-      if (response.recommendations.length > 0) {
-        trackConciergeEvent({
-          eventType: "recommendation_shown",
-          responseType: response.responseType,
-          turnCount: response.context.turnCount,
-        })
-      } else if (response.responseType === "fallback" || response.responseType === "clarify_more") {
-        trackConciergeEvent({
-          eventType: "fallback_triggered",
-          responseType: response.responseType,
-          turnCount: response.context.turnCount,
-        })
-      } else if (response.responseType === "guardrail_redirect") {
-        trackConciergeEvent({
-          eventType: "guardrail_triggered",
-          responseType: response.responseType,
-          turnCount: response.context.turnCount,
+    if (type === "fab") {
+      const handleMove = (moveEvent: React.PointerEvent) => {
+        const dx = moveEvent.clientX - startX
+        const dy = moveEvent.clientY - startY
+        setFabPosition((prev) => {
+          if (!prev) return { x: dx, y: dy }
+          return { x: prev.x + dx, y: prev.y + dy }
         })
       }
-    },
-    [context]
-  )
 
-  const handleSend = () => sendMessage(input)
+      const handleUp = () => {
+        window.removeEventListener("pointermove", handleMove)
+        window.removeEventListener("pointerup", handleUp)
+      }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+      window.addEventListener("pointermove", handleMove)
+      window.addEventListener("pointerup", handleUp)
+    } else if (type === "panel") {
+      const handleMove = (moveEvent: React.PointerEvent) => {
+        const dx = moveEvent.clientX - startX
+        const dy = moveEvent.clientY - startY
+        setPanelPosition((prev) => {
+          if (!prev) return { x: dx, y: dy }
+          return { x: prev.x + dx, y: prev.y + dy }
+        })
+      }
+
+      const handleUp = () => {
+        window.removeEventListener("pointermove", handleMove)
+        window.removeEventListener("pointerup", handleUp)
+      }
+
+      window.addEventListener("pointermove", handleMove)
+      window.addEventListener("pointerup", handleUp)
+    }
+  }
+
+    const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+
+      const url = URL.createObjectURL(file)
+      setPhotoPreview(url)
+      setMessages(prev => [...prev, { role: "user", text: "I uploaded an inspiration photo." }])
+      setInput("")
+    }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
       e.preventDefault()
       handleSend()
     }
   }
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleSend = async () => {
+    if (!input.trim() || typing) return
 
-    const url = URL.createObjectURL(file)
-    setPhotoPreview(url)
+    const userMessage: Message = {
+      role: "user",
+      text: input,
+    }
+    setMessages((prev) => [...prev, userMessage])
+    setInput("")
+    setTyping(true)
 
-    sendMessage("I uploaded an inspiration photo.", true)
+    // Simulate API delay
+    try {
+      const botMessage = await generateResponse(input, messages)
+      setMessages((prev) => [...prev, botMessage])
+    } catch (error) {
+      console.error(error)
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          text: "Sorry, I encountered an error. Please try again.",
+        },
+      ])
+    } finally {
+      setTyping(false)
+      scrollToBottom()
+    }
   }
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
+  useEffect(() => {
+    const handleStorage = () => {
+      const stored = sessionStorage.getItem("leish_concierge_fab_position")
+      if (stored) {
+        try {
+          const pos = JSON.parse(stored)
+          setFabPosition(pos)
+        } catch (e) {
+          console.error("Failed to parse FAB position from sessionStorage", e)
+        }
+      }
+
+      const storedPanel = sessionStorage.getItem("leish_concierge_panel_position")
+      if (storedPanel) {
+        try {
+          const pos = JSON.parse(storedPanel)
+          setPanelPosition(pos)
+        } catch (e) {
+          console.error("Failed to parse panel position from sessionStorage", e)
+        }
+      }
+    }
+
+    handleStorage()
+    window.addEventListener("storage", handleStorage)
+    return () => window.removeEventListener("storage", handleStorage)
+  }, [])
+
+  useEffect(() => {
+    if (fabPosition) {
+      sessionStorage.setItem("leish_concierge_fab_position", JSON.stringify(fabPosition))
+    }
+  }, [fabPosition])
+
+  useEffect(() => {
+    if (panelPosition) {
+      sessionStorage.setItem("leish_concierge_panel_position", JSON.stringify(panelPosition))
+    }
+  }, [panelPosition])
 
   return (
     <>
-       {/* FAB */}
-       {!open && (
-         <button
-           onPointerDown={(event) => startDrag(event, "fab")}
-           onClick={handleOpenClick}
-           className={cn(
-              "fixed z-40 flex items-center justify-center bg-accent text-accent-foreground shadow-lg transition-transform hover:scale-105 active:scale-95",
-              fabPosition ? "" : "bottom-4 right-4 sm:bottom-6 sm:right-6",
-              !fabPosition && "h-12 w-12 sm:h-14 sm:w-14"
-            )}
-           style={fabPosition ? { left: fabPosition.x, top: fabPosition.y } : undefined}
-           aria-label="Open beauty concierge"
-         >
-           <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
-         </button>
-       )}
+      {/* FAB */}
+      {!open && (
+        <button
+          onPointerDown={(event) => startDrag(event, "fab")}
+          onClick={handleOpenClick}
+          className={cn(
+            "fixed z-40 flex items-center justify-center bg-accent text-accent-foreground shadow-lg transition-transform hover:scale-105 active:scale-95",
+            fabPosition ? "" : "bottom-4 right-4 sm:bottom-6 sm:right-6",
+            !fabPosition && "h-12 w-12 sm:h-14 sm:w-14"
+          )}
+          style={fabPosition ? { left: fabPosition.x, top: fabPosition.y } : undefined}
+          aria-label="Open beauty concierge"
+        >
+          <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
+        </button>
+      )}
 
       {/* Panel */}
       {open && (
@@ -362,17 +222,16 @@ export function AiConcierge() {
           }
         >
           {/* Header */}
-           <div
-             onPointerDown={handlePanelDragStart}
-             className="flex cursor-grab items-center justify-between border-b border-border bg-secondary px-5 py-4 active:cursor-grabbing sm:touch-none"
-           >
-             <div className="flex items-center gap-3">
-               <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
-               <div>
-                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground">AI-Powered · Drag me</p>
-               </div>
-             </div>
-           </div>
+          <div
+            onPointerDown={handlePanelDragStart}
+            className="flex cursor-grab items-center justify-between border-b border-border bg-secondary px-5 py-4 active:cursor-grabbing sm:touch-none"
+          >
+            <div className="flex items-center gap-3">
+              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">AI-Powered · Drag me</p>
+              </div>
+            </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleReset}
@@ -391,120 +250,170 @@ export function AiConcierge() {
               </button>
             </div>
           </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="flex flex-col gap-4">
-              {messages.map((msg, i) => (
-                <div key={i} className={cn("flex flex-col", msg.role === "user" ? "items-end" : "items-start")}>
-                  <div
-                    className={cn(
-                      "max-w-[85%] px-4 py-3 text-sm leading-relaxed",
-                      msg.role === "user"
-                        ? "bg-foreground text-primary-foreground"
-                        : "border border-border bg-card text-foreground"
-                    )}
-                  >
-                    {msg.text}
-                  </div>
-
-                  {/* Artist recommendation cards */}
-                  {msg.recommendations && msg.recommendations.length > 0 && (
-                    <div className="mt-2 flex w-full max-w-[85%] flex-col gap-2">
-                      {msg.recommendations.map((rec) => (
-                        <ArtistCard
-                          key={rec.artist.id}
-                          artist={rec.artist}
-                          reason={rec.reason}
-                          onClickTrack={handleRecommendationClick}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Suggestion chips (only on last assistant message) */}
-                  {msg.role === "assistant" && msg.suggestions && i === messages.length - 1 && (
-                    <SuggestionChips
-                      suggestions={msg.suggestions}
-                      onSelect={(s) => sendMessage(s)}
-                    />
-                  )}
-                </div>
-              ))}
-
-              {/* Typing indicator */}
-              {typing && (
-                <div className="flex items-start">
-                  <div className="border border-border bg-card px-4 py-3">
-                    <div className="flex gap-1">
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:0ms]" />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:150ms]" />
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:300ms]" />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Inspiration photo preview */}
-              {photoPreview && (
-                <div className="flex justify-end">
-                  <div className="relative h-24 w-24 overflow-hidden border border-border">
-                    <Image src={photoPreview} alt="Inspiration upload" fill className="object-cover" sizes="96px" />
-                  </div>
-                </div>
-              )}
-
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
-
-          {/* Input area */}
-          <div className="border-t border-border bg-card p-4">
-            <div className="mb-3 flex items-center gap-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoUpload}
-                className="hidden"
-                aria-label="Upload inspiration photo"
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-1.5 border border-border px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-all hover:border-accent hover:text-foreground"
-              >
-                <Upload className="h-3 w-3" />
-                Upload Photo
-              </button>
-              <span className="text-[10px] text-muted-foreground">for personalised suggestions</span>
-            </div>
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Describe your event..."
-                className="flex-1 border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none"
-              />
-              <button
-                onClick={handleSend}
-                disabled={!input.trim() || typing}
-                className={cn(
-                  "flex h-[46px] w-[46px] items-center justify-center transition-all",
-                  input.trim() && !typing
-                    ? "bg-foreground text-primary-foreground hover:bg-accent hover:text-accent-foreground"
-                    : "bg-muted text-muted-foreground"
-                )}
-                aria-label="Send message"
-              >
-                <Send className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
         </div>
       )}
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex flex-col gap-4">
+          {messages.map((msg, i) => (
+            <div key={i} className={cn("flex flex-col", msg.role === "user" ? "items-end" : "items-start")}>
+              <div
+                className={cn(
+                  "max-w-[85%] px-4 py-3 text-sm leading-relaxed",
+                  msg.role === "user"
+                    ? "bg-foreground text-primary-foreground"
+                    : "border border-border bg-card text-foreground"
+                )}
+              >
+                {msg.text}
+              </div>
+
+              {/* Artist recommendation cards */}
+              {msg.recommendations && msg.recommendations.length > 0 && (
+                <div className="mt-2 flex w-full max-w-[85%] flex-col gap-2">
+                  {msg.recommendations.map((rec) => (
+                    <ArtistCard
+                      key={rec.artist.id}
+                      artist={rec.artist}
+                      reason={rec.reason}
+                      onClickTrack={handleRecommendationClick}
+                    />
+                  ))}
+                </div>
+              )}
+
+               {/* Suggestion chips (only on last assistant message) */}
+               {msg.role === "assistant" && msg.suggestions && i === messages.length - 1 && (
+                 <SuggestionChips
+                   suggestions={msg.suggestions}
+                   onSelect={(s) => {
+                     setMessages(prev => [...prev, { role: "user", text: s }]);
+                     setInput("");
+                   }}
+                 />
+               )}
+            </div>
+          ))}
+
+          {/* Typing indicator */}
+          {typing && (
+            <div className="flex items-start">
+              <div className="border border-border bg-card px-4 py-3">
+                <div className="flex gap-1">
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:0ms]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:150ms]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground [animation-delay:300ms]" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Inspiration photo preview */}
+          {photoPreview && (
+            <div className="flex justify-end">
+              <div className="relative h-24 w-24 overflow-hidden border border-border">
+                <Image src={photoPreview} alt="Inspiration upload" fill className="object-cover" sizes="96px" />
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      {/* Input area */}
+      <div className="border-t border-border bg-card p-4">
+        <div className="mb-3 flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoUpload}
+            className="hidden"
+            aria-label="Upload inspiration photo"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-1.5 border border-border px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground transition-all hover:border-accent hover:text-foreground"
+          >
+            <Upload className="h-3 w-3" />
+            Upload Photo
+          </button>
+          <span className="text-[10px] text-muted-foreground">for personalised suggestions</span>
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Describe your event..."
+            className="flex-1 border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none"
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() || typing}
+            className={cn(
+              "flex h-[46px] w-[46px] items-center justify-center transition-all",
+              input.trim() && !typing
+                ? "bg-foreground text-primary-foreground hover:bg-accent hover:text-accent-foreground"
+                : "bg-muted text-muted-foreground"
+            )}
+            aria-label="Send message"
+          >
+            <Send className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
     </>
   )
+}
+
+// Types
+type Message = {
+  role: "user" | "assistant"
+  text: string
+  suggestions?: string[]
+  recommendations?: Recommendation[]
+}
+
+type Recommendation = {
+  artist: {
+    id: string
+    name: string
+    username: string
+    avatar_url: string | null
+    subscription_tier: string
+    is_available: boolean
+    rating: number | null
+    review_count: number
+  }
+  reason: string
+}
+
+// Mock function - replace with actual API call
+async function generateResponse(
+  input: string,
+  messages: Message[]
+): Promise<Message> {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
+  // Simple echo bot for demonstration
+  return {
+    role: "assistant",
+    text: `You said: "${input}". This is a mock response. In a real app, this would call your backend.`,
+    suggestions: [
+      "Tell me more",
+      "Try another topic",
+      "See featured artists",
+    ],
+  }
+}
+
+const handleRecommendationClick = (artistId: string) => {
+  // In a real app, this would track the recommendation and navigate to the artist profile
+  console.log(`Recommendation clicked for artist: ${artistId}`)
 }

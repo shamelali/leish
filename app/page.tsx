@@ -5,7 +5,7 @@ import { FeaturedArtists } from "@/components/featured-artists"
 import { HowItWorks } from "@/components/how-it-works"
 import { TestimonialsSection } from "@/components/testimonials-section"
 import { AiConcierge } from "@/components/ai-concierge"
-import { GoogleOneTap } from "@/components/GoogleOneTap"
+import GoogleOneTap from "@/components/GoogleOneTap"
 
 export default function HomePage() {
   return (
