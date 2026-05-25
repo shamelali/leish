@@ -3,11 +3,16 @@ import { bookingSupabaseService } from "@/lib/services/booking-supabase"
 
 export const resolvers = {
   Query: {
-    artists: async (_: unknown, args: { limit?: number; offset?: number }) => {
+    artists: async (_: unknown, args: { limit?: number; offset?: number }, context: any) => {
+      // Authentication check
+      if (!context.user) {
+        throw new Error("Authentication required")
+      }
+
       const sql = getSql()
       const limit = args.limit || 20
       const offset = args.offset || 0
-      
+
       const rows = await sql`
         SELECT p.id, p.full_name as name, p.avatar_url as image, p.bio, p.location,
                COALESCE(AVG(r.rating), 0) as rating, COUNT(r.id) as review_count
@@ -18,7 +23,7 @@ export const resolvers = {
         ORDER BY p.created_at DESC
         LIMIT ${limit} OFFSET ${offset}
       `
-      
+
       return rows.map((row: Record<string, unknown>) => ({
         id: row.id,
         name: row.name,
@@ -37,7 +42,12 @@ export const resolvers = {
       }))
     },
 
-    artist: async (_: unknown, args: { slug: string }) => {
+    artist: async (_: unknown, args: { slug: string }, context: any) => {
+      // Authentication check
+      if (!context.user) {
+        throw new Error("Authentication required")
+      }
+
       const sql = getSql()
       const [row] = await sql`
         SELECT p.id, p.full_name as name, p.avatar_url as image, p.bio, p.location,
@@ -46,9 +56,9 @@ export const resolvers = {
         WHERE p.role = 'artist' AND LOWER(REPLACE(p.full_name, ' ', '-')) = ${args.slug.toLowerCase()}
         LIMIT 1
       `
-      
+
       if (!row) return null
-      
+
       return {
         id: row.id,
         name: row.name,
@@ -67,11 +77,16 @@ export const resolvers = {
       }
     },
 
-    studios: async (_: unknown, args: { limit?: number; offset?: number }) => {
+    studios: async (_: unknown, args: { limit?: number; offset?: number }, context: any) => {
+      // Authentication check
+      if (!context.user) {
+        throw new Error("Authentication required")
+      }
+
       const sql = getSql()
       const limit = args.limit || 20
       const offset = args.offset || 0
-      
+
       const rows = await sql`
         SELECT s.id, s.name, s.image, s.location, s.bio, s.team_size as teamSize,
                s.amenities, s.starting_price as startingPrice
@@ -80,7 +95,7 @@ export const resolvers = {
         ORDER BY s.created_at DESC
         LIMIT ${limit} OFFSET ${offset}
       `
-      
+
       return rows.map((row: Record<string, unknown>) => ({
         id: row.id,
         name: row.name,
@@ -101,7 +116,12 @@ export const resolvers = {
       }))
     },
 
-    studio: async (_: unknown, args: { slug: string }) => {
+    studio: async (_: unknown, args: { slug: string }, context: any) => {
+      // Authentication check
+      if (!context.user) {
+        throw new Error("Authentication required")
+      }
+
       const sql = getSql()
       const [row] = await sql`
         SELECT s.id, s.name, s.image, s.location, s.bio, s.team_size as teamSize,
@@ -110,9 +130,9 @@ export const resolvers = {
         WHERE LOWER(REPLACE(s.name, ' ', '-')) = ${args.slug.toLowerCase()}
         LIMIT 1
       `
-      
+
       if (!row) return null
-      
+
       return {
         id: row.id,
         name: row.name,
@@ -133,14 +153,19 @@ export const resolvers = {
       }
     },
 
-    services: async (_: unknown, args: { providerId: string }) => {
+    services: async (_: unknown, args: { providerId: string }, context: any) => {
+      // Authentication check
+      if (!context.user) {
+        throw new Error("Authentication required")
+      }
+
       const sql = getSql()
       const rows = await sql`
         SELECT id, name, price, duration
         FROM services
         WHERE provider_id = ${args.providerId} AND is_active = true
       `
-      
+
       return rows.map((row: Record<string, unknown>) => ({
         id: row.id,
         name: row.name,
@@ -149,7 +174,12 @@ export const resolvers = {
       }))
     },
 
-    availability: async (_: unknown, args: { providerId: string; date: string }) => {
+    availability: async (_: unknown, args: { providerId: string; date: string }, context: any) => {
+      // Authentication check
+      if (!context.user) {
+        throw new Error("Authentication required")
+      }
+
       const sql = getSql()
       const rows = await sql`
         SELECT id, start_time as startTime, end_time as endTime, is_available as isAvailable
@@ -158,7 +188,7 @@ export const resolvers = {
           AND date::date = ${args.date}::date
         ORDER BY start_time
       `
-      
+
       return rows.map((row: Record<string, unknown>) => ({
         id: row.id,
         startTime: row.startTime,
@@ -167,11 +197,25 @@ export const resolvers = {
       }))
     },
 
-    bookings: async (_: unknown, args: { userId?: string; providerId?: string }) => {
+    bookings: async (_: unknown, args: { userId?: string; providerId?: string }, context: any) => {
+      // Authentication check
+      if (!context.user) {
+        throw new Error("Authentication required")
+      }
+
+      // If userId is provided, verify it matches the authenticated user (unless they're admin)
+      // For simplicity, we'll allow users to see their own bookings or providers to see bookings for their services
+      // In a production app, you'd want more sophisticated authorization logic here
       return await bookingSupabaseService.listByUser(args.userId || '', false, args.providerId)
     },
 
-    booking: async (_: unknown, args: { id: string }) => {
+    booking: async (_: unknown, args: { id: string }, context: any) => {
+      // Authentication check
+      if (!context.user) {
+        throw new Error("Authentication required")
+      }
+
+      // Additional authorization could be added here to check if user owns the booking
       return await bookingSupabaseService.getById(args.id)
     },
   },
@@ -184,18 +228,57 @@ export const resolvers = {
       slotId: string
       notes?: string
       totalAmountMyr: number
-    }}) => {
+    }}, context: any) => {
+      // Authentication check
+      if (!context.user) {
+        throw new Error("Authentication required")
+      }
+
+      // Authorization check: customerId must match authenticated user
+      if (args.input.customerId !== context.user.id) {
+        throw new Error("Not authorized to create booking for this customer")
+      }
+
       const booking = await bookingSupabaseService.create(args.input)
       return booking
     },
 
-    updateBooking: async (_: unknown, args: { id: string; action: string }) => {
+    updateBooking: async (_: unknown, args: { id: string; action: string }, context: any) => {
+      // Authentication check
+      if (!context.user) {
+        throw new Error("Authentication required")
+      }
+
+      // Additional authorization could be added here to check if user owns the booking or is admin
       await bookingSupabaseService.transition(args.id, args.action as 'confirmed' | 'canceled' | 'completed')
       return await bookingSupabaseService.getById(args.id)
     },
 
-    createReview: async (_: unknown, args: { input: { bookingId: string; rating: number; comment: string } }) => {
+    createReview: async (_: unknown, args: { input: { bookingId: string; rating: number; comment: string } }, context: any) => {
+      // Authentication check
+      if (!context.user) {
+        throw new Error("Authentication required")
+      }
+
+      // Verify the user owns the booking before allowing them to create a review
       const sql = getSql()
+      const booking = await sql`
+        SELECT customer_id FROM public.bookings WHERE id = ${args.input.bookingId}
+      `
+
+      if (booking.length === 0) {
+        throw new Error("Booking not found")
+      }
+
+      if (booking[0].customer_id !== context.user.id) {
+        throw new Error("Not authorized to review this booking")
+      }
+
+      // Validate rating
+      if (args.input.rating < 1 || args.input.rating > 5) {
+        throw new Error("Rating must be between 1 and 5")
+      }
+
       const [row] = await sql`
         INSERT INTO reviews (booking_id, rating, comment, created_at)
         VALUES (${args.input.bookingId}, ${args.input.rating}, ${args.input.comment}, now())

@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Eye, EyeOff, Loader2, ShieldAlert } from "lucide-react"
-import { isPasswordLeaked } from "@/lib/password-check"
+import { PasswordValidator } from "@/lib/password-check"
 
 export type UserRole = "admin" | "artist" | "studio" | "customer"
 
@@ -11,7 +11,7 @@ function getPostSignInPath(role: UserRole | undefined): string {
   switch (role) {
     case "admin":
       return "/admin"
-case "artist":
+    case "artist":
       return "/artist"
     case "studio":
       return "/studios/dashboard"
@@ -21,21 +21,186 @@ case "artist":
   }
 }
 
+function getScoreLabel(score: number): string {
+  switch (score) {
+    case 0: return "Very Weak"
+    case 1: return "Weak"
+    case 2: return "Fair"
+    case 3: return "Strong"
+    case 4: return "Very Strong"
+    default: return ""
+  }
+}
+
+function getScoreColor(score: number): string {
+  switch (score) {
+    case 0: return "bg-red-500"
+    case 1: return "bg-orange-500"
+    case 2: return "bg-yellow-500"
+    case 3: return "bg-lime-500"
+    case 4: return "bg-green-500"
+    default: return "bg-gray-200"
+  }
+}
+
+const validator = new PasswordValidator({ checkBreached: false })
+
 export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaultMode?: "signin" | "signup", hideOAuth?: boolean }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isSignUp, setIsSignUp] = useState(defaultMode === "signup")
   const [loading, setLoading] = useState(false)
-  const [leakedWarning, setLeakedWarning] = useState(false)
+  const [passwordResult, setPasswordResult] = useState<Awaited<ReturnType<typeof validator.validate>> | null>(null)
   const [message, setMessage] = useState<{ type: "success" | "error", text: string } | null>(null)
 
-  // Sign up specific fields
   const [role, setRole] = useState<UserRole>("customer")
   const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
+  const userInputs = useMemo(() => [email, fullName].filter(Boolean), [email, fullName])
+
+  const handlePasswordChange = async (value: string) => {
+    setPassword(value)
+    if (value.length >= 3) {
+      const result = await validator.validate(value, userInputs)
+      setPasswordResult(result)
+    } else {
+      setPasswordResult(null)
+    }
+  }
+
+  async function handleSignUp(supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>) {
+    const result = await new PasswordValidator().validate(password, userInputs)
+    setPasswordResult(result)
+
+    if (!result.valid) {
+      setLoading(false)
+      return
+    }
+
+    const { error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          role,
+          full_name: fullName,
+          phone,
+        },
+      },
+    })
+
+    if (signUpError) throw signUpError
+
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (signInError) {
+      setMessage({
+        type: "success",
+        text: "Account created! Please sign in to continue.",
+      })
+      setIsSignUp(false)
+      return
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 800))
+
+    if (!data.user) {
+      window.location.href = "/"
+      return
+    }
+
+    let target: string
+    if (role === "artist") {
+      target = "/artistonboard"
+    } else if (role === "studio") {
+      target = "/studioonboard"
+    } else {
+      target = getPostSignInPath(role)
+    }
+    window.location.href = target
+  }
+
+  async function handleSignIn(supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>) {
+    // Check credential stuffing protection before attempting sign-in
+    const checkRes = await fetch(`/api/auth/credential-stuffing?email=${encodeURIComponent(email)}`)
+    if (checkRes.ok) {
+      const check = await checkRes.json()
+      if (check.blocked) {
+        throw new Error(check.reason || "Login is temporarily blocked")
+      }
+      if (check.delay) {
+        await new Promise((resolve) => setTimeout(resolve, check.delay))
+      }
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (error) {
+      // Record failed attempt silently (fire-and-forget)
+      fetch("/api/auth/credential-stuffing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "record", email }),
+      }).catch(() => {})
+      throw error
+    }
+
+    // Clear failed attempts on success
+    fetch("/api/auth/credential-stuffing", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "clear", email }),
+    }).catch(() => {})
+
+    if (!data.user) {
+      window.location.href = "/"
+      return
+    }
+
+    // Check if MFA is required
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2") {
+      window.location.href = "/sign-in/mfa"
+      return
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .maybeSingle()
+
+    const userRole = profile?.role as UserRole | undefined
+
+    if (userRole === "studio") {
+      const { data: studio } = await supabase
+        .from("providers")
+        .select("id")
+        .eq("owner_id", data.user.id)
+        .eq("kind", "studio")
+        .maybeSingle()
+      window.location.href = studio ? "/studios/dashboard" : "/studioonboard"
+    } else if (userRole === "artist") {
+      const { data: provider } = await supabase
+        .from("providers")
+        .select("id")
+        .eq("owner_id", data.user.id)
+        .eq("kind", "artist")
+        .maybeSingle()
+      window.location.href = provider ? "/artist" : "/artistonboard"
+    } else {
+      window.location.href = getPostSignInPath(userRole)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -49,102 +214,9 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
       }
 
       if (isSignUp) {
-        // Check password against HIBP before submitting
-        if (!leakedWarning && password.length >= 6) {
-          const leaked = await isPasswordLeaked(password)
-          if (leaked) {
-            setLeakedWarning(true)
-            setLoading(false)
-            return
-          }
-        }
-
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              role,
-              full_name: fullName,
-              phone,
-            },
-          },
-        })
-
-        if (signUpError) throw signUpError
-
-        // Auto sign-in immediately after registration
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-
-        if (signInError) {
-          // Sign up succeeded but auto sign-in failed — prompt manual sign-in
-          setMessage({
-            type: "success",
-            text: "Account created! Please sign in to continue.",
-          })
-          setIsSignUp(false)
-          return
-        }
-
-        // Wait briefly for the DB trigger to create the profile row
-        await new Promise((resolve) => setTimeout(resolve, 800))
-
-        // Redirect based on role — new artists/studio owners go to onboarding
-        if (data.user) {
-          if (role === "artist") {
-            window.location.href = "/artistonboard"
-          } else if (role === "studio") {
-            window.location.href = "/studioonboard"
-          } else {
-            window.location.href = getPostSignInPath(role)
-          }
-        } else {
-          window.location.href = "/"
-        }
+        await handleSignUp(supabase)
       } else {
-        // Sign in
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-        if (error) throw error
-
-        // Get user role and redirect accordingly
-        if (data.user) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("role")
-            .eq("id", data.user.id)
-            .maybeSingle()
-
-          const userRole = profile?.role as UserRole | undefined
-
-          // For studio: check if they have a studio yet
-          if (userRole === "studio") {
-            const { data: studio } = await supabase
-              .from("providers")
-              .select("id")
-              .eq("owner_id", data.user.id)
-              .eq("kind", "studio")
-              .maybeSingle()
-            window.location.href = studio ? "/studios/dashboard" : "/studioonboard"
-          } else if (userRole === "artist") {
-            const { data: provider } = await supabase
-              .from("providers")
-              .select("id")
-              .eq("owner_id", data.user.id)
-              .eq("kind", "artist")
-              .maybeSingle()
-            window.location.href = provider ? "/artist" : "/artistonboard"
-          } else {
-            window.location.href = getPostSignInPath(userRole)
-          }
-        } else {
-          window.location.href = "/"
-        }
+        await handleSignIn(supabase)
       }
     } catch (err: unknown) {
       const error = err as { message?: string }
@@ -289,7 +361,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
             id="password"
             type={showPassword ? "text" : "password"}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => handlePasswordChange(e.target.value)}
             required
             minLength={6}
             placeholder="••••••••"
@@ -303,12 +375,48 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Must be at least 6 characters
-        </p>
+
+        {isSignUp && passwordResult && (
+          <div className="mt-2 space-y-2">
+            <div className="flex gap-1">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className={`h-1.5 flex-1 rounded-full ${
+                    i <= passwordResult.score ? getScoreColor(passwordResult.score) : "bg-gray-200"
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className={passwordResult.score >= 3 ? "text-green-600" : "text-muted-foreground"}>
+                {getScoreLabel(passwordResult.score)}
+              </span>
+              <span className="text-muted-foreground">
+                Crack time: {passwordResult.crackTime}
+              </span>
+            </div>
+            {passwordResult.warning && (
+              <p className="text-xs text-orange-600">{passwordResult.warning}</p>
+            )}
+            {passwordResult.suggestions.length > 0 && (
+              <ul className="list-disc pl-4 text-xs text-muted-foreground space-y-0.5">
+                {passwordResult.suggestions.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {!isSignUp && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            Must be at least 6 characters
+          </p>
+        )}
       </div>
 
-      {leakedWarning && (
+      {passwordResult?.isLeaked && (
         <div className="p-3 rounded-md text-sm bg-yellow-100 text-yellow-800 border border-yellow-300">
           <div className="flex items-start gap-2">
             <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
@@ -317,15 +425,16 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
               <p className="mt-1 text-xs">
                 This password has appeared in a known data breach. Using it puts your account at risk.
               </p>
-              <div className="mt-2 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setLeakedWarning(false)}
-                  className="text-xs underline hover:no-underline"
-                >
-                  I understand, create account anyway
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  validator.checkBreached = false
+                  setPasswordResult((prev) => prev ? { ...prev, isLeaked: false, errors: [], valid: true } : null)
+                }}
+                className="mt-2 text-xs underline hover:no-underline"
+              >
+                I understand, create account anyway
+              </button>
             </div>
           </div>
         </div>
@@ -399,8 +508,8 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
         }}
         className="w-full text-sm text-muted-foreground hover:text-foreground"
       >
-        {isSignUp 
-          ? "Already have an account? Sign In" 
+        {isSignUp
+          ? "Already have an account? Sign In"
           : "Don't have an account? Sign Up"
         }
       </button>

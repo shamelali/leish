@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getSql } from "@/lib/db/postgres"
+import { getUser } from "@/lib/services/db"
 
 type ReviewPayload = {
   bookingId: string
@@ -11,11 +12,22 @@ type ReviewPayload = {
 }
 
 export async function POST(req: Request) {
+  // Authenticate user
+  const user = await getUser()
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   let payload: ReviewPayload
   try {
     payload = (await req.json()) as ReviewPayload
   } catch {
     return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 })
+  }
+
+  // Verify that the authorId matches the authenticated user
+  if (payload.authorId !== user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 
   if (payload.rating < 1 || payload.rating > 5) {
