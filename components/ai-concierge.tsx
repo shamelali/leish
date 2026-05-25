@@ -134,7 +134,7 @@ function writeStoredPosition(key: string, position: DragPosition | null) {
 
 const WELCOME: Message = {
   role: "assistant",
-  text: "Welcome to Leish! I'm your beauty concierge. Tell me about your event — the style, location, and budget — and I'll match you with the perfect artist.",
+    text: "Welcome to Leish! Tell me about your event — the style, location, and budget — and I'll match you with the perfect artist.",
   suggestions: [
     "Bridal makeup in KL",
     "Natural look under MYR 300",
@@ -362,19 +362,17 @@ export function AiConcierge() {
           }
         >
           {/* Header */}
-          <div
-            onPointerDown={handlePanelDragStart}
-            className="flex cursor-grab items-center justify-between border-b border-border bg-secondary px-5 py-4 active:cursor-grabbing sm:touch-none"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center bg-accent">
-                <Sparkles className="h-4 w-4 text-accent-foreground" />
-              </div>
-              <div>
-                <h3 className="font-serif text-sm font-medium text-foreground">Beauty Concierge</h3>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">AI-Powered · Drag me</p>
-              </div>
-            </div>
+           <div
+             onPointerDown={handlePanelDragStart}
+             className="flex cursor-grab items-center justify-between border-b border-border bg-secondary px-5 py-4 active:cursor-grabbing sm:touch-none"
+           >
+             <div className="flex items-center gap-3">
+               <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
+               <div>
+                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground">AI-Powered · Drag me</p>
+               </div>
+             </div>
+           </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleReset}
