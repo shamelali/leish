@@ -34,7 +34,7 @@ export default function UpdatePasswordPage() {
     setMessage(null)
 
     if (password.length < 12) {
-      setMessage({ type: "error", text: "Password must be at least 12 characters." })
+      setMessage({ type: "error", text: "Password must be at least 8 characters." })
       setLoading(false)
       return
     }
@@ -97,7 +97,7 @@ export default function UpdatePasswordPage() {
                 </button>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Must be at least 12 characters
+                Must be at least 8 characters
               </p>
             </div>
 

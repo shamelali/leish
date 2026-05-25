@@ -16,7 +16,7 @@ export class PasswordValidator {
   checkBreached: boolean
 
   constructor(options: { minLength?: number; minScore?: number; checkBreached?: boolean } = {}) {
-    this.minLength = options.minLength ?? 12
+    this.minLength = options.minLength ?? 8
     this.minScore = options.minScore ?? 3
     this.checkBreached = options.checkBreached !== false
   }

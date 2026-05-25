@@ -130,7 +130,28 @@ Fix all Supabase performance advisor warnings and complete remaining launch-bloc
 - Install GitLab CLI binary from gitlab.com releases (npm `glab` is different).
 - Docx edited via zip extraction → XML edit → re-zip.
 
+## Session Anchored Summary (26 May 2026)
+
+### Goal
+Polish the landing page, fix auth redirects, add forgot-password flow, fix lint/type errors.
+
+### Done
+- Removed duplicate `AiConcierge` from `page.tsx` (was rendering twice — once from `layout.tsx`).
+- Added `services/crewai/**` to eslint ignore (was linting `.venv` third-party files).
+- Refactored `handleSignIn` in `supabase-auth.tsx` — extracted helpers to fix cognitive complexity (16→below limit).
+- Fixed unused params: `req` → `_req` in `graphql/route.ts`, `messages` → `_messages` in `ai-concierge.tsx`.
+- Fixed `registration.test.ts` type error: `data` → `user_metadata` in `updateUserById` call.
+- Changed default language from `ms` → `en` in `language-context.tsx` (landing now defaults to English).
+- Added forgot password link to sign-in form → created `/forgot-password` (calls `resetPasswordForEmail`) and `/update-password` (handles recovery redirect).
+- Rewrote `auth/callback/route.ts` with role-based redirects: after email confirmation, routes artists→`/artistonboard`, studios→`/studioonboard`, admins→`/admin`. Handles `type=recovery` by redirecting to `/update-password`.
+- Test seed admin: `admin@example.com` / `password123`.
+
 ### Relevant Files
-- `lib/ops/contact-filter.ts` — new off-platform contact detection module
-- `app/api/messages/route.ts` — integrated contact filter in POST handler
+- `app/auth/callback/route.ts` — rewritten with role-based + recovery redirect
+- `app/forgot-password/page.tsx` — new password reset request page
+- `app/update-password/page.tsx` — new password update page (recovery handler)
+- `components/supabase-auth.tsx` — forgot password link, refactored sign-in
+- `lib/i18n/language-context.tsx` — default language changed to English
+- `app/page.tsx` — removed duplicate AiConcierge
+- `eslint.config.mjs` — ignore `services/crewai/**`
 - `AGENTS.md` — this anchored summary

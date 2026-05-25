@@ -372,7 +372,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
             value={password}
             onChange={(e) => handlePasswordChange(e.target.value)}
             required
-            minLength={12}
+            minLength={8}
             placeholder="••••••••"
             className="block w-full rounded-md border border-input bg-background px-3 py-2 pr-10"
           />
@@ -420,7 +420,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
 
         {!isSignUp && (
           <p className="mt-1 text-xs text-muted-foreground">
-            Must be at least 12 characters
+            Must be at least 8 characters
           </p>
         )}
         {!isSignUp && (

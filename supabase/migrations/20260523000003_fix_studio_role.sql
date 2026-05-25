@@ -33,10 +33,9 @@ begin
   end;
 
   begin
-    insert into public.profiles (id, email, full_name, role, updated_at)
+    insert into public.profiles (id, full_name, role, updated_at)
     values (
       new.id,
-      new.email,
       coalesce(new.raw_user_meta_data ->> 'full_name', split_part(new.email, '@', 1)),
       mapped_role_text::public.profile_role,
       now()
