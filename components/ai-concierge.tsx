@@ -377,7 +377,7 @@ type Recommendation = {
 // Mock function - replace with actual API call
 async function generateResponse(
   input: string,
-  _messages: Message[]
+  // todo: _messages: Message[]
 ): Promise<Message> {
   // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 1000))
