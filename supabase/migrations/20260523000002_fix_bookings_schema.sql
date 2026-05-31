@@ -3,33 +3,76 @@
 -- but the code uses provider_id, service_id, slot_id, total_amount_myr, paid_amount_myr
 -- No existing data, so safe to alter.
 
--- Rename pro_id -> provider_id and add FK
-alter table public.bookings
-  rename column pro_id to provider_id;
+-- Make schema changes idempotent: the linked remote already has the final schema.
 
-alter table public.bookings
-  add constraint bookings_provider_id_fkey
-    foreign key (provider_id) references public.providers(id) on delete restrict;
+-- Rename pro_id -> provider_id only if pro_id still exists
+do $$ begin
+  if exists (select 1 from information_schema.columns where table_schema='public' and table_name='bookings' and column_name='pro_id') then
+    alter table public.bookings rename column pro_id to provider_id;
+  end if;
+end $$;
 
--- Add missing columns for service/slot relationships and amounts
-alter table public.bookings
-  add column service_id uuid references public.services(id) on delete restrict,
-  add column slot_id uuid references public.availability_slots(id) on delete restrict,
-  add column total_amount_myr numeric not null default 0 check (total_amount_myr >= 0),
-  add column paid_amount_myr numeric not null default 0 check (paid_amount_myr >= 0);
+-- Add FK constraint if it doesn't exist
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'bookings_provider_id_fkey') then
+    alter table public.bookings add constraint bookings_provider_id_fkey
+      foreign key (provider_id) references public.providers(id) on delete restrict;
+  end if;
+end $$;
+
+-- Add columns only if missing
+do $$ begin
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='bookings' and column_name='service_id') then
+    alter table public.bookings add column service_id uuid references public.services(id) on delete restrict;
+  end if;
+end $$;
+
+do $$ begin
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='bookings' and column_name='slot_id') then
+    alter table public.bookings add column slot_id uuid references public.availability_slots(id) on delete restrict;
+  end if;
+end $$;
+
+do $$ begin
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='bookings' and column_name='total_amount_myr') then
+    alter table public.bookings add column total_amount_myr numeric not null default 0 check (total_amount_myr >= 0);
+  end if;
+end $$;
+
+do $$ begin
+  if not exists (select 1 from information_schema.columns where table_schema='public' and table_name='bookings' and column_name='paid_amount_myr') then
+    alter table public.bookings add column paid_amount_myr numeric not null default 0 check (paid_amount_myr >= 0);
+  end if;
+end $$;
 
 -- Drop view that depends on old column names
 drop view if exists public.bookings_with_services;
 
 -- scheduled_at is not null with no default but RPC doesn't insert it — make nullable
-alter table public.bookings
-  alter column scheduled_at drop not null;
+do $$ begin
+  if exists (select 1 from information_schema.columns where table_schema='public' and table_name='bookings' and column_name='scheduled_at' and is_nullable = 'NO') then
+    alter table public.bookings alter column scheduled_at drop not null;
+  end if;
+end $$;
 
 -- Drop old unused columns
-alter table public.bookings
-  drop column if exists subtotal_sen,
-  drop column if exists deposit_sen,
-  drop column if exists currency;
+do $$ begin
+  if exists (select 1 from information_schema.columns where table_schema='public' and table_name='bookings' and column_name='subtotal_sen') then
+    alter table public.bookings drop column subtotal_sen;
+  end if;
+end $$;
+
+do $$ begin
+  if exists (select 1 from information_schema.columns where table_schema='public' and table_name='bookings' and column_name='deposit_sen') then
+    alter table public.bookings drop column deposit_sen;
+  end if;
+end $$;
+
+do $$ begin
+  if exists (select 1 from information_schema.columns where table_schema='public' and table_name='bookings' and column_name='currency') then
+    alter table public.bookings drop column currency;
+  end if;
+end $$;
 
 -- Indexes for new columns
 create index if not exists idx_bookings_provider_id on public.bookings(provider_id);
@@ -37,7 +80,7 @@ create index if not exists idx_bookings_service_id on public.bookings(service_id
 create index if not exists idx_bookings_slot_id on public.bookings(slot_id);
 
 -- Recreate the view with updated column names
-create view public.bookings_with_services as
+create or replace view public.bookings_with_services with (security_invoker = true) as
 select
   b.id,
   b.customer_id,

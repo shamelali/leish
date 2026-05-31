@@ -130,6 +130,23 @@ Fix all Supabase performance advisor warnings and complete remaining launch-bloc
 - Install GitLab CLI binary from gitlab.com releases (npm `glab` is different).
 - Docx edited via zip extraction → XML edit → re-zip.
 
+## Session Anchored Summary (31 May 2026)
+
+### Goal
+Fix all 95 Supabase lint warnings (14 auth_rls_initplan + 81 multiple_permissive_policies).
+
+### Done
+- Created `supabase/migrations/20260531000000_fix_rls_performance.sql` that:
+  - Fixes **14 auth_rls_initplan** warnings by wrapping `auth.uid()` → `(SELECT auth.uid())` in policies across `provider_alerts`, `monitoring_logs`, `webhook_logs`, `loyalty_points_history`, `provider_assets`, `subscription_history`, `messages`, `provider_blocked_dates`
+  - Fixes **81 multiple_permissive_policies** warnings by merging overlapping permissive policies into single combined policies per action across `booking_surcharges`, `payout_items`, `payouts`, `profiles`, `provider_assets`, `provider_blocked_dates`, `providers`, `reviews`, `service_surcharges`, `services`, `studio_gallery`, `studio_rooms`, `subscription_history`, `payments`
+  - All merged policies use `(SELECT auth.uid())` pattern and maintain same access semantics (public read, owner mutates, admin full access)
+  - Dropped duplicate dashboard-created policies on `profiles` (insert_own, insert_own_safe, upsert_own, select_own, delete_own, etc.)
+
+### Key Decisions
+- Created a single new migration (rather than editing historical migrations) to fix both lint categories atomically.
+- For `profiles` table, cleaned up all the duplicated dashboard-generated policies into 4 clean policies (select/insert/update/delete own).
+- Preserved `is_admin()` helper function calls where already in use (services, providers) — only wrapped inline `auth.uid()` references.
+
 ## Session Anchored Summary (26 May 2026)
 
 ### Goal
@@ -155,3 +172,43 @@ Polish the landing page, fix auth redirects, add forgot-password flow, fix lint/
 - `app/page.tsx` — removed duplicate AiConcierge
 - `eslint.config.mjs` — ignore `services/crewai/**`
 - `AGENTS.md` — this anchored summary
+
+## Session Anchored Summary (31 May 2026) — Part 2
+
+### Goal
+Drop all unused indexes flagged by Supabase database linter (0005_unused_index).
+
+### Done
+- Created `supabase/migrations/20260531000001_drop_unused_indexes.sql` that drops **36 unused indexes** across 16 tables:
+  - `admin_audit_log` (1), `provider_assets` (3), `provider_alerts` (4), `bookings` (4), `messages` (2), `monitoring_logs` (2), `webhook_logs` (2), `providers` (7), `subscription_history` (2), `reviews` (2), `booking_surcharges` (1), `services` (1), `studio_gallery` (1), `payouts` (2), `payout_items` (1), `provider_blocked_dates` (1)
+- `providers_slug_idx` was safe to drop because `providers.slug` has a `UNIQUE` constraint that auto-creates its own index
+- All `DROP INDEX` statements use `IF EXISTS` and schema-qualified names for safety
+
+### Key Decisions
+- Dropped all unused indexes rather than keeping them — pre-launch app has no query patterns to justify them; they can be recreated later if needed
+
+## Session Anchored Summary (31 May 2026) — Part 3
+
+### Goal
+Fix remaining code issues flagged in tracking docs: null-return server clients, stale deploy script, hardcoded test emails, eslint-disable cleanups, and SSR client null checks.
+
+### Done
+- **`lib/supabase/server.ts`**: `getSupabaseServerClient()` now throws on missing env vars instead of returning null (previously caused silent 404s)
+- **`lib/supabase/ssr.ts`**: Same fix — `getSupabaseSsrClient()` throws instead of returning null
+- **`scripts/deploy.sh`**: Replaced stale `api/debug/env` health check (route was deleted) with `api/health`
+- **`scripts/check-users.ts`**: Updated hardcoded `@example.com` test emails to `@leish.my`
+- **Global error page + checkout route**: Removed stale `eslint-disable` for unused vars; fixed by prefixing param with `_` and removing unused constant
+- **46 files across app & lib**: Removed now-unnecessary `if (!supabase)` null checks after SSR client change
+- **Pre-existing uncommitted changes reviewed**: seed-users.ts, seed_test_users.sql, config.toml (Google OAuth ID, `@leish.my` test emails) — all confirmed reasonable
+
+### Relevant Files
+- `lib/supabase/server.ts` — throw instead of null
+- `lib/supabase/ssr.ts` — throw instead of null
+- `scripts/deploy.sh` — health check URL fixed
+- `scripts/check-users.ts` — test emails updated
+- `app/global-error.tsx`, `app/api/subscription/checkout/route.ts` — eslint cleanups
+- `supabase/migrations/20260531000001_drop_unused_indexes.sql` — new migration
+
+### Key Decisions
+- Throwing instead of returning null means the error boundary catches missing env vars early instead of causing confusing 404s
+- Placeholder images (`/artists/placeholder.png`, `/studios/placeholder.png`) are legitimate fallbacks — not a code bug; replacing them is a content/design task
