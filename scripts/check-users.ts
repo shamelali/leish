@@ -9,7 +9,7 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
 })
 
 async function main() {
-  const emails = ["admin@example.com", "artist@example.com", "customer@example.com", "studio@example.com"]
+  const emails = ["admin@leish.my", "artist@leish.my", "customer@leish.my", "studio@leish.my"]
 
   for (const email of emails) {
     const { data: users, error } = await supabase.auth.admin.listUsers()

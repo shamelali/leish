@@ -5,8 +5,6 @@ import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 export async function getFavorites(): Promise<string[]> {
   try {
     const supabase = await getSupabaseSsrClient()
-    if (!supabase) return []
-
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return []
 
@@ -27,10 +25,6 @@ export async function getFavorites(): Promise<string[]> {
 export async function toggleFavorite(providerId: string): Promise<{ success: boolean; favorited: boolean }> {
   try {
     const supabase = await getSupabaseSsrClient()
-    if (!supabase) {
-      return { success: false, favorited: false }
-    }
-
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return { success: false, favorited: false }

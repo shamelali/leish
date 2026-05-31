@@ -8,8 +8,6 @@ import { getSql } from "@/lib/db/postgres"
 
 async function requireArtistUser() {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) throw new Error("Not authenticated")
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Not authenticated")
 

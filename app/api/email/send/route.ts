@@ -8,10 +8,6 @@ type EmailType = "booking_confirmation" | "welcome" | "payment_receipt"
 export async function POST(req: Request) {
   // Check authentication
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

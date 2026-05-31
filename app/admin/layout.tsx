@@ -4,11 +4,6 @@ import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await getSupabaseSsrClient()
-
-  if (!supabase) {
-    redirect("/sign-in")
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser()

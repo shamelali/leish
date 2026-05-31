@@ -14,8 +14,6 @@ export const metadata: Metadata = {
 
 export default async function StudioDashboardPage() {
   const supabase = await getSupabaseSsrClient();
-  if (!supabase) redirect("/sign-in");
-
   const {
     data: { user },
   } = await supabase.auth.getUser();

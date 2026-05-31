@@ -11,8 +11,6 @@ import type { Category, Studio } from "@/lib/data"
 
 async function getStudioBookingData(slug: string): Promise<Studio | null> {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) return null
-
   const { data: studio, error } = await supabase
     .from("providers")
     .select(`

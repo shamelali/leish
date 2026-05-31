@@ -16,8 +16,6 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default async function ProBookingsPage() {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) return <p className="p-8">Not authenticated</p>
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return <p className="p-8">Not authenticated</p>
 

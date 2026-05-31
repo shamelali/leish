@@ -15,8 +15,6 @@ const nav = [
 
 export default async function ProPaymentsPage() {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) return <p className="p-8">Not authenticated</p>
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return <p className="p-8">Not authenticated</p>
 

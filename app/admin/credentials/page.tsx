@@ -69,10 +69,6 @@ function CredentialRow({
 
 export default async function AdminCredentialsPage() {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return redirect("/sign-in")
-  }
-
   const { data: profile } = await supabase.auth.getUser()
   const { data: userProfile } = await supabase
     .from("profiles")

@@ -28,6 +28,6 @@ pm2 save
 echo "✅ Deployment complete!"
 echo ""
 echo "Health check:"
-curl -s http://localhost:3000/api/debug/env | head -c 100
+curl -s http://localhost:3000/api/health | head -c 200
 echo ""
 pm2 status

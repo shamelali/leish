@@ -13,8 +13,6 @@ export const metadata: Metadata = {
 
 export default async function AdminMonitoringPage() {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) redirect("/sign-in")
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect("/sign-in")
 

@@ -43,7 +43,6 @@ export async function GET(req: Request) {
 
 async function ensureOwner(userId: string, providerId: string): Promise<boolean> {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) return false
   const { data: prov } = await supabase
     .from("providers")
     .select("owner_id")
@@ -61,7 +60,6 @@ async function ensureOwner(userId: string, providerId: string): Promise<boolean>
 
 export async function POST(req: Request) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -97,7 +95,6 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -128,7 +125,6 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
   const {
     data: { user },
   } = await supabase.auth.getUser()

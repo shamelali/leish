@@ -16,10 +16,6 @@ const PRICES = {
 
 export async function POST(req: NextRequest) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -102,10 +98,6 @@ export async function POST(req: NextRequest) {
 // GET - Check current tier status
 export async function GET(req: NextRequest) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser()

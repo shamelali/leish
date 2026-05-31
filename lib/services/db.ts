@@ -6,10 +6,6 @@ import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 
 export async function getUser() {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return null
-  }
-
   const { data, error } = await supabase.auth.getUser()
   if (error || !data?.user) {
     return null

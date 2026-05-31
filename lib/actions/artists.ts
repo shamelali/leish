@@ -21,11 +21,6 @@ export interface ArtistListItem {
 export async function getArtists(): Promise<ArtistListItem[]> {
   try {
     const supabase = await getSupabaseSsrClient()
-    if (!supabase) {
-      console.error("Supabase client not initialized")
-      return []
-    }
-
     const { data, error } = await supabase
       .from("providers")
       .select(
@@ -80,8 +75,6 @@ export async function getArtistStates(): Promise<
   { state: string; count: number }[]
 > {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) return []
-
   const { data, error } = await supabase
     .from("providers")
     .select("state")

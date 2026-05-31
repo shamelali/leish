@@ -13,10 +13,6 @@ const reportSchema = z.object({
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export async function POST(req: NextRequest) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -137,10 +133,6 @@ export async function POST(req: NextRequest) {
 // GET - Get violation status for a provider (for admin/owner view)
 export async function GET(req: NextRequest) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser()

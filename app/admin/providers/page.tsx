@@ -13,10 +13,6 @@ export default async function AdminProvidersPage({
   searchParams?: { filter?: string; severity?: string }
 }) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return redirect("/sign-in")
-  }
-
   // Verify admin role
   const { data: profile } = await supabase.auth.getUser()
   const { data: userProfile } = await supabase

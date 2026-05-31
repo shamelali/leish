@@ -14,7 +14,7 @@
 - [x] All 6 React components implemented
 - [x] All 4 API routes created
 - [x] All custom hooks implemented
-- [x] Stripe dependency added to package.json
+- [x] Billplz dependency added to package.json
 - [x] TypeScript types verified
 - [x] No syntax errors
 
@@ -37,11 +37,12 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-# Stripe (Use Test keys for staging, Live keys for production)
-STRIPE_SECRET_KEY=sk_live_... or sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-STRIPE_PRICE_MONTHLY=price_...
-STRIPE_PRICE_YEARLY=price_...
+# Billplz (Use Test keys for staging, Live keys for production)
+
+BILLPLZ_API_KEY=your-billplz-api-key
+BILLPLZ_X_SIGNATURE=your-billplz-x-signature
+BILLPLZ_COLLECTION_ID=your-billplz-collection-id
+BILLPLZ_API_URL=https://www.billplz.com/api/v4
 
 # Application
 NEXT_PUBLIC_APP_URL=https://your-domain.com
@@ -58,6 +59,8 @@ Run in order:
 2. 20260417000001_provider_alerts.sql
 3. 20260417000002_providers_tier_enhancements.sql
 4. 20260417000003_subscription_history.sql
+5. 20260531000000_fix_rls_performance.sql
+6. 20260531000001_drop_unused_indexes.sql
 ```
 
 ### Step 2: Verify RLS Policies
@@ -74,25 +77,23 @@ Check all policies are active:
 
 ---
 
-## 4. Stripe Configuration
+## 4. Billplz Configuration
 
-### Step 1: Create Products & Prices
-```
-Product: Leish Pro Subscription
-├── Price: Monthly - RM99/month
-└── Price: Yearly - RM999/year
-```
+### Step 1: Create Billplz Collection
+1. Log in to Billplz dashboard
+2. Create a new collection for Leish
+3. Note the Collection ID
 
 ### Step 2: Configure Webhook
 Endpoint: `https://your-domain.com/api/subscription/webhook`
-Events to listen for:
-- `checkout.session.completed`
-- `invoice.paid`
-- `customer.subscription.deleted`
+Settings:
+- Enable webhook for the collection
+- Set X-Signature secret in environment variables
+- Listen for `payment.completed` events
 
 ### Step 3: Test Mode Verification
-- [ ] Test card payments work
-- [ ] Webhooks received correctly
+- [ ] Test payment flow works end-to-end
+- [ ] Webhooks received and verified correctly
 - [ ] Tier updates in database
 
 ---
@@ -117,7 +118,7 @@ Events to listen for:
 ### Phase 3: Subscription
 - [ ] Free tier default
 - [ ] Pro upgrade flow works
-- [ ] Stripe checkout redirects
+- [ ] Billplz checkout redirects
 - [ ] Webhooks process correctly
 - [ ] Commission calculated (10%/5%)
 - [ ] Tier change logged
@@ -172,7 +173,7 @@ UPDATE providers SET tier = 'free' WHERE tier = 'pro';
 
 ### First 24 Hours:
 - [ ] Monitor error rates
-- [ ] Check Stripe webhook delivery
+- [ ] Check Billplz webhook delivery
 - [ ] Verify photo uploads
 - [ ] Monitor onboarding completion rates
 
@@ -199,7 +200,7 @@ UPDATE providers SET tier = 'free' WHERE tier = 'pro';
 
 ### Escalation Contacts:
 - **Technical Issues:** Dev Team Lead
-- **Stripe Issues:** Finance + Dev Team
+- **Billplz Issues:** Finance + Dev Team
 - **Urgent Bugs:** On-call engineer
 
 ### Documentation:

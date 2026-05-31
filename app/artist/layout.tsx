@@ -5,11 +5,6 @@ import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 
 export default async function ProLayout({ children }: { children: React.ReactNode }) {
   const supabase = await getSupabaseSsrClient()
-
-  if (!supabase) {
-    redirect("/sign-in")
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser()

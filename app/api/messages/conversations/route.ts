@@ -5,10 +5,6 @@ import { reportApiError } from "@/lib/ops/alerts"
 // GET /api/messages/conversations - Get list of conversations for current user
 export async function GET() {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-  }
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 })

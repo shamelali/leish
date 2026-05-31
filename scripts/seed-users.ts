@@ -10,22 +10,22 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
 
 const users = [
   {
-    email: "artist@example.com",
+    email: "artist@leish.my",
     password: "password123",
     user_metadata: { role: "artist", full_name: "Artist Owner" },
   },
   {
-    email: "customer@example.com",
+    email: "customer@leish.my",
     password: "password123",
     user_metadata: { role: "customer", full_name: "Sample Customer" },
   },
   {
-    email: "admin@example.com",
+    email: "admin@leish.my",
     password: "password123",
     user_metadata: { role: "admin", full_name: "Admin User" },
   },
   {
-    email: "studio@example.com",
+    email: "studio@leish.my",
     password: "password123",
     user_metadata: { role: "studio", full_name: "Studio Owner" },
   },

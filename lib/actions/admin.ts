@@ -6,8 +6,6 @@ import { getSql } from "@/lib/db/postgres"
 
 async function requireAdminUser() {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) throw new Error("Not authenticated")
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Not authenticated")
 
@@ -52,8 +50,6 @@ export async function suspendProvider(providerId: string) {
 export async function flagProvider(providerId: string) {
   const { user } = await requireAdminUser()
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) throw new Error("Database unavailable")
-
   const { data: provider } = await supabase.from("providers").select("display_name").eq("id", providerId).single()
 
   const { error } = await supabase.from("provider_alerts").insert({
@@ -101,8 +97,6 @@ export async function escalateReview(reviewId: string) {
 export async function resolveAlert(alertId: string, formData: FormData) {
   const { user } = await requireAdminUser()
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) throw new Error("Database unavailable")
-
   const notes = formData.get("resolution_notes")
 
   const { error } = await supabase.from("provider_alerts").update({ status: "resolved", resolution_notes: notes, resolved_by: user.id }).eq("id", alertId)

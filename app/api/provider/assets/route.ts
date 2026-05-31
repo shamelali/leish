@@ -3,10 +3,6 @@ import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 
 export async function POST(req: Request) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-  }
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
@@ -126,10 +122,6 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-  }
-
   const { searchParams } = new URL(req.url)
   const providerId = searchParams.get("providerId")
 

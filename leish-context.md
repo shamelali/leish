@@ -141,8 +141,8 @@ Studios go live only after Leish approval (`is_active: false` by default).
 | SSM registration | Incomplete — **hard blocker for real transactions** |
 | MyIPO trademark clearance | Pending |
 | PDPA 2010 compliance | Docs drafted, pending final entity name for find-and-replace |
-| Off-platform contact detection | Not built yet |
-| Cancellation / dispute flow | Not built yet |
+| Off-platform contact detection | Done ✅ |
+| Cancellation / dispute flow | Built (booking API + state transitions + Billplz integration) |
 | BNM e-money framework exposure | Unresolved — relevant due to escrow model |
 | Scope vs solo developer bandwidth | Active risk — delegate to Amar/Leiynda where possible |
 

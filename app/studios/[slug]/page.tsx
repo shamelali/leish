@@ -31,8 +31,6 @@ export async function generateMetadata({
 }) {
   const { slug } = await params
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) return { title: "Studio Not Found" }
-
   const { data: studio } = await supabase
     .from("providers")
     .select("display_name, bio")
@@ -55,7 +53,6 @@ export default async function StudioProfilePage({
 }) {
   const { slug } = await params
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) notFound()
 
   // Fetch studio from database
   const { data: studio, error } = await supabase

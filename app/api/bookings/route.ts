@@ -87,9 +87,6 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   const supabase = await getSupabaseSsrClient();
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -125,9 +122,6 @@ export async function GET(req: Request) {
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export async function PATCH(req: Request) {
   const supabase = await getSupabaseSsrClient();
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
   const {
     data: { user },
   } = await supabase.auth.getUser();

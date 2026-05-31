@@ -24,7 +24,6 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -58,7 +57,6 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
   const {
     data: { user },
   } = await supabase.auth.getUser()

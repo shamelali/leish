@@ -21,8 +21,6 @@ const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default async function ProChargesPage() {
   const supabase = await getSupabaseSsrClient();
-  if (!supabase) return <p className="p-8">Not authenticated</p>;
-
   const {
     data: { user },
   } = await supabase.auth.getUser();

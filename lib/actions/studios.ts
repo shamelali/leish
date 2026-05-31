@@ -28,11 +28,6 @@ export interface StudioListItem {
 export async function getStudios(): Promise<StudioListItem[]> {
   try {
     const supabase = await getSupabaseSsrClient()
-    if (!supabase) {
-      console.error("Supabase client not initialized")
-      return []
-    }
-
     const { data, error } = await supabase
       .from("providers")
       .select(
@@ -86,8 +81,6 @@ export async function getStudios(): Promise<StudioListItem[]> {
 
 export async function getStudioStates(): Promise<string[]> {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) return []
-
   const { data, error } = await supabase
     .from("providers")
     .select("state")
@@ -106,8 +99,6 @@ export async function getStudioBySlug(
   slug: string
 ): Promise<StudioListItem | null> {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) return null
-
   const { data, error } = await supabase
     .from("providers")
     .select(

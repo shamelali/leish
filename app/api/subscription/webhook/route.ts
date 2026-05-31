@@ -24,10 +24,6 @@ export async function POST(req: Request) {
   }
 
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Database unavailable" }, { status: 500 })
-  }
-
   try {
     const data = JSON.parse(payload)
     const { id: billId, state, paid_amount, reference_1, reference_2 } = data

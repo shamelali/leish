@@ -58,32 +58,6 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default async function AccountPage() {
   const supabase = await getSupabaseSsrClient()
-
-  if (!supabase) {
-    return (
-      <div className="mx-auto max-w-md px-4 py-24 text-center">
-        <h1 className="font-serif text-2xl text-foreground">Sign in required</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Please sign in to view your account.
-        </p>
-        <div className="mt-6 flex items-center justify-center gap-4">
-          <Link
-            href="/sign-in"
-            className="inline-flex items-center gap-2 border border-foreground bg-foreground px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-accent hover:border-accent"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/register"
-            className="inline-flex items-center gap-2 border border-border px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-accent"
-          >
-            Register
-          </Link>
-        </div>
-      </div>
-    )
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser()

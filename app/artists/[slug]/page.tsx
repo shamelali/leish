@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation"
 import Link from "next/link"
 import { Star, MapPin, Clock, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -23,7 +22,6 @@ export async function generateMetadata({
 }) {
   const { slug } = await params
   const supabase = await getSupabaseServerClient()
-  if (!supabase) return { title: "Leish!" }
 
   const { data: artist } = await supabase
     .from('providers')
@@ -49,7 +47,6 @@ export default async function ArtistProfilePage({
 }) {
   const { slug } = await params
   const supabase = await getSupabaseServerClient()
-  if (!supabase) notFound()
 
   // Fetch artist from database
   const { data: artist, error } = await supabase

@@ -11,9 +11,6 @@ export const metadata = {
 
 export default async function ProAvailabilityPage() {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return <p className="p-8">Not authenticated</p>
-  }
   const {
     data: { user },
   } = await supabase.auth.getUser()

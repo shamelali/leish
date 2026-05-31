@@ -4,10 +4,6 @@ import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 
 export async function GET(req: Request) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser()

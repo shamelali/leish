@@ -33,10 +33,6 @@ export async function GET(req: Request) {
 // POST /api/surcharges - Create a new surcharge (provider owner only)
 export async function POST(req: Request) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-  }
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
@@ -98,10 +94,6 @@ export async function POST(req: Request) {
 // PATCH /api/surcharges - Update a surcharge
 export async function PATCH(req: Request) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-  }
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
@@ -173,10 +165,6 @@ export async function PATCH(req: Request) {
 // DELETE /api/surcharges?id=xxx - Delete a surcharge
 export async function DELETE(req: Request) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-  }
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 })

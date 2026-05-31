@@ -42,10 +42,6 @@ export async function GET(req: Request) {
 // POST /api/providers/travel-fee - Update travel fee config (provider owner only)
 export async function POST(req: Request) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-  }
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 })

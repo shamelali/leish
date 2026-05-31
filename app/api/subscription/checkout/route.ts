@@ -3,18 +3,11 @@ import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 
 // Billplz configuration
 const BILLPLZ_API_KEY = process.env.BILLPLZ_API_KEY || ""
-// Used in webhook verification
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const BILLPLZ_X_SIGNATURE = process.env.BILLPLZ_X_SIGNATURE || ""
 const BILLPLZ_API_URL = process.env.BILLPLZ_API_URL || "https://www.billplz.com/api/v4"
 const BILLPLZ_COLLECTION_ID = process.env.BILLPLZ_COLLECTION_ID || ""
 
 export async function POST(req: Request) {
   const supabase = await getSupabaseSsrClient()
-  if (!supabase) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-  }
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
