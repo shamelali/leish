@@ -32,17 +32,23 @@ async function writeAuditLog(actorId: string, action: string, target: string, me
 }
 
 export async function activateProvider(providerId: string) {
-  const { user } = await requireAdminUser()
-  const sql = getSql()
-  await sql`update public.providers set is_active = true, is_suspended = false, suspended_at = null, suspended_by = null where id = ${providerId}`
+  const { user, supabase } = await requireAdminUser()
+  const { error } = await supabase
+    .from("providers")
+    .update({ is_active: true, is_suspended: false, suspended_at: null, suspended_by: null })
+    .eq("id", providerId)
+  if (error) throw error
   await writeAuditLog(user.id, "provider.activate", providerId)
   revalidatePath("/admin/providers")
 }
 
 export async function suspendProvider(providerId: string) {
-  const { user } = await requireAdminUser()
-  const sql = getSql()
-  await sql`update public.providers set is_active = false, is_suspended = true, suspended_at = NOW(), suspended_by = ${user.id} where id = ${providerId}`
+  const { user, supabase } = await requireAdminUser()
+  const { error } = await supabase
+    .from("providers")
+    .update({ is_active: false, is_suspended: true, suspended_at: new Date().toISOString(), suspended_by: user.id })
+    .eq("id", providerId)
+  if (error) throw error
   await writeAuditLog(user.id, "provider.suspend", providerId)
   revalidatePath("/admin/providers")
 }
