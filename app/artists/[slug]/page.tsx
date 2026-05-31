@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation"
 import Link from "next/link"
 import { Star, MapPin, Clock, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
