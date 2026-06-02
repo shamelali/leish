@@ -19,9 +19,16 @@ export function getSql() {
 }
 
 export async function checkDatabaseHealth() {
-  const sql = getSql()
-  const result = await sql`select now()::text as now`
-  return { ok: true, now: result[0]?.now ?? "" }
+  if (!connectionString) {
+    return { ok: false, error: "DATABASE_URL is not set" }
+  }
+  try {
+    const result = await _sql`select now()::text as now`
+    return { ok: true, now: result[0]?.now ?? "" }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error"
+    return { ok: false, error: message }
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
