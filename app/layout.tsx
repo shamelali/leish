@@ -90,8 +90,8 @@ export default function RootLayout({
               <main>{children}</main>
               <Footer />
               <AiConcierge />
-              <Analytics />
-              <SpeedInsights />
+              {process.env.NODE_ENV !== 'development' && <Analytics />}
+              {process.env.NODE_ENV !== 'development' && <SpeedInsights />}
             </ErrorBoundary>
           </LanguageProvider>
         </ThemeProvider>

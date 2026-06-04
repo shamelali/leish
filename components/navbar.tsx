@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
 import { Logo } from "@/components/logo"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 import { useTranslation } from "@/lib/i18n/language-context"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import {
@@ -93,6 +94,7 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           <LanguageToggle />
           <ThemeToggle />
+          {isAuthenticated && <NotificationBell />}
             {isAuthenticated ? (
               <>
                 <Link
@@ -167,6 +169,9 @@ export function Navbar() {
                   </div>
                     {isAuthenticated ? (
                       <>
+                        <div className="flex justify-center mb-3">
+                          <NotificationBell />
+                        </div>
                         <Link
                           href="/account"
                           onClick={() => setSheetOpen(false)}

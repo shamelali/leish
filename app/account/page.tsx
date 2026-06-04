@@ -1,8 +1,10 @@
 export const dynamic = "force-dynamic"
 
 import Link from "next/link"
+import { Suspense } from "react"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { Calendar, Clock, User } from "lucide-react"
+import { LoyaltyStatusCard } from "@/components/loyalty-status-card"
 
 interface BookingService {
   name: string
@@ -189,6 +191,15 @@ export default async function AccountPage() {
             )}
           </div>
         </div>
+
+        {/* Loyalty card for customers */}
+        {role === "customer" && (
+          <div className="mb-10 max-w-md">
+            <Suspense fallback={null}>
+              <LoyaltyStatusCard />
+            </Suspense>
+          </div>
+        )}
 
         {/* Customer bookings */}
         {role === "customer" && (

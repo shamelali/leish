@@ -62,7 +62,18 @@ export default function AuthCallbackPage() {
           await new Promise(r => setTimeout(r, 600))
         }
 
-        router.replace(getRedirectPath(role))
+        // Check onboarding status for artist/studio roles
+        if (role === "artist") {
+          const { data: provider } = await supabase
+            .from("providers").select("id").eq("user_id", user.id).maybeSingle()
+          router.replace(provider ? "/artist" : "/artistonboard")
+        } else if (role === "studio_manager") {
+          const { data: provider } = await supabase
+            .from("providers").select("id").eq("user_id", user.id).maybeSingle()
+          router.replace(provider ? "/studios/dashboard" : "/studioonboard")
+        } else {
+          router.replace(getRedirectPath(role))
+        }
       } catch (e) {
         console.error("[Leish] Auth callback error:", e)
         router.replace("/")

@@ -12,7 +12,6 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "@/lib/i18n/language-context";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 interface LoyaltyStatus {
   points: number;
@@ -24,14 +23,22 @@ interface LoyaltyStatus {
   currentTierBonus: number;
 }
 
-const tierIcons = {
+interface HistoryEntry {
+  id: string;
+  points: number;
+  type: string;
+  description: string | null;
+  created_at: string;
+}
+
+const tierIcons: Record<string, typeof Trophy> = {
   bronze: Trophy,
   silver: Star,
   gold: Crown,
   platinum: Award,
 };
 
-const tierColors = {
+const tierColors: Record<string, string> = {
   bronze: "bg-amber-600",
   silver: "bg-gray-400",
   gold: "bg-yellow-500",
@@ -40,43 +47,39 @@ const tierColors = {
 
 export function LoyaltyStatusCard() {
   const [status, setStatus] = useState<LoyaltyStatus | null>(null);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
   const { lang } = useTranslation();
 
   useEffect(() => {
-    const fetchStatus = async () => {
+    const fetchData = async () => {
       try {
-        const supabase = getSupabaseBrowserClient();
-        if (!supabase) return;
+        const [statusRes, historyRes] = await Promise.all([
+          fetch("/api/loyalty/status"),
+          fetch("/api/loyalty/history"),
+        ]);
 
-        const { data, error } = await supabase.auth.getUser();
-        if (error || !data?.user) return;
+        if (statusRes.ok) {
+          const { status: data } = await statusRes.json();
+          setStatus({
+            ...data,
+            memberSince: new Date(data.memberSince),
+          });
+        }
 
-        // This would normally call the loyalty service API
-        // For now, we'll use mock data
-        const mockStatus: LoyaltyStatus = {
-          points: 450,
-          pointsTotalEarned: 650,
-          pointsTotalRedeemed: 200,
-          tier: "gold",
-          memberSince: new Date("2024-01-15"),
-          tierThresholds: {
-            bronze: 0,
-            silver: 100,
-            gold: 300,
-            platinum: 1000,
-          },
-          currentTierBonus: 10,
-        };
-        setStatus(mockStatus);
+        if (historyRes.ok) {
+          const { history: entries } = await historyRes.json();
+          setHistory(entries || []);
+        }
       } catch (error) {
-        console.error("Failed to fetch loyalty status:", error);
+        console.error("Failed to fetch loyalty data:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStatus();
+    fetchData();
   }, []);
 
   if (loading) {
@@ -106,18 +109,18 @@ export function LoyaltyStatusCard() {
       100
     : 100;
 
-  const TierIcon = tierIcons[status.tier as keyof typeof tierIcons] || Trophy;
+  const TierIcon = tierIcons[status.tier] || Trophy;
 
   return (
     <Card className="relative overflow-hidden">
       <div
-        className={`absolute top-0 right-0 w-20 h-20 ${tierColors[status.tier as keyof typeof tierColors]} opacity-10 rounded-bl-full`}
+        className={`absolute top-0 right-0 w-20 h-20 ${tierColors[status.tier]} opacity-10 rounded-bl-full`}
       ></div>
 
       <CardHeader className="pb-4">
         <div className="flex items-center gap-3">
           <div
-            className={`p-2 rounded-full ${tierColors[status.tier as keyof typeof tierColors]} text-foreground`}
+            className={`p-2 rounded-full ${tierColors[status.tier]} text-foreground`}
           >
             <TierIcon className="h-5 w-5" />
           </div>
@@ -137,7 +140,6 @@ export function LoyaltyStatusCard() {
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* Points Balance */}
         <div className="text-center">
           <div className="text-3xl font-bold text-primary mb-1">
             {status.points.toLocaleString()}
@@ -147,7 +149,6 @@ export function LoyaltyStatusCard() {
           </div>
         </div>
 
-        {/* Progress to Next Tier */}
         {nextTier && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
@@ -165,7 +166,6 @@ export function LoyaltyStatusCard() {
           </div>
         )}
 
-        {/* Stats */}
         <div className="grid grid-cols-2 gap-4 pt-4 border-t">
           <div className="text-center">
             <div className="text-lg font-semibold text-green-600">
@@ -185,7 +185,45 @@ export function LoyaltyStatusCard() {
           </div>
         </div>
 
-        {/* Achievement Badges */}
+        {history.length > 0 && (
+          <div className="pt-4 border-t">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Target className="h-4 w-4" />
+              {showHistory
+                ? (lang === "ms" ? "Sembunyi sejarah" : "Hide history")
+                : (lang === "ms" ? "Lihat sejarah" : "View history")}
+              <span className="text-xs text-muted-foreground">
+                ({history.length})
+              </span>
+            </button>
+            {showHistory && (
+              <div className="mt-3 space-y-2 max-h-48 overflow-y-auto">
+                {history.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="flex items-center justify-between text-sm border-b border-border pb-2"
+                  >
+                    <div>
+                      <span className={entry.type === "earn" ? "text-green-600" : "text-blue-600"}>
+                        {entry.type === "earn" ? "+" : "-"}{entry.points}
+                      </span>
+                      <span className="text-muted-foreground ml-2 text-xs">
+                        {entry.description || entry.type}
+                      </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(entry.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="pt-4 border-t">
           <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
             <Target className="h-4 w-4" />
