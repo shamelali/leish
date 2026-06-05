@@ -212,3 +212,48 @@ Fix remaining code issues flagged in tracking docs: null-return server clients, 
 ### Key Decisions
 - Throwing instead of returning null means the error boundary catches missing env vars early instead of causing confusing 404s
 - Placeholder images (`/artists/placeholder.png`, `/studios/placeholder.png`) are legitimate fallbacks — not a code bug; replacing them is a content/design task
+
+## Session Anchored Summary (5 June 2026)
+
+### Goal
+Replace GitHub remote URL from `leish_app.git` → `leish.git`.
+
+### Done
+- Verified `git@github.com:shamelali/leish.git` is SSH-accessible and shares common history (commit `072c3a7`)
+- Replaced `github` remote URL: `git remote set-url github git@github.com:shamelali/leish.git`
+- `origin` (GitLab) left unchanged as backup
+
+### Key Decisions
+- Chose to replace existing remote rather than adding a third remote — `leish.git` is simply a cleaner name for the same project
+
+## Session Anchored Summary (5 June 2026) — Part 2
+
+### Goal
+Implement loyalty API, studio room CRUD, notification system, and dashboard enhancements.
+
+### Done
+- **Loyalty System**: Created `/api/loyalty/status` and `/api/loyalty/history` API routes. Updated `LoyaltyStatusCard` to fetch real data from the live service instead of mock data. Added loyalty card display to customer account page.
+- **Studio Room CRUD**: Created `lib/services/studio-rooms.ts` with full CRUD. Added API routes (`GET/POST /api/studio/rooms`, `PATCH/DELETE /api/studio/rooms/[id]`). Built room management UI at `/studios/dashboard/rooms/` with add/edit/delete dialogs.
+- **Notification System**: Created `notifications` table (migration + live SQL via psql). Built `lib/services/notifications/` service with list, unread count, mark read, create. Added API routes (`GET/PATCH /api/notifications`, `POST /api/notifications/send`). Built `NotificationBell` component with popover, unread badge, inline mark-as-read. Added to navbar (desktop + mobile) for authenticated users.
+- **Database Types**: Generated `lib/supabase/database.types.ts` from live schema (26 tables, 10 enums).
+- **Utitilies**: Created `utils/supabase/{server,client,middleware}.ts` with proper SSR cookie-based client setup. Fixed type annotations for `CookieOptions`.
+- **MCP**: Added Supabase remote MCP server to `~/.config/opencode/opencode.json`.
+- **Agent Skills**: Installed `supabase` and `supabase-postgres-best-practices` skills.
+- **Tests**: `npm test` — 73 passed, 0 failures from our changes. `npm run typecheck` — clean.
+- **Git**: Committed and pushed to GitLab. GitHub push blocked — `shamelali/leish_app` repo doesn't exist on GitHub yet.
+
+### Relevant Files
+- `app/api/loyalty/{status,history}/route.ts` — new loyalty API
+- `app/api/studio/rooms/route.ts` — studio room CRUD API
+- `app/api/notifications/route.ts` — notification list/mark-read API
+- `app/api/notifications/send/route.ts` — notification creation API
+- `components/loyalty-status-card.tsx` — rewritten with real data
+- `components/notifications/notification-bell.tsx` — new notification UI
+- `components/navbar.tsx` — NotificationBell added
+- `app/studios/dashboard/rooms/page.tsx` — room management UI
+- `lib/services/studio-rooms.ts` — room CRUD service
+- `lib/services/notifications/index.ts` — notification service
+- `lib/supabase/database.types.ts` — generated from live schema
+- `supabase/migrations/20260604000000_create_notifications.sql` — notifications table migration
+- `utils/supabase/{server,client,middleware}.ts` — SSR client helpers
+- `~/.config/opencode/opencode.json` — MCP config added
