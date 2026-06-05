@@ -18,7 +18,7 @@ function getPostSignInPath(role: UserRole | undefined): string {
       return "/studios/dashboard"
     case "customer":
     default:
-      return "/"
+      return "/account"
   }
 }
 

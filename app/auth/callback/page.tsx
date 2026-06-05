@@ -7,13 +7,13 @@ import { useRouter } from "next/navigation"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Loader2 } from "lucide-react"
 
-type UserRole = "admin" | "artist" | "studio_manager" | "customer"
+type UserRole = "admin" | "artist" | "studio" | "customer"
 
 function getRedirectPath(role: UserRole): string {
   switch (role) {
     case "admin":          return "/admin"
     case "artist":         return "/artist"
-    case "studio_manager": return "/studios/dashboard"
+    case "studio": return "/studios/dashboard"
     case "customer":
     default:               return "/account"
   }
@@ -56,7 +56,7 @@ export default function AuthCallbackPage() {
             .from("profiles").select("role").eq("id", user.id).maybeSingle()
           if (profile?.role) {
             const r = profile.role as UserRole
-            if (["admin","artist","studio_manager"].includes(r)) role = r
+            if (["admin","artist","studio"].includes(r)) role = r
             break
           }
           await new Promise(r => setTimeout(r, 600))
@@ -65,11 +65,11 @@ export default function AuthCallbackPage() {
         // Check onboarding status for artist/studio roles
         if (role === "artist") {
           const { data: provider } = await supabase
-            .from("providers").select("id").eq("user_id", user.id).maybeSingle()
+            .from("providers").select("id").eq("owner_id", user.id).eq("kind", "artist").maybeSingle()
           router.replace(provider ? "/artist" : "/artistonboard")
-        } else if (role === "studio_manager") {
+        } else if (role === "studio") {
           const { data: provider } = await supabase
-            .from("providers").select("id").eq("user_id", user.id).maybeSingle()
+            .from("providers").select("id").eq("owner_id", user.id).eq("kind", "studio").maybeSingle()
           router.replace(provider ? "/studios/dashboard" : "/studioonboard")
         } else {
           router.replace(getRedirectPath(role))
