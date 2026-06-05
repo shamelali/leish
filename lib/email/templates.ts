@@ -262,6 +262,63 @@ Payment Method: ${params.paymentMethod}
   return { subject, html, text }
 }
 
+export function notificationEmailTemplate(params: {
+  name: string
+  title: string
+  body: string
+  type: string
+}) {
+  const subject = params.title
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${params.title}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #1a1a1a; color: white; padding: 30px; text-align: center; }
+    .content { background: #f9f9f9; padding: 30px; margin: 20px 0; }
+    .footer { text-align: center; color: #666; font-size: 12px; margin-top: 30px; }
+    .button { display: inline-block; background: #1a1a1a; color: white; padding: 12px 24px; text-decoration: none; margin-top: 20px; }
+    .tag { display: inline-block; background: #c9a96e; color: white; padding: 4px 10px; border-radius: 4px; font-size: 12px; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="tag">${params.type}</span>
+    <h1>${params.title}</h1>
+  </div>
+  <div class="content">
+    <p>Hi ${params.name},</p>
+    <p>${params.body}</p>
+    <p style="text-align: center;">
+      <a href="https://www.leish.my/account" class="button">View in Account</a>
+    </p>
+  </div>
+  <div class="footer">
+    <p>© 2026 Beaute. All rights reserved.</p>
+  </div>
+</body>
+</html>
+  `
+
+  const text = `
+${params.title}
+
+Hi ${params.name},
+
+${params.body}
+
+View in your account: https://www.leish.my/account
+
+© 2026 Beaute. All rights reserved.
+  `
+
+  return { subject, html, text }
+}
+
 export function bookingReminderTemplate(params: {
   customerName: string
   bookingId: string

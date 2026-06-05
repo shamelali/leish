@@ -9,6 +9,7 @@ import {
   paymentReceiptTemplate,
 } from "@/lib/email/templates";
 import { sendPaymentConfirmation } from "@/lib/notifications/whatsapp";
+import { notificationService } from "@/lib/services/notifications";
 
 function getValue(params: URLSearchParams, key: string) {
   return params.get(key) ?? params.get(`billplz[${key}]`) ?? undefined;
@@ -80,10 +81,11 @@ export async function POST(req: Request) {
         where id = ${bookingId}
       `;
 
-      // Fetch booking details and send confirmation email
+      // Fetch booking details and send notifications
       try {
         const bookingDetails = await sql<
           {
+            customer_id: string;
             customer_email: string;
             customer_name: string;
             service_name: string;
@@ -112,6 +114,23 @@ export async function POST(req: Request) {
         `;
 
         const booking = bookingDetails[0];
+
+        // Send in-app notification to customer
+        try {
+          if (booking?.customer_id) {
+            const label = paymentType === "deposit" ? "deposit" : "full payment";
+            await notificationService.create({
+              user_id: booking.customer_id,
+              type: "payment",
+              title: "Payment received",
+              body: `Your ${label} of MYR ${Math.round(amount)} for booking ${bookingId.slice(0, 8)}… has been confirmed.`,
+              data: { bookingId, amount: Math.round(amount), paymentType },
+            });
+          }
+        } catch {
+          console.error("In-app notification failed for payment:", bookingId);
+        }
+
         if (booking?.customer_email) {
           // Send booking confirmation
           const confirmationTemplate = bookingConfirmationTemplate({

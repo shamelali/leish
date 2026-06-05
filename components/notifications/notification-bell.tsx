@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { Bell, BellRing, X, CheckCheck, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -9,6 +9,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { useTranslation } from "@/lib/i18n/language-context"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import type { RealtimeChannel } from "@supabase/supabase-js"
 
 interface Notification {
   id: string
@@ -35,6 +37,7 @@ export function NotificationBell() {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   const { lang } = useTranslation()
+  const channelRef = useRef<RealtimeChannel | null>(null)
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -50,6 +53,60 @@ export function NotificationBell() {
       setLoading(false)
     }
   }, [])
+
+  const handleRealtimeInsert = useCallback(
+    (payload: { new: Record<string, unknown> }) => {
+      const newNotification = payload.new as unknown as Notification
+      setUnreadCount((prev) => prev + 1)
+      setNotifications((prev) => {
+        const exists = prev.some((n) => n.id === newNotification.id)
+        if (exists) return prev
+        return [newNotification, ...prev]
+      })
+    },
+    [],
+  )
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient()
+    if (!supabase) return
+
+    let cancelled = false
+
+    ;(async () => {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const userId = sessionData?.session?.user?.id
+      if (!userId || cancelled) return
+
+      fetchNotifications()
+
+      const channel = supabase
+        .channel("notifications_realtime")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            handleRealtimeInsert(payload)
+          },
+        )
+        .subscribe()
+
+      channelRef.current = channel
+    })()
+
+    return () => {
+      cancelled = true
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
+    }
+  }, [fetchNotifications, handleRealtimeInsert])
 
   useEffect(() => {
     if (open) {

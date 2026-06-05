@@ -25,3 +25,6 @@ CREATE POLICY notifications_delete_own ON public.notifications
 
 CREATE POLICY notifications_insert_service ON public.notifications
   FOR INSERT WITH CHECK (true);
+
+ALTER TABLE public.notifications REPLICA IDENTITY FULL;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;

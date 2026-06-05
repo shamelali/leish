@@ -257,3 +257,18 @@ Implement loyalty API, studio room CRUD, notification system, and dashboard enha
 - `supabase/migrations/20260604000000_create_notifications.sql` — notifications table migration
 - `utils/supabase/{server,client,middleware}.ts` — SSR client helpers
 - `~/.config/opencode/opencode.json` — MCP config added
+
+## Session Anchored Summary (5 June 2026) — Part 3
+
+### Goal
+Clean up stale GitHub repos under `shamelali` account — delete 18 unused Leish iterations.
+
+### Done
+- Listed all 22 repos via GitHub API; categorized into active (3), stale Leish iterations (18), and non-Leish projects (1 — `the_empire_elites_v1`)
+- Authenticated `gh` CLI with `delete_repo` scope via device flow
+- Deleted all 18 stale repos:
+  `leish-studio-admin`, `leish-studio-prod`, `leishroom`, `leishdataroom`, `leish-pitch`, `leish-theapp`, `leish-studio-final`, `leish_optimized`, `leish-expo`, `leish_studio_deploy`, `leish_migrate`, `leish-combined`, `leish_studio`, `leish-frontend`, `leish-claude`, `leishstudio`, `Leish-Studio-Booking`, `leishstudio2`
+- Kept 4 active repos: `leish`, `studio-leish-static`, `leish-admin-dashboard`, `the_empire_elites_v1`
+
+### Key Decisions
+- Deleted all stale Leish experiment repos (mostly 1-commit throwaway iterations) — they were superseded by the current `leish` project and had no active use

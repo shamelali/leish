@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { bookingSupabaseService } from "@/lib/services/booking-supabase";
+import { notificationService } from "@/lib/services/notifications";
 import {
   sendBookingConfirmationSms,
   sendBookingCancellationSms,
@@ -62,6 +64,31 @@ export async function POST(req: Request) {
       ...payload,
       serviceId: resolvedServiceId,
     });
+
+    // Notify provider of new booking
+    try {
+      const provider = await bookingSupabaseService.getById(booking.id);
+      if (provider) {
+        const sb = getSupabaseServerClient();
+        const { data: provProfile } = await sb
+          .from("providers")
+          .select("owner_id")
+          .eq("id", provider.provider_id)
+          .maybeSingle();
+
+        if (provProfile?.owner_id) {
+          await notificationService.create({
+            user_id: provProfile.owner_id,
+            type: "booking",
+            title: "New booking received",
+            body: `A new booking (${booking.id.slice(0, 8)}…) has been created and is awaiting your confirmation.`,
+            data: { bookingId: booking.id, status: "pending" },
+          });
+        }
+      }
+    } catch {
+      console.error("Provider notification failed for booking:", booking.id);
+    }
 
     // Send SMS/WhatsApp confirmation (non-blocking, won't fail booking if SMS fails)
     try {
@@ -201,6 +228,12 @@ export async function PATCH(req: Request) {
     if (isOwner || isAdmin2) {
       let nextStatus = "";
       let sendConfirmSms = false;
+      const actionLabels: Record<string, string> = {
+        confirm: "confirmed",
+        complete: "completed",
+        cancel: "canceled",
+        refund: "refunded",
+      };
       switch (payload.action) {
         case "confirm":
           nextStatus = "confirmed";
@@ -227,6 +260,22 @@ export async function PATCH(req: Request) {
           await sendBookingConfirmationSms(booking.id);
         } catch {
           console.error("SMS confirmation failed for booking:", booking.id);
+        }
+      }
+
+      // Send in-app notification to customer
+      if (nextStatus !== "refunded") {
+        try {
+          const label = actionLabels[nextStatus] || nextStatus;
+          await notificationService.create({
+            user_id: booking.customer_id,
+            type: "booking",
+            title: `Booking ${label}`,
+            body: `Your booking ${booking.id.slice(0, 8)}… has been ${label} by the provider.`,
+            data: { bookingId: booking.id, status: nextStatus },
+          });
+        } catch {
+          console.error("In-app notification failed for booking:", booking.id);
         }
       }
 
