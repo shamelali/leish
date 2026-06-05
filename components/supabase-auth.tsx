@@ -118,9 +118,9 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
 
     let target: string
     if (role === "artist") {
-      target = "/artistonboard"
+      target = "/artist/onboarding"
     } else if (role === "studio") {
-      target = "/studioonboard"
+      target = "/studios/onboarding"
     } else {
       target = getPostSignInPath(role)
     }
@@ -173,7 +173,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
         .eq("owner_id", userId)
         .eq("kind", "studio")
         .maybeSingle()
-      window.location.href = studio ? "/studios/dashboard" : "/studioonboard"
+      window.location.href = studio ? "/studios/dashboard" : "/studios/onboarding"
     } else if (userRole === "artist") {
       const { data: provider } = await supabase
         .from("providers")
@@ -181,7 +181,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
         .eq("owner_id", userId)
         .eq("kind", "artist")
         .maybeSingle()
-      window.location.href = provider ? "/artist" : "/artistonboard"
+      window.location.href = provider ? "/artist" : "/artist/onboarding"
     } else {
       window.location.href = getPostSignInPath(userRole)
     }

@@ -38,7 +38,7 @@ export default async function ProLayout({ children }: { children: React.ReactNod
       .maybeSingle()
 
     if (!provider) {
-      redirect("/artistonboard")
+      redirect("/artist/onboarding")
     }
   }
 

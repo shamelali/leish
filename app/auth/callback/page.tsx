@@ -66,11 +66,11 @@ export default function AuthCallbackPage() {
         if (role === "artist") {
           const { data: provider } = await supabase
             .from("providers").select("id").eq("owner_id", user.id).eq("kind", "artist").maybeSingle()
-          router.replace(provider ? "/artist" : "/artistonboard")
+          router.replace(provider ? "/artist" : "/artist/onboarding")
         } else if (role === "studio") {
           const { data: provider } = await supabase
             .from("providers").select("id").eq("owner_id", user.id).eq("kind", "studio").maybeSingle()
-          router.replace(provider ? "/studios/dashboard" : "/studioonboard")
+          router.replace(provider ? "/studios/dashboard" : "/studios/onboarding")
         } else {
           router.replace(getRedirectPath(role))
         }
