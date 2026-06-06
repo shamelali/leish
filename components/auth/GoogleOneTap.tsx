@@ -4,7 +4,7 @@ import Script from 'next/script'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 import { getPostAuthRedirect, type UserRole } from '@/lib/routing'
 
-declare const google: { accounts: { id: { initialize: (options: any) => void; prompt: () => void }; } }
+declare const google: { accounts: { id: { initialize: (options: any) => void; prompt: (momentListener?: () => void) => void }; } }
 
 async function routeUserAfterSignIn(userId: string) {
   const supabase = getSupabaseBrowserClient()
@@ -40,10 +40,8 @@ const generateNonce = async (): Promise<string[]> => {
 
 const GoogleOneTap = () => {
   const initializeGoogleOneTap = async () => {
-    const [nonce, hashedNonce] = await generateNonce()
-
     const supabase = getSupabaseBrowserClient()
-    if (!supabase) { console.error('Supabase client not available'); return }
+    if (!supabase) return
 
     const { data: sessionData } = await supabase.auth.getSession()
     if (sessionData?.session?.user) {
@@ -51,32 +49,40 @@ const GoogleOneTap = () => {
       return
     }
 
-    google.accounts.id.initialize({
-      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-      callback: async (response: any) => {
-        try {
-          const { data, error } = await supabase.auth.signInWithIdToken({
-            provider: 'google',
-            token: response.credential,
-            nonce,
-          })
-          if (error) throw error
-          if (data?.user) {
-            await routeUserAfterSignIn(data.user.id)
-          } else {
-            window.location.href = "/account"
+    if (!window.google?.accounts?.id) return
+
+    const [nonce, hashedNonce] = await generateNonce()
+
+    try {
+      google.accounts.id.initialize({
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        callback: async (response: any) => {
+          try {
+            const { data, error } = await supabase.auth.signInWithIdToken({
+              provider: 'google',
+              token: response.credential,
+              nonce,
+            })
+            if (error) throw error
+            if (data?.user) {
+              await routeUserAfterSignIn(data.user.id)
+            } else {
+              window.location.href = "/account"
+            }
+          } catch (error) {
+            console.error('Google One Tap sign-in failed:', error)
           }
-        } catch (error) {
-          console.error('Error logging in with Google One Tap', error)
-        }
-      },
-      nonce: hashedNonce,
-      use_fedcm_for_prompt: true,
-    })
-    google.accounts.id.prompt()
+        },
+        nonce: hashedNonce,
+        cancel_on_tap_outside: true,
+      })
+      google.accounts.id.prompt()
+    } catch {
+      // FedCM unavailable or user not signed into Google — silent fail
+    }
   }
 
-  return <Script onReady={() => { initializeGoogleOneTap().catch(console.error) }} src="https://accounts.google.com/gsi/client" />
+  return <Script onReady={() => { initializeGoogleOneTap() }} src="https://accounts.google.com/gsi/client" />
 }
 
 export default GoogleOneTap
