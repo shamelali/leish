@@ -5,19 +5,8 @@ export const dynamic = "force-dynamic"
 import { useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { getPostAuthRedirect, type UserRole } from "@/lib/routing"
 import { Loader2 } from "lucide-react"
-
-type UserRole = "admin" | "artist" | "studio" | "customer"
-
-function getRedirectPath(role: UserRole): string {
-  switch (role) {
-    case "admin":          return "/admin"
-    case "artist":         return "/artist"
-    case "studio": return "/studios/dashboard"
-    case "customer":
-    default:               return "/account"
-  }
-}
 
 export default function AuthCallbackPage() {
   const router = useRouter()
@@ -63,17 +52,12 @@ export default function AuthCallbackPage() {
         }
 
         // Check onboarding status for artist/studio roles
-        if (role === "artist") {
-          const { data: provider } = await supabase
-            .from("providers").select("id").eq("owner_id", user.id).eq("kind", "artist").maybeSingle()
-          router.replace(provider ? "/artist" : "/artist/onboarding")
-        } else if (role === "studio") {
-          const { data: provider } = await supabase
-            .from("providers").select("id").eq("owner_id", user.id).eq("kind", "studio").maybeSingle()
-          router.replace(provider ? "/studios/dashboard" : "/studios/onboarding")
-        } else {
-          router.replace(getRedirectPath(role))
-        }
+        const kind = role === "artist" ? "artist" : "studio"
+        const { data: provider } = role === "customer" || role === "admin"
+          ? { data: null }
+          : await supabase.from("providers").select("id").eq("owner_id", user.id).eq("kind", kind).maybeSingle()
+
+        router.replace(getPostAuthRedirect(role, !!provider))
       } catch (e) {
         console.error("[Leish] Auth callback error:", e)
         router.replace("/")

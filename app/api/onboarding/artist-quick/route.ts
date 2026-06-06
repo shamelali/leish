@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
+import { getPostAuthRedirect } from "@/lib/routing"
 
 interface QuickOnboardingPayload {
   userId: string
@@ -125,9 +126,12 @@ export async function POST(req: Request) {
     }
   }
 
+  const redirectTo = `${getPostAuthRedirect("artist", true)}?onboarded=1`
+
   return NextResponse.json({ 
     ok: true, 
     providerId: provider.id,
-    message: "Profile created successfully" 
+    message: "Profile created successfully",
+    redirectTo,
   })
 }

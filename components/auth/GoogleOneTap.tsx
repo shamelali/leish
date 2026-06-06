@@ -1,22 +1,10 @@
 'use client'
 
 import Script from 'next/script'
-
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
+import { getPostAuthRedirect, type UserRole } from '@/lib/routing'
 
 declare const google: { accounts: { id: { initialize: (options: any) => void; prompt: () => void }; } }
-
-type UserRole = "admin" | "artist" | "studio" | "customer"
-
-function getPostSignInPath(role: UserRole | undefined): string {
-  switch (role) {
-    case "admin":  return "/admin"
-    case "artist": return "/artist"
-    case "studio": return "/studios/dashboard"
-    case "customer":
-    default:       return "/account"
-  }
-}
 
 async function routeUserAfterSignIn(userId: string) {
   const supabase = getSupabaseBrowserClient()
@@ -31,19 +19,13 @@ async function routeUserAfterSignIn(userId: string) {
   const { data: profile } = await supabase
     .from("profiles").select("role").eq("id", userId).maybeSingle()
 
-  const userRole = profile?.role as UserRole | undefined
+  const role = (profile?.role as UserRole) || "customer"
+  const kind = role === "artist" ? "artist" : "studio"
+  const { data: provider } = role === "customer" || role === "admin"
+    ? { data: null }
+    : await supabase.from("providers").select("id").eq("owner_id", userId).eq("kind", kind).maybeSingle()
 
-  if (userRole === "studio") {
-    const { data: studio } = await supabase
-      .from("providers").select("id").eq("owner_id", userId).eq("kind", "studio").maybeSingle()
-    window.location.href = studio ? "/studios/dashboard" : "/studios/onboarding"
-  } else if (userRole === "artist") {
-    const { data: provider } = await supabase
-      .from("providers").select("id").eq("owner_id", userId).eq("kind", "artist").maybeSingle()
-    window.location.href = provider ? "/artist" : "/artist/onboarding"
-  } else {
-    window.location.href = getPostSignInPath(userRole)
-  }
+  window.location.href = getPostAuthRedirect(role, !!provider)
 }
 
 const generateNonce = async (): Promise<string[]> => {
@@ -53,7 +35,6 @@ const generateNonce = async (): Promise<string[]> => {
   const hashBuffer = await crypto.subtle.digest('SHA-256', encodedNonce)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   const hashedNonce = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
-
   return [nonce, hashedNonce]
 }
 
@@ -62,10 +43,7 @@ const GoogleOneTap = () => {
     const [nonce, hashedNonce] = await generateNonce()
 
     const supabase = getSupabaseBrowserClient()
-    if (!supabase) {
-      console.error('Supabase client not available')
-      return
-    }
+    if (!supabase) { console.error('Supabase client not available'); return }
 
     const { data: sessionData } = await supabase.auth.getSession()
     if (sessionData?.session?.user) {
@@ -82,9 +60,7 @@ const GoogleOneTap = () => {
             token: response.credential,
             nonce,
           })
-
           if (error) throw error
-
           if (data?.user) {
             await routeUserAfterSignIn(data.user.id)
           } else {

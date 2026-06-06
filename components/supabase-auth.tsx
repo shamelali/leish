@@ -5,22 +5,10 @@ import Link from "next/link"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Eye, EyeOff, Loader2, ShieldAlert } from "lucide-react"
 import { PasswordValidator } from "@/lib/password-check"
+import { routeUserAfterSignIn, routeUserAfterSignUp } from "@/components/auth/sign-in-helpers"
+import type { UserRole } from "@/lib/routing"
 
-export type UserRole = "admin" | "artist" | "studio" | "customer"
-
-function getPostSignInPath(role: UserRole | undefined): string {
-  switch (role) {
-    case "admin":
-      return "/admin"
-    case "artist":
-      return "/artist"
-    case "studio":
-      return "/studios/dashboard"
-    case "customer":
-    default:
-      return "/account"
-  }
-}
+export type { UserRole }
 
 function getScoreLabel(score: number): string {
   switch (score) {
@@ -116,15 +104,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
       return
     }
 
-    let target: string
-    if (role === "artist") {
-      target = "/artist/onboarding"
-    } else if (role === "studio") {
-      target = "/studios/onboarding"
-    } else {
-      target = getPostSignInPath(role)
-    }
-    window.location.href = target
+    window.location.href = routeUserAfterSignUp(role)
   }
 
   async function checkCredentialStuffing() {
@@ -149,42 +129,6 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "clear", email }),
     }).catch(() => {})
-  }
-
-  async function routeUserAfterSignIn(supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>, userId: string) {
-    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-    if (aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2") {
-      window.location.href = "/sign-in/mfa"
-      return
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", userId)
-      .maybeSingle()
-
-    const userRole = profile?.role as UserRole | undefined
-
-    if (userRole === "studio") {
-      const { data: studio } = await supabase
-        .from("providers")
-        .select("id")
-        .eq("owner_id", userId)
-        .eq("kind", "studio")
-        .maybeSingle()
-      window.location.href = studio ? "/studios/dashboard" : "/studios/onboarding"
-    } else if (userRole === "artist") {
-      const { data: provider } = await supabase
-        .from("providers")
-        .select("id")
-        .eq("owner_id", userId)
-        .eq("kind", "artist")
-        .maybeSingle()
-      window.location.href = provider ? "/artist" : "/artist/onboarding"
-    } else {
-      window.location.href = getPostSignInPath(userRole)
-    }
   }
 
   async function handleSignIn(supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>) {
