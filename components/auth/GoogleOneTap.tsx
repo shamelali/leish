@@ -49,7 +49,7 @@ const GoogleOneTap = () => {
       return
     }
 
-    if (!window.google?.accounts?.id) return
+    if (!google?.accounts?.id) return
 
     const [nonce, hashedNonce] = await generateNonce()
 
