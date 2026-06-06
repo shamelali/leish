@@ -85,6 +85,17 @@
       "permanent": true
     },
     {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "studio.leish.my"
+        }
+      ],
+      "destination": "https://www.leish.my/studios",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {
