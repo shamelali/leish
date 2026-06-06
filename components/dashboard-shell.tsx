@@ -66,13 +66,15 @@ export function Panel({
   title,
   children,
   action,
+  className,
 }: {
   title: string
   children: React.ReactNode
   action?: React.ReactNode
+  className?: string
 }) {
   return (
-    <div className="border border-border bg-card p-5">
+    <div className={cn("border border-border bg-card p-5", className)}>
       <div className="flex items-center justify-between gap-4">
         <h2 className="font-serif text-xl font-semibold text-foreground">{title}</h2>
         {action}
