@@ -81,6 +81,7 @@ export default function UpdatePasswordPage() {
                 <input
                   id="new-password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required

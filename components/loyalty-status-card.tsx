@@ -62,10 +62,12 @@ export function LoyaltyStatusCard() {
 
         if (statusRes.ok) {
           const { status: data } = await statusRes.json();
-          setStatus({
-            ...data,
-            memberSince: new Date(data.memberSince),
-          });
+          if (data) {
+            setStatus({
+              ...data,
+              memberSince: new Date(data.memberSince),
+            });
+          }
         }
 
         if (historyRes.ok) {

@@ -312,3 +312,25 @@ Fix production API errors (400/500 on services & availability, 404 on loyalty, R
 - Google One Tap FedCM error is expected when user isn't signed into Google; removing `use_fedcm_for_prompt` lets GSI choose gracefully
 - `availability_slots` has intentional DENY-ALL RLS — all writes go through raw SQL (`getSql()`) or service-role client; no client-side path exists
 - API handlers now accept both camelCase and snake_case to be resilient to client variations
+
+## Session Anchored Summary (6 June 2026) — Part 2
+
+### Goal
+Resolve Supabase performance advisor warnings, add autocomplete to auth forms, fix loyalty card null crash.
+
+### Done
+- **Fixed `auth_rls_initplan` on `notifications`**: Replaced `auth.uid()` with `(SELECT auth.uid())` in `notifications_insert_own` policy
+- **Dropped remaining 9 unused indexes**: `idx_payout_items_payout_id`, `idx_providers_suspended_by`, `idx_reviews_room_id`, `idx_services_provider_id`, `idx_studio_gallery_room_id`, `idx_bookings_provider_id`, `idx_booking_surcharges_surcharge_id`, `idx_bookings_service_id`, `idx_notifications_unread`
+- **Added FK indexes** for known query patterns: `bookings(service_id)`, `services(provider_id)`, `reviews(room_id)`, `studio_gallery(room_id)`, `payout_items(payout_id)`
+- **Fixed LoyaltyStatusCard null spread crash**: Added null check when API returns `{ status: null }` (line 66)
+- **Added autocomplete attributes** to all auth form fields (email, current-password, new-password) in `supabase-auth.tsx`, `forgot-password/page.tsx`, `update-password/page.tsx`
+- **Updated AGENTS.md** with this session summary
+
+### Relevant Files
+- `components/loyalty-status-card.tsx` — null check for `data` before spread
+- `components/supabase-auth.tsx` — `autoComplete="email"`, `autoComplete={isSignUp ? "new-password" : "current-password"}` 
+- `app/forgot-password/page.tsx` — `autoComplete="email"`
+- `app/update-password/page.tsx` — `autoComplete="new-password"`
+- `supabase/migrations/20260606000001_fix_notifications_rls_initplan.sql` — new migration
+- `supabase/migrations/20260606000002_drop_remaining_unused_indexes.sql` — new migration
+- `supabase/migrations/20260606000003_add_foreign_key_indexes.sql` — new migration

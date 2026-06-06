@@ -298,6 +298,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
         <input
           id="email"
           type="email"
+          autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -313,6 +314,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
           <input
             id="password"
             type={showPassword ? "text" : "password"}
+            autoComplete={isSignUp ? "new-password" : "current-password"}
             value={password}
             onChange={(e) => handlePasswordChange(e.target.value)}
             required
