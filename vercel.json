@@ -83,6 +83,17 @@
       ],
       "destination": "https://www.leish.my/:path*",
       "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "studio.leish.my"
+        }
+      ],
+      "destination": "https://www.leish.my/studios/:path*",
+      "permanent": true
     }
   ],
   "crons": [

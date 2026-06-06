@@ -12,7 +12,7 @@ import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { Button } from "@/components/ui/button"
 
 export const metadata: Metadata = {
-  title: "Pro Dashboard | Leish!",
+  title: "Artist Dashboard | Leish!",
   description: "Manage profile, services, bookings, and reviews.",
 }
 
@@ -56,8 +56,8 @@ export default async function ProDashboardPage() {
 
   return (
     <DashboardShell
-      title="Pro Dashboard"
-      subtitle="Operational workspace for artists and studios to manage services, bookings, reviews, and payouts."
+      title="Artist Dashboard"
+      subtitle="Manage your artist profile, services, bookings, reviews, and payouts."
       nav={nav}
     >
       <Suspense fallback={null}>

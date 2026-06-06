@@ -5,9 +5,10 @@ import { DashboardShell, Panel } from "@/components/dashboard-shell"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { ProProfileForm } from "@/components/pro-profile-form"
 import { ProServiceManager } from "@/components/pro-service-manager"
+import { ProviderPhotoUpload } from "@/components/provider-photo-upload"
 
 export const metadata: Metadata = {
-  title: "Pro Profile | Leish!",
+  title: "Artist Profile | Leish!",
   description: "Manage provider profile and services.",
 }
 
@@ -51,6 +52,11 @@ export default async function ProProfilePage() {
             {/* specialties are managed via admin; placeholder for now */}
             <p className="text-xs text-muted-foreground">Coming soon</p>
           </Panel>
+          <div className="mt-6">
+            <Panel title="Photos">
+              {providerId ? <ProviderPhotoUpload providerId={providerId} /> : <p className="text-sm text-muted-foreground">No provider found for your account.</p>}
+            </Panel>
+          </div>
           <div className="mt-6">
             <Panel title="Services">
               {providerId ? <ProServiceManager providerId={providerId} /> : <p className="text-sm text-muted-foreground">No provider found for your account.</p>}

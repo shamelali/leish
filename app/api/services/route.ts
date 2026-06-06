@@ -36,7 +36,8 @@ export async function GET(req: Request) {
   try {
     const rows = await serviceService.listByProvider(providerId)
     return NextResponse.json(rows)
-  } catch {
+  } catch (err) {
+    console.error("[services GET] error:", err)
     return NextResponse.json({ error: "Failed to fetch" }, { status: 500 })
   }
 }
@@ -71,7 +72,12 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 })
   }
-  const { providerId, name, durationMinutes, priceMyr } = payload
+  let { providerId, name, durationMinutes, priceMyr } = payload
+  // Accept both camelCase and snake_case
+  if (!providerId && "provider_id" in payload) providerId = (payload as Record<string, unknown>).provider_id as string
+  if (!name && "name" in payload) name = (payload as Record<string, unknown>).name as string
+  if (!durationMinutes && "duration_minutes" in payload) durationMinutes = (payload as Record<string, unknown>).duration_minutes as number
+  if (priceMyr == null && "price_myr" in payload) priceMyr = (payload as Record<string, unknown>).price_myr as number
   if (!providerId || !name || !durationMinutes || priceMyr == null) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 })
   }

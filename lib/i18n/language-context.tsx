@@ -177,8 +177,8 @@ const translations = {
     },
     // Dashboard
     dashboard: {
-      title: "Pro Dashboard",
-      subtitle: "Operational workspace for artists and studios to manage services, bookings, reviews, and payouts.",
+      title: "Artist Dashboard",
+      subtitle: "Manage your artist profile, services, bookings, and reviews.",
       overview: "Overview",
       upcomingBookings: "Upcoming Bookings",
       recentReviews: "Recent Reviews",

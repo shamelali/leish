@@ -272,3 +272,43 @@ Clean up stale GitHub repos under `shamelali` account — delete 18 unused Leish
 
 ### Key Decisions
 - Deleted all stale Leish experiment repos (mostly 1-commit throwaway iterations) — they were superseded by the current `leish` project and had no active use
+
+## Session Anchored Summary (6 June 2026)
+
+### Goal
+Fix production API errors (400/500 on services & availability, 404 on loyalty, RLS violation), centralize post-auth routing, enable profile image uploads.
+
+### Done
+- **Google One Tap**: Removed `use_fedcm_for_prompt: true` (caused AbortError when user not signed into Google); wrapped in try/catch; added `cancel_on_tap_outside: true`; fixed type (`window.google` → `google` via global declare)
+- **Created `lib/routing.ts`**: `getPostAuthRedirect(role, hasProvider)` as single source of truth — admin→`/admin`, artist→`/artist` or `/artist/onboarding`, customer→`/account`, studio→`/studios/dashboard` or `/studio/onboarding`
+- **Created `components/auth/sign-in-helpers.ts`**: `routeUserAfterSignIn()` (MFA check + role lookup + provider check → `getPostAuthRedirect`), `routeUserAfterSignUp()` (artist→`/artist/onboarding`, studio→`/studios/onboarding`)
+- **Normalized onboarding paths**: `artistonboard` → `/artist/onboarding`, `studioonboard` → `/studio/onboarding`; deleted old redirect stubs
+- **Refactored `app/auth/callback/page.tsx`**: Replaced inline `getRedirectPath()` with `getPostAuthRedirect()`; fixed `user_id`→`owner_id` column bug; `studio_manager`→`studio` role mapping
+- **Refactored `components/supabase-auth.tsx`**: Imported helpers from `sign-in-helpers.ts` instead of inline routing
+- **Moved `GoogleOneTap.tsx`** to `components/auth/GoogleOneTap.tsx`; role-based routing
+- **Created `app/admin/providers/[id]/page.tsx`**: Provider detail page (info, alerts, services, bookings, activate/suspend) to fix repeated 404 RSC prefetches
+- **Tracked missing service files**: `lib/services/notifications/index.ts` and `lib/services/studio-rooms.ts` added to git; fixed `.gitignore` scope (`services/` → `/services/`)
+- **Fixed API resilience**: Added camelCase+snake_case fallback in `POST /api/services` and `POST /api/availability`; added error logging to `GET /api/services` catch block
+- **Wired image uploads**: Added `ProviderPhotoUpload` to artist profile page (`app/artist/profile/page.tsx`); created studio photos page (`app/studios/dashboard/photos/page.tsx`); added "Manage photos" link to studio dashboard Quick Actions
+- **Vercel**: Production deployments now building successfully (latest: `leish-hvbksy9t5` Ready ✅)
+
+### Relevant Files
+- `lib/routing.ts` — single source of truth for post-auth routing
+- `components/auth/sign-in-helpers.ts` — `routeUserAfterSignIn()`, `routeUserAfterSignUp()`
+- `components/auth/GoogleOneTap.tsx` — rebuilt with try/catch, no forced FedCM
+- `app/auth/callback/page.tsx` — uses `getPostAuthRedirect()`, fixed `owner_id`
+- `components/supabase-auth.tsx` — imports helpers
+- `app/admin/providers/[id]/page.tsx` — new provider detail page
+- `app/api/services/route.ts` — added error logging, camelCase+snake_case resilience
+- `app/api/availability/route.ts` — added camelCase+snake_case resilience
+- `app/artist/profile/page.tsx` — added `ProviderPhotoUpload` panel
+- `app/studios/dashboard/photos/page.tsx` — new studio photos page
+- `app/studios/dashboard/page.tsx` — added "Manage photos" Quick Action link
+- `AGENTS.md` — this anchored summary
+
+### Key Decisions
+- All auth flows (email/password, OAuth callback, Google OneTap, sign-up) converge on `getPostAuthRedirect()` in `lib/routing.ts` — any future path change needs one file
+- Deleted old `/artistonboard` and `/studioonboard` redirect stubs after migration
+- Google One Tap FedCM error is expected when user isn't signed into Google; removing `use_fedcm_for_prompt` lets GSI choose gracefully
+- `availability_slots` has intentional DENY-ALL RLS — all writes go through raw SQL (`getSql()`) or service-role client; no client-side path exists
+- API handlers now accept both camelCase and snake_case to be resilient to client variations

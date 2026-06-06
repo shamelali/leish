@@ -78,7 +78,11 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 })
   }
-  const { providerId, startsAt, endsAt } = payload
+  let { providerId, startsAt, endsAt } = payload
+  // Accept both camelCase and snake_case
+  if (!providerId && "provider_id" in payload) providerId = (payload as Record<string, unknown>).provider_id as string
+  if (!startsAt && "starts_at" in payload) startsAt = (payload as Record<string, unknown>).starts_at as string
+  if (!endsAt && "ends_at" in payload) endsAt = (payload as Record<string, unknown>).ends_at as string
   if (!providerId || !startsAt || !endsAt) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 })
   }
