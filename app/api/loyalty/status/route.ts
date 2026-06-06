@@ -14,7 +14,7 @@ export async function GET() {
 
     const status = await loyaltyService.getUserStatus(user.id)
     if (!status) {
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 })
+      return NextResponse.json({ status: null })
     }
 
     return NextResponse.json({ status })
