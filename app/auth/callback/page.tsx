@@ -21,13 +21,8 @@ export default function AuthCallbackPage() {
 
     const handleCallback = async () => {
       try {
-        const code = new URLSearchParams(window.location.search).get("code")
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code)
-          if (error) { console.error("Code exchange error:", error); router.replace("/sign-in"); return }
-        }
-
-        // Wait for session to propagate
+        // @supabase/ssr createBrowserClient auto-detects the ?code= parameter
+        // and handles PKCE exchange. Wait for the session to propagate.
         await new Promise<void>((resolve) => {
           const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === "SIGNED_IN" && session) { subscription.unsubscribe(); resolve() }
