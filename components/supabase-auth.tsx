@@ -6,6 +6,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Eye, EyeOff, Loader2, ShieldAlert } from "lucide-react"
 import { PasswordValidator } from "@/lib/password-check"
 import { routeUserAfterSignIn, routeUserAfterSignUp } from "@/components/auth/sign-in-helpers"
+import { RoleSelectDialog } from "@/components/auth/role-select-dialog"
 import type { UserRole } from "@/lib/routing"
 
 export type { UserRole }
@@ -42,6 +43,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
   const [loading, setLoading] = useState(false)
   const [passwordResult, setPasswordResult] = useState<Awaited<ReturnType<typeof validator.validate>> | null>(null)
   const [message, setMessage] = useState<{ type: "success" | "error", text: string } | null>(null)
+  const [showRoleDialog, setShowRoleDialog] = useState(false)
 
   const [role, setRole] = useState<UserRole>("customer")
   const [fullName, setFullName] = useState("")
@@ -179,7 +181,12 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
     }
   }
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
+    setShowRoleDialog(true)
+  }
+
+  const handleGoogleRoleSelect = async (selectedRole: UserRole) => {
+    setShowRoleDialog(false)
     setLoading(true)
     setMessage(null)
 
@@ -190,6 +197,8 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
       return
     }
 
+    sessionStorage.setItem("pendingOAuthRole", selectedRole)
+
     const redirectTo = `${window.location.origin}/auth/callback`
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -199,6 +208,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
     })
 
     if (error) {
+      sessionStorage.removeItem("pendingOAuthRole")
       setMessage({ type: "error", text: error.message || "Failed to sign in with Google" })
       setLoading(false)
     }
@@ -476,6 +486,12 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
           : "Don't have an account? Sign Up"
         }
       </button>
+
+      <RoleSelectDialog
+        open={showRoleDialog}
+        onOpenChange={setShowRoleDialog}
+        onSelect={handleGoogleRoleSelect}
+      />
     </form>
   )
 }

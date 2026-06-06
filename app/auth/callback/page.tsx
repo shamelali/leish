@@ -35,15 +35,25 @@ export default function AuthCallbackPage() {
 
         // Read role with retry (DB trigger may not have fired yet)
         let role: UserRole = "customer"
+        let profile: { role: string } | null = null
         for (let i = 0; i < 3; i++) {
-          const { data: profile } = await supabase
+          const { data: p } = await supabase
             .from("profiles").select("role").eq("id", user.id).maybeSingle()
-          if (profile?.role) {
-            const r = profile.role as UserRole
+          if (p?.role) {
+            profile = p
+            const r = p.role as UserRole
             if (["admin","artist","studio"].includes(r)) role = r
             break
           }
           await new Promise(r => setTimeout(r, 600))
+        }
+
+        // Apply role from Google sign-in dialog selection (new users only)
+        const pendingRole = sessionStorage.getItem("pendingOAuthRole") as UserRole | null
+        sessionStorage.removeItem("pendingOAuthRole")
+        if (pendingRole && pendingRole !== "customer" && role === "customer" && profile) {
+          role = pendingRole
+          await supabase.from("profiles").update({ role: pendingRole }).eq("id", user.id)
         }
 
         // Check onboarding status for artist/studio roles
