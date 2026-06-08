@@ -307,6 +307,7 @@ Fix production API errors (400/500 on services & availability, 404 on loyalty, R
 - `AGENTS.md` — this anchored summary
 
 ### Key Decisions
+- `password_hibp_enabled` cannot be toggled via the Management API — must use the Supabase Dashboard UI
 - All auth flows (email/password, OAuth callback, Google OneTap, sign-up) converge on `getPostAuthRedirect()` in `lib/routing.ts` — any future path change needs one file
 - Deleted old `/artistonboard` and `/studioonboard` redirect stubs after migration
 - Google One Tap FedCM error is expected when user isn't signed into Google; removing `use_fedcm_for_prompt` lets GSI choose gracefully
@@ -334,3 +335,42 @@ Resolve Supabase performance advisor warnings, add autocomplete to auth forms, f
 - `supabase/migrations/20260606000001_fix_notifications_rls_initplan.sql` — new migration
 - `supabase/migrations/20260606000002_drop_remaining_unused_indexes.sql` — new migration
 - `supabase/migrations/20260606000003_add_foreign_key_indexes.sql` — new migration
+
+## Session Anchored Summary (7 June 2026)
+
+### Goal
+Prompt role selection when user clicks "Sign in with Google" — currently all Google users defaulted to `customer`.
+
+### Done
+- **Created `components/auth/role-select-dialog.tsx`**: Shadcn dialog with 3 role cards (Customer, Makeup Artist, Studio Owner) each with icon and description
+- **Modified `components/supabase-auth.tsx`**: `handleGoogleSignIn` now opens the dialog. `handleGoogleRoleSelect(selectedRole)` stores role in `sessionStorage` (`pendingOAuthRole`) then initiates OAuth flow. On error, clears `sessionStorage`.
+- **Modified `app/auth/callback/page.tsx`**: After authentication, reads `pendingOAuthRole` from `sessionStorage`. If the profile role is still `customer` (new sign-up via trigger default) and a valid non-customer role was stored, updates the profile with the selected role. Clears `sessionStorage` after use.
+- **Safety**: Existing users (non-customer profile) never get their role overwritten. Missing/expired `sessionStorage` silently falls back to current behavior (default `customer`).
+
+### Key Decisions
+- Used `sessionStorage` (not URL params) to pass role through the OAuth redirect — more reliable, survives page reloads, no URL manipulation needed
+- Google OneTap flow is unchanged (always `customer`) — role selection dialog would defeat the "one tap" UX
+- Callback only overwrites profile role when current role is `customer` — prevents overwriting existing users' roles
+
+### Files
+- `components/auth/role-select-dialog.tsx` — new dialog component
+- `components/supabase-auth.tsx` — dialog state + `handleGoogleRoleSelect`
+- `app/auth/callback/page.tsx` — reads `pendingOAuthRole` and updates profile
+
+## Session Anchored Summary (8 June 2026)
+
+### Goal
+Fix high auth email bounce rate by configuring Brevo SMTP for Supabase Auth emails.
+
+### Done
+- **Configured Supabase SMTP via Management API**: Host `smtp-relay.brevo.com:587`, sender `hello@leish.my`, sender name "Leish", rate limit 60/hr
+- **Updated Vercel env vars**: `BREVO_API_KEY`, `FROM_EMAIL`, `FROM_NAME` all set in Production
+- **Updated local `.env.production` and `.env.local`** with Brevo API key (gitignored files)
+- **Tested SMTP**: Password reset for `admin@example.com` accepted by Supabase Auth (`{}` success)
+
+### Pending
+- `password_hibp_enabled` requires Supabase Dashboard UI (Management API doesn't support toggling it)
+
+### Files
+- `lib/email/brevo.ts` — uses `BREVO_API_KEY` for transactional emails (unchanged)
+- Supabase project `rmsjrhamjmupvrxqyagm` — SMTP config applied via `PATCH /v1/projects/.../config/auth`
