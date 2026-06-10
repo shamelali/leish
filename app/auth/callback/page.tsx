@@ -8,6 +8,36 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { getPostAuthRedirect, type UserRole } from "@/lib/routing"
 import { Loader2 } from "lucide-react"
 
+async function waitForSession(
+  supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+  retries = 10,
+  delay = 500,
+) {
+  for (let i = 0; i < retries; i++) {
+    const { data } = await supabase.auth.getSession()
+    if (data?.session?.user) return data.session.user
+    await new Promise(r => setTimeout(r, delay))
+  }
+  // One final attempt with getUser (which refreshes if needed)
+  const { data: { user } } = await supabase.auth.getUser()
+  return user
+}
+
+async function waitForProfile(
+  supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+  userId: string,
+  retries = 5,
+  delay = 600,
+) {
+  for (let i = 0; i < retries; i++) {
+    const { data } = await supabase
+      .from("profiles").select("role").eq("id", userId).maybeSingle()
+    if (data?.role) return data as { role: string }
+    await new Promise(r => setTimeout(r, delay))
+  }
+  return null
+}
+
 export default function AuthCallbackPage() {
   const router = useRouter()
   const processed = useRef(false)
@@ -21,38 +51,39 @@ export default function AuthCallbackPage() {
 
     const handleCallback = async () => {
       try {
-        // @supabase/ssr createBrowserClient auto-detects the ?code= parameter
-        // and handles PKCE exchange. Wait for the session to propagate.
-        await new Promise<void>((resolve) => setTimeout(resolve, 2000))
+        const user = await waitForSession(supabase)
+        if (!user) { router.replace("/sign-in"); return }
 
-        const { data: { user }, error: userError } = await supabase.auth.getUser()
-        if (userError || !user) { router.replace("/sign-in"); return }
+        const profile = await waitForProfile(supabase, user.id)
 
-        // Read role with retry (DB trigger may not have fired yet)
         let role: UserRole = "customer"
-        let profile: { role: string } | null = null
-        for (let i = 0; i < 3; i++) {
-          const { data: p } = await supabase
-            .from("profiles").select("role").eq("id", user.id).maybeSingle()
-          if (p?.role) {
-            profile = p
-            const r = p.role as UserRole
-            if (["admin","artist","studio"].includes(r)) role = r
-            break
-          }
-          await new Promise(r => setTimeout(r, 600))
+        if (profile) {
+          const r = profile.role as UserRole
+          if (["admin","artist","studio"].includes(r)) role = r
         }
 
-        // Apply role from Google sign-in dialog selection (new users only)
-        // Read selected role from cookie (primary, survives cross-origin redirect) or sessionStorage (fallback)
-        const pendingRoleRaw =
-          document.cookie.split(";").find(c => c.trim().startsWith("pendingOAuthRole="))
-            ?.split("=")[1]
-          || sessionStorage.getItem("pendingOAuthRole")
-        const pendingRole = (pendingRoleRaw ? decodeURIComponent(pendingRoleRaw) : null) as UserRole | null
+        // Read selected role from sessionStorage (survives same-tab cross-origin navigations)
+        // Cookie is fallback for browsers that clear sessionStorage on redirect
+        let pendingRole: UserRole | null = null
+
+        // Try sessionStorage first
+        const ss = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("pendingOAuthRole") : null
+        if (ss && ["artist", "studio", "customer"].includes(ss)) {
+          pendingRole = ss as UserRole
+        } else {
+          // Fallback: try cookie
+          const stored = document.cookie.split(";").find(c => c.trim().startsWith("pendingOAuthRole="))
+          const raw = stored ? decodeURIComponent(stored.split("=")[1]) : null
+          if (raw && ["artist", "studio", "customer"].includes(raw)) {
+            pendingRole = raw as UserRole
+          }
+        }
+
         // Clean up both storage mechanisms
-        sessionStorage.removeItem("pendingOAuthRole")
-        document.cookie = "pendingOAuthRole=;path=/;max-age=0"
+        try { sessionStorage.removeItem("pendingOAuthRole") } catch {}
+        document.cookie = "pendingOAuthRole=;path=/;max-age=0;samesite=none;secure"
+
+        // Apply role from sign-up dialog selection (new users only)
         if (pendingRole && pendingRole !== "customer" && role === "customer" && profile) {
           role = pendingRole
           await supabase.from("profiles").update({ role: pendingRole }).eq("id", user.id)

@@ -22,7 +22,7 @@ export default function PickRolePage() {
 
     // Store role in cookie and sessionStorage before sign-in
     sessionStorage.setItem("pendingOAuthRole", role)
-    document.cookie = `pendingOAuthRole=${encodeURIComponent(role)};path=/;max-age=600;samesite=lax`
+    document.cookie = `pendingOAuthRole=${encodeURIComponent(role)};path=/;max-age=600;samesite=none;secure`
 
     const supabase = getSupabaseBrowserClient()
     if (!supabase) { router.replace("/sign-in"); return }

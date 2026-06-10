@@ -218,7 +218,8 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
 
     sessionStorage.setItem("pendingOAuthRole", selectedRole)
     // Cookie survives cross-origin OAuth redirect (sessionStorage can be unreliable)
-    document.cookie = `pendingOAuthRole=${encodeURIComponent(selectedRole)};path=/;max-age=600;samesite=lax`
+    // SameSite=None;Secure required for cross-site redirect from supabase.co back to leish.my
+    document.cookie = `pendingOAuthRole=${encodeURIComponent(selectedRole)};path=/;max-age=600;samesite=none;secure`
 
     const redirectTo = `${window.location.origin}/auth/callback`
     const { error } = await supabase.auth.signInWithOAuth({
@@ -230,7 +231,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
 
     if (error) {
       sessionStorage.removeItem("pendingOAuthRole")
-      document.cookie = "pendingOAuthRole=;path=/;max-age=0"
+      document.cookie = "pendingOAuthRole=;path=/;max-age=0;samesite=none;secure"
       setMessage({ type: "error", text: error.message || "Failed to sign in with Google" })
       setLoading(false)
     }
