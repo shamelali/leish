@@ -62,9 +62,9 @@ export default function AuthCallbackPage() {
         const kind = role === "artist" ? "artist" : "studio"
         const { data: provider } = role === "customer" || role === "admin"
           ? { data: null }
-          : await supabase.from("providers").select("id").eq("owner_id", user.id).eq("kind", kind).maybeSingle()
+          : await supabase.from("providers").select("id, slug").eq("owner_id", user.id).eq("kind", kind).maybeSingle()
 
-        router.replace(getPostAuthRedirect(role, !!provider))
+        router.replace(getPostAuthRedirect(role, !!provider, (provider as { slug?: string } | null)?.slug))
       } catch (e) {
         console.error("[Leish] Auth callback error:", e)
         router.replace("/")

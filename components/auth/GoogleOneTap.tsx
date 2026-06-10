@@ -32,9 +32,9 @@ async function routeUserAfterSignIn(userId: string) {
   const kind = role === "artist" ? "artist" : "studio"
   const { data: provider } = role === "customer" || role === "admin"
     ? { data: null }
-    : await supabase.from("providers").select("id").eq("owner_id", userId).eq("kind", kind).maybeSingle()
+    : await supabase.from("providers").select("id, slug").eq("owner_id", userId).eq("kind", kind).maybeSingle()
 
-  window.location.href = getPostAuthRedirect(role, !!provider)
+  window.location.href = getPostAuthRedirect(role, !!provider, (provider as { slug?: string } | null)?.slug)
 }
 
 const generateNonce = async (): Promise<string[]> => {

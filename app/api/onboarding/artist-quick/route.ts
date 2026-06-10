@@ -126,7 +126,7 @@ export async function POST(req: Request) {
     }
   }
 
-  const redirectTo = `${getPostAuthRedirect("artist", true)}?onboarded=1`
+  const redirectTo = `${getPostAuthRedirect("artist", true, slug)}?onboarded=1`
 
   return NextResponse.json({ 
     ok: true, 
