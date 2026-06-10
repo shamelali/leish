@@ -1,8 +1,10 @@
 import type { Metadata } from "next"
 export const dynamic = "force-dynamic"
+import { redirect } from "next/navigation"
 
 import { DashboardShell, Panel, StatGrid } from "@/components/dashboard-shell"
 import { getAdminDashboardData } from "@/lib/dashboard-simple"
+import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import Link from "next/link"
 
 export const metadata: Metadata = {
@@ -11,6 +13,18 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminDashboardPage() {
+  const supabase = await getSupabaseSsrClient()
+  const { data: profile } = await supabase.auth.getUser()
+  const { data: userProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", profile.user?.id)
+    .single()
+
+  if (!userProfile?.role || userProfile.role !== "admin") {
+    return redirect("/")
+  }
+
   const data = await getAdminDashboardData()
   const nav = [
     { href: "/admin", label: "Overview", active: true },
@@ -23,7 +37,7 @@ export default async function AdminDashboardPage() {
   return (
     <DashboardShell
       title="Admin Dashboard"
-      subtitle="Admin UI scaffold. Secure access should be enforced with Supabase session + role checks on the server."
+      subtitle="Marketplace operations dashboard"
       nav={nav}
     >
       <StatGrid stats={data.stats} />

@@ -106,7 +106,7 @@ export function AiConcierge() {
 
     // Simulate API delay
     try {
-      const botMessage = await generateResponse(input, messages)
+      const botMessage = await generateResponse(input)
       setMessages((prev) => [...prev, botMessage])
     } catch (error) {
       console.error(error)
@@ -377,7 +377,6 @@ type Recommendation = {
 // Mock function - replace with actual API call
 async function generateResponse(
   input: string,
-  _messages: Message[]
 ): Promise<Message> {
   // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 1000))

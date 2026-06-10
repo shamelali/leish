@@ -8,6 +8,7 @@ import { BookingCalendar } from "@/components/booking-calendar"
 import { StickyBookBar } from "@/components/sticky-book-bar"
 import { ArtistChat } from "@/components/artist-chat"
 import { SocialShare } from "@/components/social-share"
+import { MapDisplay } from "@/components/maps/map-display"
 import { getSupabaseServerClient } from "@/lib/supabase/server"
 
 export async function generateStaticParams() {
@@ -207,6 +208,21 @@ export default async function ArtistProfilePage({
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                   {artistData.bio || `${artistData.name} is a professional makeup artist based in ${artistData.location}. Contact for bookings and inquiries.`}
                 </p>
+              </div>
+
+              {/* Location Map */}
+              <div className="mb-8">
+                <h2 className="font-serif text-xl font-medium text-foreground">Location</h2>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  {artistData.location}
+                </p>
+                <div className="mt-3">
+                  <MapDisplay
+                    address={`${artistData.location}, Malaysia`}
+                    title={artistData.name}
+                    className="h-64 w-full"
+                  />
+                </div>
               </div>
 
               {/* Services */}

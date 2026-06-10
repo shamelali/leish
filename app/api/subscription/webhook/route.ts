@@ -5,7 +5,6 @@ import crypto from "crypto"
 // Billplz configuration
 const BILLPLZ_X_SIGNATURE = process.env.BILLPLZ_X_SIGNATURE || ""
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export async function POST(req: Request) {
   const payload = await req.text()
   const signature = req.headers.get("x-signature")

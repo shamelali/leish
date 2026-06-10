@@ -72,6 +72,7 @@ interface CreateBookingInput {
   serviceId: string
   slotId: string
   notes?: string
+  address?: string
   totalAmountMyr: number
 }
 
@@ -90,6 +91,7 @@ export const bookingSupabaseService = {
         p_slot_id: payload.slotId,
         p_total_amount_myr: payload.totalAmountMyr,
         p_notes: payload.notes ?? null,
+        p_address: payload.address ?? null,
       }
     )
 
@@ -158,6 +160,7 @@ export const bookingSupabaseService = {
         slot_id: payload.slotId,
         status: await getInitialBookingStatus(supabase),
         notes: payload.notes ?? null,
+        address: payload.address ?? null,
         total_amount_myr: payload.totalAmountMyr,
         paid_amount_myr: 0,
       })

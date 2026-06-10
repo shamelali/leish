@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -9,6 +10,9 @@ import {
 } from "@/lib/services/booking-notifications";
 import { enforceRateLimit } from "@/lib/ops/rate-limit";
 import { reportApiError } from "@/lib/ops/alerts";
+import { createEvent, deleteEvent } from "@/lib/services/google-calendar";
+import { surchargeService } from "@/lib/services/surcharges";
+import { calcTravelFee } from "@/lib/services/maps";
 
 interface BookingPayload {
   customerId: string;
@@ -16,6 +20,7 @@ interface BookingPayload {
   serviceId: string;
   slotId: string;
   notes?: string;
+  address?: string;
   totalAmountMyr: number;
 }
 
@@ -102,6 +107,24 @@ export async function POST(req: Request) {
       // Don't fail the booking if SMS fails
     }
 
+    // Apply travel fee surcharge if address was provided
+    if (payload.address) {
+      try {
+        const travelFeeResult = await calcTravelFee(payload.address, payload.providerId);
+        if (travelFeeResult && travelFeeResult.fee > 0) {
+          await surchargeService.applySurchargesToBooking(booking.id, [
+            {
+              name: "Travel Fee",
+              amountMyr: Math.round(travelFeeResult.fee),
+              reason: `${travelFeeResult.distanceKm.toFixed(1)} km from provider`,
+            },
+          ]);
+        }
+      } catch (surchargeError) {
+        console.error("Travel fee surcharge failed for booking:", booking.id, surchargeError);
+      }
+    }
+
     return NextResponse.json({ ok: true, bookingId: booking.id });
   } catch (error) {
     await reportApiError("bookings_post", error, {
@@ -146,7 +169,37 @@ export async function GET(req: Request) {
   }
 }
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
+async function syncBookingToCalendar(booking: any, supabase: any) {
+  const [service, profile, provider] = await Promise.all([
+    supabase.from("services").select("name").eq("id", booking.service_id).maybeSingle().then((r: any) => r.data),
+    supabase.from("profiles").select("full_name").eq("id", booking.customer_id).maybeSingle().then((r: any) => r.data),
+    supabase.from("providers").select("display_name").eq("id", booking.provider_id).maybeSingle().then((r: any) => r.data),
+  ])
+  if (!service || !profile || !provider) return
+  const customerName = profile.full_name || "Customer"
+
+  const serviceClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  )
+  const { data: authUser } = await serviceClient.auth.admin.getUserById(booking.customer_id)
+  const customerEmail = authUser?.user?.email || ""
+
+  const start = new Date(booking.scheduled_at)
+  const end = new Date(start.getTime() + 30 * 60 * 1000)
+
+  const eventId = await createEvent({
+    summary: `${service.name} – ${customerName} @ ${provider.display_name}`,
+    description: `Booking ID: ${booking.id}\nCustomer: ${customerName} (${customerEmail})`,
+    start: start.toISOString(),
+    end: end.toISOString(),
+    attendees: customerEmail ? [customerEmail] : undefined,
+  })
+
+  await supabase.from("bookings").update({ google_calendar_event_id: eventId }).eq("id", booking.id)
+}
+
 export async function PATCH(req: Request) {
   const supabase = await getSupabaseSsrClient();
   const {
@@ -189,6 +242,14 @@ export async function PATCH(req: Request) {
     if (booking.customer_id === user.id) {
       if (payload.action === "cancel") {
         await bookingSupabaseService.transition(booking.id, "canceled");
+        // Remove from Google Calendar
+        if (booking.google_calendar_event_id) {
+          try {
+            await deleteEvent(booking.google_calendar_event_id);
+          } catch {
+            console.error("Google Calendar delete failed for booking:", booking.id);
+          }
+        }
         // Send cancellation SMS
         try {
           await sendBookingCancellationSms(booking.id);
@@ -201,6 +262,14 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ ok: true });
       }
       if (payload.action === "reschedule" && payload.slotId) {
+        // Remove old event from Google Calendar
+        if (booking.google_calendar_event_id) {
+          try {
+            await deleteEvent(booking.google_calendar_event_id);
+          } catch {
+            console.error("Google Calendar delete failed for rescheduled booking:", booking.id);
+          }
+        }
         // naive reschedule: cancel and create new booking
         await bookingSupabaseService.transition(booking.id, "canceled");
         const newBooking = await bookingSupabaseService.create({
@@ -263,6 +332,15 @@ export async function PATCH(req: Request) {
         }
       }
 
+      // Sync confirmed booking to Google Calendar
+      if (nextStatus === "confirmed") {
+        try {
+          await syncBookingToCalendar(booking, supabase);
+        } catch {
+          console.error("Google Calendar sync failed for booking:", booking.id);
+        }
+      }
+
       // Send in-app notification to customer
       if (nextStatus !== "refunded") {
         try {
@@ -276,6 +354,15 @@ export async function PATCH(req: Request) {
           });
         } catch {
           console.error("In-app notification failed for booking:", booking.id);
+        }
+      }
+
+      // Remove from Google Calendar on cancel
+      if (nextStatus === "canceled" && booking.google_calendar_event_id) {
+        try {
+          await deleteEvent(booking.google_calendar_event_id);
+        } catch {
+          console.error("Google Calendar delete failed for booking:", booking.id);
         }
       }
 

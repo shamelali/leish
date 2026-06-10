@@ -1,4 +1,4 @@
-# 🚀 Beaute Development Roadmap
+# 🚀 Leish Development Roadmap
 
 A production-ready beauty marketplace platform connecting makeup artists and studios with customers. Features real-time booking, integrated payments via Billplz, and automated email notifications.
 

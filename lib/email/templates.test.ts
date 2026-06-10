@@ -60,7 +60,7 @@ describe("bookingConfirmationTemplate", () => {
 describe("welcomeEmailTemplate", () => {
   it("returns subject, html, and text", () => {
     const result = welcomeEmailTemplate({ name: "Bob" })
-    expect(result.subject).toBe("Welcome to Beaute!")
+    expect(result.subject).toBe("Welcome to Leish!")
     expect(result.html).toContain("Bob")
     expect(result.text).toContain("Bob")
     expect(result.html).toContain("Explore Artists")

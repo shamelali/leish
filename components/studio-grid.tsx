@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { Star, MapPin, ArrowRight, Users } from "lucide-react";
+import { Star, MapPin, ArrowRight, Users, Search } from "lucide-react";
 import type { Category } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import type { StudioListItem } from "@/lib/actions/studios";
@@ -25,6 +25,7 @@ interface StudioGridProps {
 export function StudioGrid({ studios }: StudioGridProps) {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("category") as Category | null;
+  const [searchQuery, setSearchQuery] = useState("");
   const [state, setState] = useState<string>("All");
   const [district, setDistrict] = useState<string>("All");
   const [active, setActive] = useState<Category | "All">(
@@ -50,13 +51,20 @@ export function StudioGrid({ studios }: StudioGridProps) {
   }, [studios, state]);
 
   const filtered = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
     return studios.filter((s) => {
+      const searchMatch =
+        !q ||
+        s.name.toLowerCase().includes(q) ||
+        s.specialties.some((sp) => sp.toLowerCase().includes(q)) ||
+        s.location.toLowerCase().includes(q) ||
+        s.state.toLowerCase().includes(q);
       const categoryMatch = active === "All" || s.specialties.includes(active);
       const stateMatch = state === "All" || s.state === state;
       const districtMatch = district === "All" || s.district === district;
-      return categoryMatch && stateMatch && districtMatch;
+      return searchMatch && categoryMatch && stateMatch && districtMatch;
     });
-  }, [studios, active, state, district]);
+  }, [studios, active, state, district, searchQuery]);
 
   return (
     <div>
@@ -76,6 +84,16 @@ export function StudioGrid({ studios }: StudioGridProps) {
             {f}
           </button>
         ))}
+      </div>
+      <div className="relative mt-4">
+        <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search studios..."
+          className="w-full border border-border bg-background pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none"
+        />
       </div>
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <select

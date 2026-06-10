@@ -9,8 +9,8 @@ import {
   dbArtistService,
   dbBookingAvailabilityService,
   dbStudioService,
-  bookingService,
 } from "./db"
+import { bookingSupabaseService } from "./booking-supabase"
 
 export * from "@/lib/services/types"
 
@@ -35,6 +35,6 @@ export function getBookingAvailabilityService() {
 }
 
 export function getBookingService() {
-  if (useDb) return bookingService
+  if (useDb) return bookingSupabaseService
   throw new Error("bookingService not available in mock mode")
 }

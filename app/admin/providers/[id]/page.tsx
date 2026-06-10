@@ -58,6 +58,11 @@ export default async function AdminProviderDetailPage({
   ]
 
   const openAlerts = (provider.provider_alerts || []).filter((a: any) => a.status === "open")
+  let statusText: string
+  let statusClass: string
+  if (provider.is_suspended) { statusText = "Suspended"; statusClass = "text-red-600" }
+  else if (provider.is_active) { statusText = "Active"; statusClass = "text-emerald-600" }
+  else { statusText = "Inactive"; statusClass = "text-muted-foreground" }
 
   return (
     <DashboardShell
@@ -88,13 +93,7 @@ export default async function AdminProviderDetailPage({
             <div>
               <dt className="text-muted-foreground">Status</dt>
               <dd>
-                {provider.is_suspended ? (
-                  <span className="text-red-600">Suspended</span>
-                ) : provider.is_active ? (
-                  <span className="text-emerald-600">Active</span>
-                ) : (
-                  <span className="text-muted-foreground">Inactive</span>
-                )}
+                <span className={statusClass}>{statusText}</span>
               </dd>
             </div>
             <div>

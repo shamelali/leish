@@ -41,17 +41,14 @@ export async function sendBookingConfirmationSms(bookingId: string) {
 
     if (!booking) return
 
-    const customerPhone =
-      (booking.profiles as unknown as { phone?: string }[])?.[0]?.phone
-    const customerName =
-      (booking.profiles as unknown as { full_name?: string }[])?.[0]?.full_name || "Customer"
-    const providerName =
-      (booking.providers as unknown as { display_name?: string }[])?.[0]?.display_name || "Provider"
+    const phone = (booking.profiles as unknown as { phone?: string }[])?.[0]?.phone
+    const customerName = (booking.profiles as unknown as { full_name?: string }[])?.[0]?.full_name || "Customer"
+    const providerName = (booking.providers as unknown as { display_name?: string }[])?.[0]?.display_name || "Provider"
 
-    const phone = customerPhone ? formatPhone(customerPhone) : null
-    if (phone && booking.status === "confirmed") {
+    const formattedPhone = phone ? formatPhone(phone) : null
+    if (formattedPhone && booking.status === "confirmed") {
       await sendBookingConfirmation({
-        phone,
+        phone: formattedPhone,
         customerName,
         bookingId,
         providerName,
@@ -101,17 +98,13 @@ export async function sendBookingCancellationSms(bookingId: string) {
 
     if (!booking) return
 
-    const customerPhone =
-      (booking.profiles as unknown as { phone?: string }[])?.[0]?.phone
-    const customerName =
-      (booking.profiles as unknown as { full_name?: string }[])?.[0]?.full_name || "Customer"
-    const providerName =
-      (booking.providers as unknown as { display_name?: string }[])?.[0]?.display_name || "Provider"
+    const phone = (booking.profiles as unknown as { phone?: string }[])?.[0]?.phone
+    const customerName = (booking.profiles as unknown as { full_name?: string }[])?.[0]?.full_name || "Customer"
 
-    const phone = customerPhone ? formatPhone(customerPhone) : null
-    if (phone) {
+    const formattedPhone = phone ? formatPhone(phone) : null
+    if (formattedPhone) {
       await sendCancellationNotice({
-        phone,
+        phone: formattedPhone,
         customerName,
         bookingId,
       })
@@ -161,7 +154,7 @@ const TRANSITION_MESSAGES: Record<string, { title: string; body: string }> = {
 export async function notifyBookingStatusChange(
   bookingId: string,
   customerId: string,
-  _providerId: string,
+  _providerId: string | null,
   newStatus: string,
   providerName: string,
 ) {

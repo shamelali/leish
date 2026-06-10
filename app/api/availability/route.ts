@@ -4,11 +4,6 @@ import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 
 const THIRTY_MINUTES_MS = 30 * 60 * 1000
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
-type AvailabilityCreatePayload = {
-  providerId?: string
-  startsAt?: string
-  endsAt?: string
-}
 
 function formatSlotLabel(iso: string) {
   return new Date(iso).toLocaleTimeString("en-US", {
@@ -65,6 +60,25 @@ export async function GET(req: Request) {
   return NextResponse.json(rows)
 }
 
+function parseAvailabilityPayload(raw: unknown): { providerId: string; startsAt: string; endsAt: string } | null {
+  const payload = raw as Record<string, unknown>
+  const providerId = (payload.providerId || payload.provider_id) as string | undefined
+  const startsAt = (payload.startsAt || payload.starts_at) as string | undefined
+  const endsAt = (payload.endsAt || payload.ends_at) as string | undefined
+  if (!providerId || !startsAt || !endsAt) return null
+  return { providerId: providerId as string, startsAt: startsAt as string, endsAt: endsAt as string }
+}
+
+function validateSlotTimes(startsAt: string, endsAt: string): { startsAtDate: Date; endsAtDate: Date } | string {
+  const startsAtDate = new Date(startsAt)
+  const endsAtDate = new Date(endsAt)
+  if (Number.isNaN(startsAtDate.getTime()) || Number.isNaN(endsAtDate.getTime())) return "Invalid start or end time"
+  if (endsAtDate.getTime() - startsAtDate.getTime() !== THIRTY_MINUTES_MS) return "Availability slots must be exactly 30 minutes"
+  const minutes = startsAtDate.getMinutes()
+  if (minutes !== 0 && minutes !== 30) return "Start time must be on a 30-minute boundary (:00 or :30)"
+  return { startsAtDate, endsAtDate }
+}
+
 export async function POST(req: Request) {
   const supabase = await getSupabaseSsrClient()
   const {
@@ -72,55 +86,34 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
 
-  let payload: AvailabilityCreatePayload
+  let parsed: ReturnType<typeof parseAvailabilityPayload>
   try {
-    payload = (await req.json()) as AvailabilityCreatePayload
+    parsed = parseAvailabilityPayload(await req.json())
   } catch {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 })
   }
-  let { providerId, startsAt, endsAt } = payload
-  // Accept both camelCase and snake_case
-  if (!providerId && "provider_id" in payload) providerId = (payload as Record<string, unknown>).provider_id as string
-  if (!startsAt && "starts_at" in payload) startsAt = (payload as Record<string, unknown>).starts_at as string
-  if (!endsAt && "ends_at" in payload) endsAt = (payload as Record<string, unknown>).ends_at as string
-  if (!providerId || !startsAt || !endsAt) {
-    return NextResponse.json({ error: "Missing fields" }, { status: 400 })
-  }
-  const startsAtDate = new Date(startsAt)
-  const endsAtDate = new Date(endsAt)
-  if (Number.isNaN(startsAtDate.getTime()) || Number.isNaN(endsAtDate.getTime())) {
-    return NextResponse.json({ error: "Invalid start or end time" }, { status: 400 })
-  }
-  const durationMs = endsAtDate.getTime() - startsAtDate.getTime()
-  if (durationMs !== THIRTY_MINUTES_MS) {
-    return NextResponse.json({ error: "Availability slots must be exactly 30 minutes" }, { status: 400 })
-  }
-  const startsMinutes = startsAtDate.getMinutes()
-  if (startsMinutes !== 0 && startsMinutes !== 30) {
-    return NextResponse.json({ error: "Start time must be on a 30-minute boundary (:00 or :30)" }, { status: 400 })
-  }
+  if (!parsed) return NextResponse.json({ error: "Missing fields" }, { status: 400 })
 
-  // verify ownership
+  const times = validateSlotTimes(parsed.startsAt, parsed.endsAt)
+  if (typeof times === "string") return NextResponse.json({ error: times }, { status: 400 })
+
   const { data: prov } = await supabase
     .from("providers")
     .select("owner_id")
-    .eq("id", providerId)
+    .eq("id", parsed.providerId)
     .maybeSingle()
-  if (prov?.owner_id !== user.id) {
-    return NextResponse.json({ error: "Not allowed" }, { status: 403 })
-  }
+  if (prov?.owner_id !== user.id) return NextResponse.json({ error: "Not allowed" }, { status: 403 })
 
   try {
     const sql = getSql()
     const [row] = await sql<{ id: string }[]>`
       insert into public.availability_slots (provider_id, starts_at, ends_at)
-      values (${providerId}, ${startsAtDate.toISOString()}, ${endsAtDate.toISOString()})
+      values (${parsed.providerId}, ${times.startsAtDate.toISOString()}, ${times.endsAtDate.toISOString()})
       returning id
     `
     return NextResponse.json({ ok: true, slotId: row.id })
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Create failed"
-    return NextResponse.json({ ok: false, error: message }, { status: 400 })
+    return NextResponse.json({ ok: false, error: err instanceof Error ? err.message : "Create failed" }, { status: 400 })
   }
 }
 

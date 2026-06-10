@@ -11,7 +11,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { useTranslation } from "@/lib/i18n/language-context"
 
@@ -37,6 +36,7 @@ const defaultRoom: Room = {
   sort_order: 0,
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export default function StudioRoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
@@ -45,22 +45,23 @@ export default function StudioRoomsPage() {
   const [saving, setSaving] = useState(false)
   const { lang } = useTranslation()
 
-  const fetchRooms = async () => {
-    try {
-      const res = await fetch("/api/studio/rooms")
-      if (res.ok) {
-        const data = await res.json()
-        setRooms(data.rooms || [])
-      }
-    } catch {
-      console.error("Failed to fetch rooms")
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
-    fetchRooms()
+    let cancelled = false
+    async function load() {
+      try {
+        const res = await fetch("/api/studio/rooms")
+        if (res.ok && !cancelled) {
+          const data = await res.json()
+          setRooms(data.rooms || [])
+        }
+      } catch {
+        if (!cancelled) console.error("Failed to fetch rooms")
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
   }, [])
 
   const openNew = () => {
@@ -78,10 +79,8 @@ export default function StudioRoomsPage() {
     try {
       const isNew = !editing.id
       const url = isNew ? "/api/studio/rooms" : `/api/studio/rooms/${editing.id}`
-      const method = isNew ? "POST" : "PATCH"
-
       const res = await fetch(url, {
-        method,
+        method: isNew ? "POST" : "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: editing.name,
@@ -90,11 +89,12 @@ export default function StudioRoomsPage() {
           price_per_hour: editing.price_per_hour,
         }),
       })
-
-      if (res.ok) {
-        setDialogOpen(false)
-        fetchRooms()
-      }
+      if (!res.ok) return
+      setDialogOpen(false)
+      const reload = await fetch("/api/studio/rooms")
+      if (!reload.ok) return
+      const data = await reload.json()
+      setRooms(data.rooms || [])
     } catch (error) {
       console.error("Failed to save room:", error)
     } finally {
@@ -103,12 +103,11 @@ export default function StudioRoomsPage() {
   }
 
   const deleteRoom = async (id: string) => {
-    if (!confirm(lang === "ms" ? "Padamkan bilik ini?" : "Delete this room?")) return
+    const msg = lang === "ms" ? "Padamkan bilik ini?" : "Delete this room?"
+    if (!confirm(msg)) return
     try {
       const res = await fetch(`/api/studio/rooms/${id}`, { method: "DELETE" })
-      if (res.ok) {
-        setRooms((prev) => prev.filter((r) => r.id !== id))
-      }
+      if (res.ok) setRooms((prev) => prev.filter((r) => r.id !== id))
     } catch (error) {
       console.error("Failed to delete room:", error)
     }
@@ -118,6 +117,20 @@ export default function StudioRoomsPage() {
     { href: "/studios/dashboard", label: "Overview" },
     { href: "/studios/dashboard/rooms", label: "Rooms", active: true },
   ]
+
+  let dialogTitle: string
+  if (editing.id) {
+    dialogTitle = lang === "ms" ? "Edit Bilik" : "Edit Room"
+  } else {
+    dialogTitle = lang === "ms" ? "Bilik Baru" : "New Room"
+  }
+
+  let saveLabel: string
+  if (saving) {
+    saveLabel = lang === "ms" ? "Menyimpan..." : "Saving..."
+  } else {
+    saveLabel = lang === "ms" ? "Simpan" : "Save"
+  }
 
   return (
     <DashboardShell
@@ -140,7 +153,8 @@ export default function StudioRoomsPage() {
               <div key={i} className="h-16 animate-pulse bg-muted rounded" />
             ))}
           </div>
-        ) : rooms.length === 0 ? (
+        ) : null}
+        {!loading && rooms.length === 0 ? (
           <div className="py-12 text-center">
             <p className="text-sm text-muted-foreground">
               {lang === "ms"
@@ -148,9 +162,10 @@ export default function StudioRoomsPage() {
                 : "No rooms yet. Add your first room."}
             </p>
           </div>
-        ) : (
+        ) : null}
+        {!loading && rooms.length > 0 ? (
           <div className="space-y-2">
-            {rooms.map((room, index) => (
+            {rooms.map((room) => (
               <div
                 key={room.id}
                 className="flex items-center gap-3 border border-border bg-background p-4"
@@ -185,17 +200,13 @@ export default function StudioRoomsPage() {
               </div>
             ))}
           </div>
-        )}
+        ) : null}
       </Panel>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {editing.id
-                ? (lang === "ms" ? "Edit Bilik" : "Edit Room")
-                : (lang === "ms" ? "Bilik Baru" : "New Room")}
-            </DialogTitle>
+            <DialogTitle>{dialogTitle}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -247,9 +258,7 @@ export default function StudioRoomsPage() {
                 {lang === "ms" ? "Batal" : "Cancel"}
               </Button>
               <Button onClick={saveRoom} disabled={saving || !editing.name}>
-                {saving
-                  ? (lang === "ms" ? "Menyimpan..." : "Saving...")
-                  : (lang === "ms" ? "Simpan" : "Save")}
+                {saveLabel}
               </Button>
             </div>
           </div>

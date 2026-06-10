@@ -118,7 +118,7 @@ export async function sendBookingConfirmation({
     `${serviceName} with ${providerName}\n` +
     `📅 ${date} at ${time}\n` +
     `📋 Ref: ${bookingId}\n\n` +
-    `Thank you for choosing Beaute!`
+    `Thank you for choosing Leish!`
 
   return sendMessage(phone, message)
 }
@@ -163,7 +163,7 @@ export async function sendPaymentConfirmation({
   const message = `Hi ${customerName}! Payment received.\n\n` +
     `💰 MYR ${amount}\n` +
     `📋 Ref: ${bookingId}\n\n` +
-    `Thank you! - Beaute`
+    `Thank you! - Leish`
 
   return sendMessage(phone, message)
 }
@@ -180,7 +180,7 @@ export async function sendCancellationNotice({
   const message = `Hi ${customerName}, your booking has been cancelled.\n\n` +
     `📋 Ref: ${bookingId}\n\n` +
     `If you have questions, contact us at hello@leish.my\n` +
-    `- Beaute`
+    `- Leish`
 
   return sendMessage(phone, message)
 }

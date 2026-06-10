@@ -10,6 +10,7 @@ import {
   ArrowRight,
   SlidersHorizontal,
   Heart,
+  Search,
 } from "lucide-react";
 import type { Category } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,7 @@ interface ArtistGridProps {
 export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("category") as Category | null;
+  const [searchQuery, setSearchQuery] = useState("");
   const [state, setState] = useState<string>("All");
   const [district, setDistrict] = useState<string>("All");
   const [active, setActive] = useState<Category | "All">(
@@ -73,7 +75,14 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
   }, [artists, state]);
 
   const filtered = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
     return artists.filter((a) => {
+      const searchMatch =
+        !q ||
+        a.name.toLowerCase().includes(q) ||
+        a.specialties.some((s) => s.toLowerCase().includes(q)) ||
+        a.location.toLowerCase().includes(q) ||
+        a.state.toLowerCase().includes(q);
       const categoryMatch = active === "All" || a.specialties.includes(active);
       const stateMatch = state === "All" || a.state === state;
       const districtMatch = district === "All" || a.district === district;
@@ -81,6 +90,7 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
         a.hourlyRate >= priceRange[0] && a.hourlyRate <= priceRange[1];
       const ratingMatch = a.rating >= minRating;
       return (
+        searchMatch &&
         categoryMatch &&
         stateMatch &&
         districtMatch &&
@@ -88,7 +98,7 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
         ratingMatch
       );
     });
-  }, [artists, active, state, district, priceRange, minRating]);
+  }, [artists, active, state, district, priceRange, minRating, searchQuery]);
 
   const handleToggleFavorite = async (
     e: React.MouseEvent,
@@ -134,6 +144,16 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           Showing {filtered.length} of {artists.length} artists
         </p>
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search artists..."
+            className="w-full border border-border bg-background pl-9 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none"
+          />
+        </div>
         <div className="flex gap-2">
           <button
             type="button"
@@ -150,13 +170,14 @@ export function ArtistGrid({ artists, favorites = [] }: ArtistGridProps) {
           </button>
           <button
             type="button"
-            onClick={() => {
-              setActive("All");
-              setState("All");
-              setDistrict("All");
-              setPriceRange([0, 1000]);
-              setMinRating(0);
-            }}
+        onClick={() => {
+          setSearchQuery("");
+          setActive("All");
+          setState("All");
+          setDistrict("All");
+          setPriceRange([0, 1000]);
+          setMinRating(0);
+        }}
             className="border border-border px-3 py-2 text-[10px] uppercase tracking-widest text-muted-foreground transition-all hover:border-foreground hover:text-foreground"
           >
             Reset Filters

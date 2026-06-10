@@ -197,7 +197,7 @@ export const loyaltyService = {
   </div>
   
   <div class="footer">
-    <p>© 2026 Beaute. All rights reserved.</p>
+    <p>© 2026 Leish. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -207,7 +207,7 @@ export const loyaltyService = {
         to: profile.email,
         subject: `🎉 You earned ${pointsEarned} points!`,
         html,
-        text: `Hi ${profile.full_name || "Valued Member"}, You've earned ${pointsEarned} points from your booking! Your balance: ${status?.points || 0} points. Keep booking to earn more! - Beaute`,
+        text: `Hi ${profile.full_name || "Valued Member"}, You've earned ${pointsEarned} points from your booking! Your balance: ${status?.points || 0} points. Keep booking to earn more! - Leish`,
       })
     } catch (error) {
       console.error("Failed to send points earned email:", error)

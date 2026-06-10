@@ -26,7 +26,7 @@ export type EmailPayload = {
 
 export async function sendEmail(payload: EmailPayload) {
   const fromEmail = payload.from || process.env.FROM_EMAIL || "hello@leish.my"
-  const fromName = payload.fromName || process.env.FROM_NAME || "Beaute"
+  const fromName = payload.fromName || process.env.FROM_NAME || "Leish"
 
   try {
     const client = getBrevoClient()

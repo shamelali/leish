@@ -23,12 +23,7 @@ export default function AuthCallbackPage() {
       try {
         // @supabase/ssr createBrowserClient auto-detects the ?code= parameter
         // and handles PKCE exchange. Wait for the session to propagate.
-        await new Promise<void>((resolve) => {
-          const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === "SIGNED_IN" && session) { subscription.unsubscribe(); resolve() }
-          })
-          setTimeout(resolve, 3000)
-        })
+        await new Promise<void>((resolve) => setTimeout(resolve, 2000))
 
         const { data: { user }, error: userError } = await supabase.auth.getUser()
         if (userError || !user) { router.replace("/sign-in"); return }

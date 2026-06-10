@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { PortfolioGallery } from "@/components/portfolio-gallery"
 import { BookingCalendar } from "@/components/booking-calendar"
 import { StickyBookBar } from "@/components/sticky-book-bar"
+import { MapDisplay } from "@/components/maps/map-display"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import type { Category, Studio, PortfolioItem } from "@/lib/data"
 
@@ -274,6 +275,20 @@ export default async function StudioProfilePage({
                     </ul>
                   </div>
                 )}
+
+                {/* Location Map */}
+                <div className="mt-8">
+                  <p className="text-xs font-medium uppercase tracking-[0.3em] text-accent">
+                    Location
+                  </p>
+                  <div className="mt-3">
+                    <MapDisplay
+                      address={`${studioData.location}, Malaysia`}
+                      title={studioData.name}
+                      className="h-48 w-full"
+                    />
+                  </div>
+                </div>
 
                 {/* Team */}
                 {studioData.artists.length > 0 && (

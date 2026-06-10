@@ -21,7 +21,8 @@ async function main() {
         .select("role, full_name")
         .eq("id", user.id)
         .maybeSingle()
-      console.log(`${email}: auth=✓  profile=${profile ? `${profile.role} (${profile.full_name})` : '✗ MISSING'}`)
+      const profileStr = profile ? `${profile.role} (${profile.full_name})` : '✗ MISSING'
+      console.log(`${email}: auth=✓  profile=${profileStr}`)
     } else {
       console.log(`${email}: auth=✗ NOT FOUND`)
     }

@@ -65,6 +65,7 @@
     "dotenv": "^17.3.1",
     "embla-carousel-react": "8.6.0",
     "framer-motion": "^12.34.3",
+    "googleapis": "^173.0.0",
     "graphql": "^16.13.1",
     "graphql-scalars": "^1.25.0",
     "graphql-tools": "^9.0.26",

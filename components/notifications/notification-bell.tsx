@@ -108,12 +108,6 @@ export function NotificationBell() {
     }
   }, [fetchNotifications, handleRealtimeInsert])
 
-  useEffect(() => {
-    if (open) {
-      fetchNotifications()
-    }
-  }, [open, fetchNotifications])
-
   const markAsRead = async (id: string) => {
     await fetch("/api/notifications", {
       method: "PATCH",
@@ -136,8 +130,13 @@ export function NotificationBell() {
     setUnreadCount(0)
   }
 
+  const handleOpenChange = (v: boolean) => {
+    setOpen(v)
+    if (v) fetchNotifications()
+  }
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           {unreadCount > 0 ? (
@@ -169,17 +168,19 @@ export function NotificationBell() {
         </div>
 
         <div className="max-h-96 overflow-y-auto">
-          {loading ? (
+          {loading && (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
-          ) : notifications.length === 0 ? (
+          )}
+          {!loading && notifications.length === 0 && (
             <div className="py-8 text-center text-sm text-muted-foreground">
               {lang === "ms"
                 ? "Tiada pemberitahuan"
                 : "No notifications"}
             </div>
-          ) : (
+          )}
+          {!loading && notifications.length > 0 && (
             notifications.map((notification) => (
               <div
                 key={notification.id}

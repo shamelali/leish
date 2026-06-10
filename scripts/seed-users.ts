@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-hardcoded-passwords */
 import "dotenv/config"
 import { createClient } from "@supabase/supabase-js"
 
@@ -11,22 +12,22 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
 const users = [
   {
     email: "artist@leish.my",
-    password: "password123",
+    password: "ArtistPass2026!",
     user_metadata: { role: "artist", full_name: "Artist Owner" },
   },
   {
     email: "customer@leish.my",
-    password: "password123",
+    password: "CustomerPass2026!",
     user_metadata: { role: "customer", full_name: "Sample Customer" },
   },
   {
     email: "admin@leish.my",
-    password: "password123",
+    password: "AdminPass2026!",
     user_metadata: { role: "admin", full_name: "Admin User" },
   },
   {
     email: "studio@leish.my",
-    password: "password123",
+    password: "StudioPass2026!",
     user_metadata: { role: "studio", full_name: "Studio Owner" },
   },
 ]

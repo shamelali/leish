@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { isPasswordPwned } from "@/lib/ops/password-check"
 
 export default function UpdatePasswordPage() {
   const router = useRouter()
@@ -35,6 +36,16 @@ export default function UpdatePasswordPage() {
 
     if (password.length < 12) {
       setMessage({ type: "error", text: "Password must be at least 8 characters." })
+      setLoading(false)
+      return
+    }
+
+    const pwnedCount = await isPasswordPwned(password)
+    if (pwnedCount !== null && pwnedCount > 0) {
+      setMessage({
+        type: "error",
+        text: `This password has been exposed in ${pwnedCount.toLocaleString()} data breach(es). Please choose a different password.`,
+      })
       setLoading(false)
       return
     }

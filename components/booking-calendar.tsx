@@ -7,11 +7,13 @@ import {
   Check,
   Smartphone,
   Loader2,
+  MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type Artist, type Studio } from "@/lib/data";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import Link from "next/link";
+import { PlacesInput } from "@/components/maps/places-input";
 
 type BookingStep = 1 | 2 | 3 | 4;
 
@@ -80,6 +82,13 @@ export function BookingCalendar({
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [contactNotes, setContactNotes] = useState("");
+
+  // Location / travel fee
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [selectedPlace, setSelectedPlace] = useState<{label: string; placeId: string; lat: number; lng: number} | null>(null);
+  const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
+  const [travelFee, setTravelFee] = useState<number | null>(null);
+  const [travelDistance, setTravelDistance] = useState<number | null>(null);
 
   // Payment
   const [paymentOption, setPaymentOption] = useState<PaymentOption>("full");
@@ -195,6 +204,35 @@ export function BookingCalendar({
     return digits.replace(/(\d{4})(?=\d)/g, "$1 ");
   }, []);
 
+  const calcTravelFeeForAddress = useCallback(async (address: string, place: typeof selectedPlace) => {
+    if (!address.trim() || !place) {
+      setTravelFee(null);
+      setTravelDistance(null);
+      return;
+    }
+    setIsCalculatingTravel(true);
+    try {
+      const res = await fetch("/api/maps/calculate-travel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ providerId: entity.id, address }),
+      });
+      if (res.ok) {
+        const data = await res.json() as { travelFee: number; distanceKm: number };
+        setTravelFee(data.travelFee);
+        setTravelDistance(data.distanceKm);
+      } else {
+        setTravelFee(null);
+        setTravelDistance(null);
+      }
+    } catch {
+      setTravelFee(null);
+      setTravelDistance(null);
+    } finally {
+      setIsCalculatingTravel(false);
+    }
+  }, [entity.id]);
+
   const findNextAvailableDates = useCallback(async () => {
     if (!selectedDate) return;
     setSearchingNextSlots(true);
@@ -252,6 +290,7 @@ export function BookingCalendar({
           serviceId: service?.name ?? "",
           slotId: selectedTimeId || "",
           notes: contactNotes,
+          address: selectedPlace?.label ?? "",
           totalAmountMyr: totalPrice,
         }),
       });
@@ -323,6 +362,10 @@ export function BookingCalendar({
     setContactEmail("");
     setContactPhone("");
     setContactNotes("");
+    setCustomerAddress("");
+    setSelectedPlace(null);
+    setTravelFee(null);
+    setTravelDistance(null);
     setPaymentOption("full");
     setCardNumber("");
     setCardExpiry("");
@@ -820,6 +863,41 @@ export function BookingCalendar({
                     className="mt-1.5 sm:mt-2 w-full resize-none border border-border bg-background px-3 sm:px-4 py-2.5 sm:py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none"
                   />
                 </div>
+                <div>
+                  <label className="block text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                    Your Location
+                  </label>
+                  <PlacesInput
+                    value={customerAddress}
+                    onChange={(place, raw) => {
+                      setCustomerAddress(raw);
+                      setSelectedPlace(place);
+                      if (place) {
+                        calcTravelFeeForAddress(raw, place);
+                      } else {
+                        setTravelFee(null);
+                        setTravelDistance(null);
+                      }
+                    }}
+                    placeholder="Enter your address for travel fee estimate"
+                    className="mt-1.5 sm:mt-2 w-full border border-border bg-background px-3 sm:px-4 py-2.5 sm:py-3 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none"
+                  />
+                  {isCalculatingTravel && (
+                    <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Calculating travel fee...
+                    </p>
+                  )}
+                  {!isCalculatingTravel && travelFee !== null && (
+                    <p className="mt-1 flex items-center gap-1 text-xs">
+                      <MapPin className="h-3 w-3 text-accent" />
+                      <span className="text-muted-foreground">{travelDistance ? `${travelDistance.toFixed(1)} km — ` : ""}</span>
+                      <span className={travelFee > 0 ? "text-accent font-medium" : "text-muted-foreground"}>
+                        {travelFee > 0 ? `MYR ${travelFee.toFixed(2)} travel fee` : "Free travel (within radius)"}
+                      </span>
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -887,6 +965,15 @@ export function BookingCalendar({
                     {selectedSlot?.slot ?? "-"}
                   </span>
                 </div>
+                {travelFee !== null && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Travel Fee</span>
+                    <span className={travelFee > 0 ? "text-accent" : "text-muted-foreground"}>
+                      {travelFee > 0 ? `MYR ${travelFee.toFixed(2)}` : "Free"}
+                      {travelDistance ? ` (${travelDistance.toFixed(1)} km)` : ""}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 

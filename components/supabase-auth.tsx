@@ -7,6 +7,7 @@ import { Eye, EyeOff, Loader2, ShieldAlert } from "lucide-react"
 import { PasswordValidator } from "@/lib/password-check"
 import { routeUserAfterSignIn, routeUserAfterSignUp } from "@/components/auth/sign-in-helpers"
 import { RoleSelectDialog } from "@/components/auth/role-select-dialog"
+import { isPasswordPwned } from "@/lib/ops/password-check"
 import type { UserRole } from "@/lib/routing"
 
 export type { UserRole }
@@ -67,6 +68,16 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
 
     if (!result.valid) {
       setMessage({ type: "error", text: result.errors.join(". ") })
+      setLoading(false)
+      return
+    }
+
+    const pwnedCount = await isPasswordPwned(password)
+    if (pwnedCount !== null && pwnedCount > 0) {
+      setMessage({
+        type: "error",
+        text: `This password has been exposed in ${pwnedCount.toLocaleString()} data breach(es). Please choose a different password.`,
+      })
       setLoading(false)
       return
     }
