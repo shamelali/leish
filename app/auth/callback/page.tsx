@@ -44,10 +44,15 @@ export default function AuthCallbackPage() {
         }
 
         // Apply role from Google sign-in dialog selection (new users only)
-        // Read selected role from URL param (primary) or sessionStorage (fallback)
-        const urlParams = new URLSearchParams(window.location.search)
-        const pendingRole = (urlParams.get("provider_role") || sessionStorage.getItem("pendingOAuthRole")) as UserRole | null
+        // Read selected role from cookie (primary, survives cross-origin redirect) or sessionStorage (fallback)
+        const pendingRoleRaw =
+          document.cookie.split(";").find(c => c.trim().startsWith("pendingOAuthRole="))
+            ?.split("=")[1]
+          || sessionStorage.getItem("pendingOAuthRole")
+        const pendingRole = (pendingRoleRaw ? decodeURIComponent(pendingRoleRaw) : null) as UserRole | null
+        // Clean up both storage mechanisms
         sessionStorage.removeItem("pendingOAuthRole")
+        document.cookie = "pendingOAuthRole=;path=/;max-age=0"
         if (pendingRole && pendingRole !== "customer" && role === "customer" && profile) {
           role = pendingRole
           await supabase.from("profiles").update({ role: pendingRole }).eq("id", user.id)
