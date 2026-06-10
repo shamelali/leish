@@ -73,8 +73,10 @@ const GoogleOneTap = () => {
             console.error('Google One Tap sign-in failed:', error)
           }
         },
-        nonce: hashedNonce,
         cancel_on_tap_outside: true,
+        params: {
+          nonce: hashedNonce,
+        },
       })
       google.accounts.id.prompt()
     } catch {
