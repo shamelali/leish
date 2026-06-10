@@ -44,7 +44,9 @@ export default function AuthCallbackPage() {
         }
 
         // Apply role from Google sign-in dialog selection (new users only)
-        const pendingRole = sessionStorage.getItem("pendingOAuthRole") as UserRole | null
+        // Read selected role from URL param (primary) or sessionStorage (fallback)
+        const urlParams = new URLSearchParams(window.location.search)
+        const pendingRole = (urlParams.get("provider_role") || sessionStorage.getItem("pendingOAuthRole")) as UserRole | null
         sessionStorage.removeItem("pendingOAuthRole")
         if (pendingRole && pendingRole !== "customer" && role === "customer" && profile) {
           role = pendingRole

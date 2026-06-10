@@ -210,7 +210,8 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
 
     sessionStorage.setItem("pendingOAuthRole", selectedRole)
 
-    const redirectTo = `${window.location.origin}/auth/callback`
+    const base = `${window.location.origin}/auth/callback`
+    const redirectTo = `${base}${base.includes("?") ? "&" : "?"}provider_role=${encodeURIComponent(selectedRole)}`
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
