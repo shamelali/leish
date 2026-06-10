@@ -1,19 +1,22 @@
 "use client"
 
-type SuggestionChipsProps = {
+export function SuggestionChips({
+  suggestions,
+  onSelect,
+}: {
   suggestions: string[]
   onSelect: (suggestion: string) => void
-}
+}) {
+  if (!suggestions.length) return null
 
-export function SuggestionChips({ suggestions, onSelect }: SuggestionChipsProps) {
   return (
-    <div className="mt-2 flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5">
       {suggestions.map((suggestion) => (
         <button
           key={suggestion}
           type="button"
           onClick={() => onSelect(suggestion)}
-          className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground transition-all hover:border-accent hover:text-foreground"
+          className="rounded-full border border-border bg-muted/50 px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-accent hover:text-accent"
         >
           {suggestion}
         </button>

@@ -1,10 +1,11 @@
 "use client"
 
-import { Star } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
+import { Star, MapPin, Sparkles } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-type ArtistCardProps = {
+export type Recommendation = {
   artist: {
     id: string
     name: string
@@ -16,46 +17,55 @@ type ArtistCardProps = {
     review_count: number
   }
   reason: string
-  onClickTrack?: (artistId: string) => void
 }
 
-export function ArtistCard({ artist, reason, onClickTrack }: ArtistCardProps) {
+export function ArtistCard({
+  artist,
+  reason,
+  onClickTrack,
+}: Recommendation & { onClickTrack?: (id: string) => void }) {
+  const initials = artist.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2)
+
   return (
-    <Link
-      href={`/artists/${artist.username}`}
+    <Card
+      className="cursor-pointer overflow-hidden border-border bg-card p-3 transition-colors hover:border-primary"
       onClick={() => onClickTrack?.(artist.id)}
-      className="group flex items-start gap-3 border border-border bg-card p-3 transition-all hover:border-accent"
     >
-      <div className="relative size-12 shrink-0 overflow-hidden border border-border">
-        {artist.avatar_url ? (
-          <Image src={artist.avatar_url} alt={artist.name} fill className="object-cover" sizes="48px" />
-        ) : (
-          <div className="flex size-full items-center justify-center bg-muted text-xs text-muted-foreground">
-            {artist.name.charAt(0)}
+      <div className="flex items-start gap-3">
+        <Avatar className="h-10 w-10 shrink-0">
+          <AvatarImage src={artist.avatar_url || undefined} alt={artist.name} />
+          <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm font-medium">{artist.name}</span>
+            {artist.is_available && (
+              <Badge variant="default" className="h-5 px-1.5 text-[10px]">
+                Available
+              </Badge>
+            )}
           </div>
-        )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate text-sm font-medium text-foreground group-hover:text-accent">
-            {artist.name}
-          </span>
-          {artist.is_available && (
-            <span className="shrink-0 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] text-green-700">
-              Available
+          <div className="mt-0.5 flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Star className="h-3 w-3 text-yellow-500" />
+              {artist.rating ? `${artist.rating.toFixed(1)} (${artist.review_count})` : "No reviews"}
             </span>
-          )}
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              @{artist.username}
+            </span>
+          </div>
+          <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+            <Sparkles className="h-3 w-3 shrink-0 text-accent" />
+            <span className="italic">{reason}</span>
+          </div>
         </div>
-        {artist.rating != null && (
-          <div className="mt-0.5 flex items-center gap-1">
-            <Star className="size-3 fill-amber-400 text-amber-400" />
-            <span className="text-xs text-muted-foreground">
-              {artist.rating.toFixed(1)} ({artist.review_count})
-            </span>
-          </div>
-        )}
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2">{reason}</p>
       </div>
-    </Link>
+    </Card>
   )
 }
