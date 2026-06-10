@@ -62,6 +62,7 @@ export function Navbar() {
     if (!supabase) return
     await supabase.auth.signOut()
     setSheetOpen(false)
+    window.location.href = "/"
   }
 
    return (
