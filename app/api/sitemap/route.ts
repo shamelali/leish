@@ -9,12 +9,7 @@ export async function GET() {
     { loc: "/studios", priority: "0.9" },
     { loc: "/register", priority: "0.7" },
     { loc: "/sign-in", priority: "0.5" },
-    { loc: "/booking", priority: "0.8" },
     { loc: "/pricing", priority: "0.7" },
-    { loc: "/about", priority: "0.6" },
-    { loc: "/privacy", priority: "0.4" },
-    { loc: "/terms", priority: "0.4" },
-    { loc: "/mua", priority: "0.6" },
     { loc: "/quiz", priority: "0.5" },
   ]
 
