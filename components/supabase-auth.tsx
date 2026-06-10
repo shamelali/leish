@@ -193,6 +193,13 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
   }
 
   const handleGoogleSignIn = () => {
+    // If a role was already selected on /auth/pick-role, use it directly
+    const stored = document.cookie.split(";").find(c => c.trim().startsWith("pendingOAuthRole="))
+    const storedRole = stored ? decodeURIComponent(stored.split("=")[1]) : null
+    if (storedRole && ["artist", "studio", "customer"].includes(storedRole)) {
+      handleGoogleRoleSelect(storedRole as UserRole)
+      return
+    }
     setShowRoleDialog(true)
   }
 
