@@ -21,7 +21,7 @@ export async function routeUserAfterSignIn(supabase: NonNullable<ReturnType<type
 }
 
 export function routeUserAfterSignUp(role: UserRole) {
-  if (role === "artist") return "/onboarding"
-  if (role === "studio") return "/onboarding"
+  if (role === "artist") return "/artist/onboarding"
+  if (role === "studio") return "/studios/onboarding"
   return getPostAuthRedirect(role, false)
 }
