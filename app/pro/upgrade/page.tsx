@@ -114,11 +114,6 @@ export default function ProUpgradePage() {
   const isPro = provider?.tier === "pro"
 
   const nav = [
-    { href: "/pro", label: "Dashboard" },
-    { href: "/pro/bookings", label: "Bookings" },
-    { href: "/pro/services", label: "Services" },
-    { href: "/pro/availability", label: "Availability" },
-    { href: "/pro/profile", label: "Profile" },
     { href: "/pro/upgrade", label: "Upgrade", active: true },
   ]
 

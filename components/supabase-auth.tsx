@@ -91,6 +91,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
           full_name: fullName,
           phone,
         },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
 
