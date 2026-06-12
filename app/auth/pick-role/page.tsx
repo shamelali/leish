@@ -20,18 +20,18 @@ export default function PickRolePage() {
     processed.current = true
     setLoading(true)
 
-    // Store role in cookie and sessionStorage before sign-in
+  // Store role in cookie and sessionStorage before sign-in
     sessionStorage.setItem("pendingOAuthRole", role)
     document.cookie = `pendingOAuthRole=${encodeURIComponent(role)};path=/;max-age=600;samesite=none;secure`
 
     const supabase = getSupabaseBrowserClient()
-    if (!supabase) { router.replace("/sign-in"); return }
+    if (!supabase) { router.replace("/sign-up"); return }
 
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      // Not signed in — redirect to sign-in; role is stored in cookie
-      router.replace("/sign-in")
+      // Not signed in — redirect to sign-up; role is stored in cookie
+      router.replace("/sign-up")
       return
     }
 

@@ -38,6 +38,62 @@ async function waitForProfile(
   return null
 }
 
+async function resolveUserRole(
+  supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+  user: any,
+  profile: { role: string } | null
+): Promise<UserRole> {
+  let role: UserRole = "customer"
+  if (profile) {
+    const r = profile.role as UserRole
+    if (["admin", "artist", "studio"].includes(r)) role = r
+  }
+
+  let pendingRole: UserRole | null = null
+  const ss = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("pendingOAuthRole") : null
+  if (ss && ["artist", "studio", "customer"].includes(ss)) {
+    pendingRole = ss as UserRole
+  } else {
+    const stored = document.cookie.split(";").find(c => c.trim().startsWith("pendingOAuthRole="))
+    const raw = stored ? decodeURIComponent(stored.split("=")[1]) : null
+    if (raw && ["artist", "studio", "customer"].includes(raw)) {
+      pendingRole = raw as UserRole
+    }
+  }
+
+  if (pendingRole && pendingRole !== "customer" && role === "customer" && profile) {
+    role = pendingRole
+    await supabase.from("profiles").update({ role: pendingRole }).eq("id", user.id)
+  }
+
+  return role
+}
+
+function cleanupPendingRole() {
+  try {
+    sessionStorage.removeItem("pendingOAuthRole")
+  } catch {}
+  document.cookie = "pendingOAuthRole=;path=/;max-age=0;samesite=none;secure"
+}
+
+async function getProviderInfo(
+  supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+  userId: string,
+  role: UserRole
+) {
+  if (role === "customer" || role === "admin") return null
+
+  const kind = role === "artist" ? "artist" : "studio"
+  const { data } = await supabase
+    .from("providers")
+    .select("id, slug")
+    .eq("owner_id", userId)
+    .eq("kind", kind)
+    .maybeSingle()
+
+  return data
+}
+
 export default function AuthCallbackPage() {
   const router = useRouter()
   const processed = useRef(false)
@@ -55,47 +111,12 @@ export default function AuthCallbackPage() {
         if (!user) { router.replace("/sign-in"); return }
 
         const profile = await waitForProfile(supabase, user.id)
+        const role = await resolveUserRole(supabase, user, profile)
 
-        let role: UserRole = "customer"
-        if (profile) {
-          const r = profile.role as UserRole
-          if (["admin","artist","studio"].includes(r)) role = r
-        }
+        cleanupPendingRole()
 
-        // Read selected role from sessionStorage (survives same-tab cross-origin navigations)
-        // Cookie is fallback for browsers that clear sessionStorage on redirect
-        let pendingRole: UserRole | null = null
-
-        // Try sessionStorage first
-        const ss = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("pendingOAuthRole") : null
-        if (ss && ["artist", "studio", "customer"].includes(ss)) {
-          pendingRole = ss as UserRole
-        } else {
-          // Fallback: try cookie
-          const stored = document.cookie.split(";").find(c => c.trim().startsWith("pendingOAuthRole="))
-          const raw = stored ? decodeURIComponent(stored.split("=")[1]) : null
-          if (raw && ["artist", "studio", "customer"].includes(raw)) {
-            pendingRole = raw as UserRole
-          }
-        }
-
-        // Clean up both storage mechanisms
-        try { sessionStorage.removeItem("pendingOAuthRole") } catch {}
-        document.cookie = "pendingOAuthRole=;path=/;max-age=0;samesite=none;secure"
-
-        // Apply role from sign-up dialog selection (new users only)
-        if (pendingRole && pendingRole !== "customer" && role === "customer" && profile) {
-          role = pendingRole
-          await supabase.from("profiles").update({ role: pendingRole }).eq("id", user.id)
-        }
-
-        // Check onboarding status for artist/studio roles
-        const kind = role === "artist" ? "artist" : "studio"
-        const { data: provider } = role === "customer" || role === "admin"
-          ? { data: null }
-          : await supabase.from("providers").select("id, slug").eq("owner_id", user.id).eq("kind", kind).maybeSingle()
-
-        router.replace(getPostAuthRedirect(role, !!provider, (provider as { slug?: string } | null)?.slug))
+        const provider = await getProviderInfo(supabase, user.id, role)
+        router.replace(getPostAuthRedirect(role, !!provider, provider?.slug))
       } catch (e) {
         console.error("[Leish] Auth callback error:", e)
         router.replace("/")

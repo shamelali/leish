@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Eye, EyeOff, Loader2, ShieldAlert } from "lucide-react"
 import { PasswordValidator } from "@/lib/password-check"
@@ -36,7 +37,8 @@ function getScoreColor(score: number): string {
 
 const validator = new PasswordValidator({ checkBreached: false })
 
-export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaultMode?: "signin" | "signup", hideOAuth?: boolean }) {
+export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle }: { defaultMode?: "signin" | "signup", hideOAuth?: boolean, hideToggle?: boolean }) {
+  const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -114,11 +116,11 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
     await new Promise((resolve) => setTimeout(resolve, 800))
 
     if (!data.user) {
-      window.location.href = "/"
+      router.replace("/")
       return
     }
 
-    window.location.href = routeUserAfterSignUp(role)
+    router.replace(routeUserAfterSignUp(role))
   }
 
   async function checkCredentialStuffing() {
@@ -161,11 +163,12 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
     clearFailedAttempts()
 
     if (!data.user) {
-      window.location.href = "/"
+      router.replace("/")
       return
     }
 
-    await routeUserAfterSignIn(supabase, data.user.id)
+    const redirectUrl = await routeUserAfterSignIn(supabase, data.user.id)
+    router.replace(redirectUrl)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -491,24 +494,26 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth }: { defaul
         </>
       )}
 
-      <button
-        type="button"
-        onClick={() => {
-          setIsSignUp(!isSignUp)
-          setMessage(null)
-          if (!isSignUp) {
-            setRole("customer")
-            setFullName("")
-            setPhone("")
+      {!hideToggle && (
+        <button
+          type="button"
+          onClick={() => {
+            setIsSignUp(!isSignUp)
+            setMessage(null)
+            if (!isSignUp) {
+              setRole("customer")
+              setFullName("")
+              setPhone("")
+            }
+          }}
+          className="w-full text-sm text-muted-foreground hover:text-foreground"
+        >
+          {isSignUp
+            ? "Already have an account? Sign In"
+            : "Don't have an account? Sign Up"
           }
-        }}
-        className="w-full text-sm text-muted-foreground hover:text-foreground"
-      >
-        {isSignUp
-          ? "Already have an account? Sign In"
-          : "Don't have an account? Sign Up"
-        }
-      </button>
+        </button>
+      )}
 
       <RoleSelectDialog
         open={showRoleDialog}
