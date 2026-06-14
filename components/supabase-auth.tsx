@@ -84,7 +84,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
       return
     }
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -99,7 +99,19 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
 
     if (signUpError) throw signUpError
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+    // Auto-confirm the user server-side to handle cases where
+    // confirmation email lands in spam (DKIM/DMARC not yet set up)
+    if (data.user?.id) {
+      fetch("/api/auth/auto-confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: data.user.id }),
+      }).catch(() => {})
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
@@ -113,9 +125,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
       return
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 800))
-
-    if (!data.user) {
+    if (!signInData.user) {
       router.replace("/")
       return
     }
