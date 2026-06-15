@@ -30,6 +30,9 @@ debug.log
 dist/
 build/
 
+# Turbo
+.turbo/
+
 # TypeScript
 *.tsbuildinfo
 

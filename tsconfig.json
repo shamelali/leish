@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@leish/shared/*": [
+        "./packages/shared/*"
       ]
     }
   },
@@ -38,6 +41,8 @@
   ],
   "exclude": [
     "node_modules",
-    "tools"
+    "tools",
+    "apps",
+    "packages/shared/node_modules"
   ]
 }

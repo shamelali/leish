@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Outfit, Space_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { CloudflareAnalytics } from '@leish/shared/lib/analytics/cloudflare-analytics'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { AiConcierge } from '@/components/ai-concierge'
@@ -92,6 +93,7 @@ export default function RootLayout({
               <AiConcierge />
               {process.env.NODE_ENV !== 'development' && <Analytics />}
               {process.env.NODE_ENV !== 'development' && <SpeedInsights />}
+              <CloudflareAnalytics />
             </ErrorBoundary>
           </LanguageProvider>
         </ThemeProvider>

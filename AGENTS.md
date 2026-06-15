@@ -7,9 +7,12 @@ This file provides guidance to agents when working with code in this repository.
 ## Non-Obvious Project Rules
 
 ### Build/Test Commands
-- Run `npm run typecheck` before `npm run lint` - type errors break linting
-- `npm test` runs Vitest with coverage - use `npm test -- --watch` for TDD
-- `npm run verify-env` runs automatically before build via `prebuild` hook
+- **Package manager:** `pnpm` (not npm). Install with `npm install -g pnpm`.
+- Run `pnpm typecheck` before `pnpm lint` - type errors break linting
+- `pnpm test` runs Vitest with coverage - use `pnpm test -- --watch` for TDD
+- `turbo` commands: `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`
+- Individual apps: `pnpm dev:web` (port 3000), `pnpm dev:artist` (port 3001), `pnpm dev:studio` (port 3002)
+- Dev root directly: `pnpm dev:root` (uses root next.config, port 3000)
 - Tests can live alongside source files OR in `__tests__/` sibling directory
 
 ### Critical Booking Rules (Do Not Break)
@@ -96,6 +99,29 @@ Install VS Code extension "GitHub Copilot Workspace" and configure in `.github/c
 - ALWAYS use slot ID (not label) when creating bookings
 
 ---
+
+## Monorepo Structure
+
+This is a **pnpm TurboRepo monorepo** with 3 deployable apps:
+
+```
+leish-main/                    ← Root (www.leish.my — marketing + admin + customer)
+├── apps/
+│   ├── artist/                → artist.leish.my (artist booking portal)
+│   └── studio/                → studio.leish.my (studio booking portal)
+├── packages/
+│   └── shared/                → @leish/shared (auth, services, i18n, types, UI)
+├── turbo.json
+└── pnpm-workspace.yaml
+```
+
+### Import Conventions
+- **Shared code** (auth, services, i18n, types, utils): `import { ... } from "@leish/shared/lib/..."`
+- **App-local code** (pages, components, api routes): `import { ... } from "@/..."` (scoped to that app)
+- **CSS**: each app has its own `styles/globals.css` (copies from `packages/shared/styles/globals.css`)
+
+### Cross-Subdomain Auth
+All 3 apps share a single Supabase Auth project. Cookies are configured with `domain: ".leish.my"` in `packages/shared/lib/auth/ssr.ts` and middleware to share sessions across subdomains.
 
 ## Stack (For Reference)
 - Next.js 16 (App Router) + TypeScript
@@ -374,3 +400,53 @@ Fix high auth email bounce rate by configuring Brevo SMTP for Supabase Auth emai
 ### Files
 - `lib/email/brevo.ts` — uses `BREVO_API_KEY` for transactional emails (unchanged)
 - Supabase project `rmsjrhamjmupvrxqyagm` — SMTP config applied via `PATCH /v1/projects/.../config/auth`
+
+## Session Anchored Summary (15 June 2026)
+
+### Goal
+Revamp monolith into TurboRepo monorepo with 3 subdomain apps: www.leish.my, artist.leish.my, studio.leish.my.
+
+### Done
+- **Switched from npm to pnpm** — `pnpm-workspace.yaml`, `turbo.json`, `.npmrc`
+- **Created `packages/shared/` (@leish/shared)** — Clean, reorganized shared library:
+  - Auth layer: 7 files (`client`, `server`, `ssr`, `middleware`, `routing`, `helpers`, `callback`) with cross-subdomain cookie support (`domain: ".leish.my"`)
+  - Types: `database.ts`, `index.ts` (UserRole)
+  - i18n: `context.tsx`, `translations.ts` (en + ms)
+  - Services: `db.ts`, `env.ts`, `utils.ts`
+  - Styles: `globals.css` (Tailwind v4 theme)
+- **Created `apps/artist/`** (@leish/artist → artist.leish.my):
+  - 10 pages (dashboard, bookings, payments, reviews, availability, profile, charges, onboarding, public profile, 404)
+  - 5 API routes (bookings, availability, services, reviews, health)
+  - Components: navbar, footer, dashboard shell, booking calendar, loyalty card, etc.
+- **Created `apps/studio/`** (@leish/studio → studio.leish.my):
+  - 10 pages (dashboard, rooms, photos, gallery, onboarding, public profile, booking, 404)
+  - 5 API routes (rooms, room[id], availability, bookings, health)
+  - Components: navbar, footer, dashboard shell, booking calendar, gallery grid, etc.
+- **Updated `vercel.json`** — Removed studio.leish.my redirects (now separate app), added pnpm install command
+- **Updated `next.config.mjs`** — Added `transpilePackages: ["@leish/shared"]`
+- **All 3 packages pass `typecheck`** — clean TypeScript compilation
+
+### Key Decisions
+- Cross-subdomain auth: Set `domain: ".leish.my"` on all Supabase SSR cookies so www, artist, and studio share one session
+- Root project remains as www.leish.my (no move to `apps/web/` yet) — keeps migration low-risk
+- Each app has its own `styles/globals.css` copied from shared (Tailwind v4 doesn't support CSS package imports cleanly)
+- Auth code completely reorganized from `lib/supabase/` + `components/auth/` + `lib/routing.ts` → single `packages/shared/lib/auth/` module
+- pnpm `shamefully-hoist=true` for Radix UI peer dependency compatibility
+
+### DNS Setup Required
+```
+artist.leish.my  → CNAME → cname.vercel-dns.com  (Vercel project: leish-artist)
+studio.leish.my  → CNAME → cname.vercel-dns.com  (Vercel project: leish-studio)
+www.leish.my     → CNAME → cname.vercel-dns.com  (Vercel project: leish-web)
+leish.my         → redirect → www.leish.my
+```
+
+### Relevant Files
+- `pnpm-workspace.yaml` — new workspace config
+- `turbo.json` — new task pipeline
+- `packages/shared/` — shared library (18 files)
+- `apps/artist/` — artist subdomain app (25 files)
+- `apps/studio/` — studio subdomain app (25 files)
+- `vercel.json` — updated for pnpm + removed studio redirects
+- `next.config.mjs` — added transpilePackages
+- `AGENTS.md` — monorepo structure section added
