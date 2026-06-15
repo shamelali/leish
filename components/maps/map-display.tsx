@@ -17,15 +17,12 @@ export function MapDisplay({ address, title, className }: MapDisplayProps) {
   const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
   useEffect(() => {
-    if (!key) {
-      setError("Google Maps API key not configured")
-      return
-    }
+    if (!key) return
     loadMapsApi(key, "places").then(() => setLoaded(true))
   }, [key])
 
   useEffect(() => {
-    if (!loaded || !mapRef.current || !address) return
+    if (!key || !loaded || !mapRef.current || !address) return
 
     const geocoder = new window.google.maps.Geocoder()
     geocoder.geocode({ address }, (results: any, status: string) => {
@@ -46,13 +43,22 @@ export function MapDisplay({ address, title, className }: MapDisplayProps) {
         fullscreenControl: false,
       })
 
+      // eslint-disable-next-line sonarjs/constructor-for-side-effects
       new window.google.maps.Marker({
         map,
         position: { lat, lng },
         title: title || address,
       })
     })
-  }, [loaded, address, title])
+  }, [key, loaded, address, title])
+
+  if (!key) {
+    return (
+      <div className={cn("flex items-center justify-center rounded-sm border border-border bg-secondary text-sm text-muted-foreground", className)}>
+        Google Maps API key not configured
+      </div>
+    )
+  }
 
   if (error) {
     return (
