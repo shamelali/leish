@@ -45,14 +45,6 @@ async function normalizeStatus(
   supabase: ReturnType<typeof getServiceClient>,
   status: string
 ) {
-  if (status === "canceled" && (await isStatusSupported(supabase, "cancelled"))) {
-    return "cancelled"
-  }
-
-  if ((status === "paid_deposit" || status === "paid_full") && (await isStatusSupported(supabase, "completed"))) {
-    return "completed"
-  }
-
   return status
 }
 
@@ -264,8 +256,8 @@ export const bookingSupabaseService = {
     // Validate transition
     const allowedTransitions: Record<string, string[]> = {
       pending: ["payment_required", "canceled"],
-      payment_required: ["confirmed", "canceled"],
-      confirmed: ["paid_deposit", "paid_full", "completed", "canceled", "cancelled"],
+      payment_required: ["confirmed", "paid_deposit", "paid_full", "canceled"],
+      confirmed: ["paid_deposit", "paid_full", "completed", "canceled"],
       paid_deposit: ["completed", "canceled"],
       paid_full: ["completed", "refunded"],
       completed: [],
@@ -274,15 +266,12 @@ export const bookingSupabaseService = {
     }
 
     const current = booking.status
-    const normalizedAllowedTransitions = (allowedTransitions[current] ?? []).map((s) =>
-      s === "canceled" ? "cancelled" : s
-    )
-    if (current !== normalizedNextStatus && !normalizedAllowedTransitions.includes(normalizedNextStatus)) {
+    if (current !== normalizedNextStatus && !(allowedTransitions[current] ?? []).includes(normalizedNextStatus)) {
       throw new Error(`Invalid transition ${current} -> ${normalizedNextStatus}`)
     }
 
     // If canceling, free up the slot
-    if ((normalizedNextStatus === "canceled" || normalizedNextStatus === "cancelled") && booking.slot_id) {
+    if (normalizedNextStatus === "canceled" && booking.slot_id) {
       await supabase
         .from("availability_slots")
         .update({ is_booked: false })

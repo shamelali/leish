@@ -28,6 +28,7 @@ describeIf("Booking Load Tests", () => {
     supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     })
+  })
 
   it("should handle 10 concurrent booking attempts on same slot (only 1 succeeds)", async () => {
     // Create a single slot
@@ -266,5 +267,4 @@ describeIf("Booking Load Tests", () => {
     }
     await supabase.from("availability_slots").delete().eq("id", slot!.id)
   })
-})
 })

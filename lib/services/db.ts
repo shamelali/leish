@@ -58,7 +58,7 @@ export function validateBookingTransition(current: string, next: string) {
   const allowed: Record<string, string[]> = {
     pending: ["payment_required", "canceled"],
     payment_required: ["confirmed", "canceled"],
-    confirmed: ["paid_deposit", "paid_full", "canceled"],
+    confirmed: ["paid_deposit", "paid_full", "completed", "canceled"],
     paid_deposit: ["completed", "canceled"],
     paid_full: ["completed", "refunded"],
     completed: [],
