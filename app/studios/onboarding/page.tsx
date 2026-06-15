@@ -32,7 +32,7 @@ export default async function StudioOnboardingPage() {
             Sign In
           </Link>
           <Link
-            href="/register"
+            href="/sign-up"
             className="inline-flex items-center gap-2 border border-border px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-accent"
           >
             Register
