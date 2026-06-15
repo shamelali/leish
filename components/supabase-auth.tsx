@@ -262,7 +262,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
   let buttonLabel: string;
   if (isSignUp) {
     if (defaultMode === "signup") {
-      buttonLabel = "Register";
+      buttonLabel = "Sign Up";
     } else if (role === "customer") {
       buttonLabel = "Create Account";
     } else {

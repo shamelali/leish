@@ -115,10 +115,10 @@ export function Navbar() {
             ) : (
              <>
                 <Link
-                  href="/register"
+                  href="/sign-up"
                   className="hidden rounded-full border border-border/60 px-4 py-2 font-serif text-sm font-semibold tracking-[-0.01em] text-muted-foreground transition-colors hover:text-foreground md:inline-block mr-2"
                 >
-                  {t.auth.registerTitle}
+                  {t.auth.signUpTitle}
                 </Link>
                 <Link
                   href="/sign-in"
@@ -191,11 +191,11 @@ export function Navbar() {
                     ) : (
                      <>
                         <Link
-                          href="/register"
+                          href="/sign-up"
                           onClick={() => setSheetOpen(false)}
                           className="flex min-h-12 w-full items-center justify-center rounded-full border border-border px-4 font-serif text-sm font-semibold tracking-[-0.01em] text-foreground transition-colors hover:border-foreground mb-2"
                         >
-                          {t.auth.registerTitle}
+                          {t.auth.signUpTitle}
                         </Link>
                         <Link
                           href="/sign-in"

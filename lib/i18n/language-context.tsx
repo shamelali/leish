@@ -117,6 +117,7 @@ const translations = {
     auth: {
       signInTitle: "Sign In",
       signInSubtitle: "Access your account to manage bookings and availability.",
+      signUpTitle: "Sign Up",
       registerTitle: "Register",
       registerSubtitle: "Create an account to book artists or offer your services.",
       email: "Email",
@@ -373,6 +374,7 @@ const translations = {
     auth: {
       signInTitle: "Log Masuk",
       signInSubtitle: "Akses akaun anda untuk menguruskan tempahan dan ketersediaan.",
+      signUpTitle: "Daftar",
       registerTitle: "Daftar",
       registerSubtitle: "Buat akaun untuk menempah artis atau menawarkan perkhidmatan anda.",
       email: "Emel",

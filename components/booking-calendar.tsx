@@ -574,7 +574,7 @@ export function BookingCalendar({
                   href="/sign-in"
                   className="mt-3 inline-flex w-full items-center justify-center rounded-lg border border-accent bg-accent px-4 py-2 text-xs font-medium text-accent-foreground transition-colors hover:bg-accent/90"
                 >
-                  Sign In / Register
+                  Sign In / Sign Up
                 </Link>
               </div>
             )}
@@ -789,7 +789,7 @@ export function BookingCalendar({
                   href="/sign-in"
                   className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-accent bg-accent px-4 py-3 text-sm font-medium text-accent-foreground transition-colors hover:bg-accent/90"
                 >
-                  Sign In / Register
+                  Sign In / Sign Up
                 </Link>
                 <p className="mt-3 text-xs text-muted-foreground">
                   Already have an account? Sign in to auto-fill your details
