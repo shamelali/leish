@@ -183,7 +183,7 @@ export default async function AccountPage() {
             )}
             {(role === "artist" || role === "studio") && (
               <Link
-                href="/studios/dashboard"
+                href={role === "studio" ? "/studio/dashboard" : "/artist/dashboard"}
                 className="inline-flex items-center gap-2 border border-foreground bg-foreground px-4 py-2 text-xs font-medium uppercase tracking-widest text-primary-foreground transition-colors hover:bg-accent hover:border-accent"
               >
                 Dashboard
@@ -256,19 +256,19 @@ export default async function AccountPage() {
         {(role === "artist" || role === "studio") && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <QuickLink
-              href="/studios/dashboard"
+              href={role === "studio" ? "/studio/dashboard" : "/artist/dashboard"}
               icon={<Calendar className="h-5 w-5" />}
               title="Bookings"
               description="Manage your upcoming and past bookings"
             />
             <QuickLink
-              href="/studios/dashboard?tab=availability"
+              href={role === "studio" ? "/studio/dashboard" : "/artist/availability"}
               icon={<Clock className="h-5 w-5" />}
               title="Availability"
               description="Set your available time slots"
             />
             <QuickLink
-              href="/studios/dashboard?tab=reviews"
+              href={role === "studio" ? "/studio/dashboard" : "/artist/reviews"}
               icon={<User className="h-5 w-5" />}
               title="Reviews"
               description="View and respond to client reviews"

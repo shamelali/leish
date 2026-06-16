@@ -77,7 +77,7 @@ All suggestions, completions, and agent actions should follow these rules.
 - Auth is handled by **Supabase Auth** with SSR session management.
 - Session refresh runs through `proxy.ts` (not `middleware.ts`).
 - Admin routes are server-guarded — check `profiles.role = 'admin'` server-side.
-- Roles: `admin`, `artist`, `studio_manager`, `customer`.
+- Roles: `admin`, `artist`, `studio`, `customer`.
 - All DB tables must have **RLS policies** — never expose tables without them.
 - Profile insert trigger must be idempotent: `ON CONFLICT (id) DO NOTHING`.
 

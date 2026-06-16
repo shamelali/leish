@@ -20,7 +20,7 @@ This file provides guidance to agents when working in this repository.
 ### Auth & Security
 - **Session**: Refresh uses `proxy.ts`, NOT `middleware.ts`.
 - **RLS**: All tables MUST have RLS. Use `(SELECT auth.uid())` instead of `auth.uid()` in policies to avoid performance warnings.
-- **Roles**: `admin`, `artist`, `studio_manager`, `customer`.
+- **Roles**: `admin`, `artist`, `studio`, `customer`.
 - **Routing**: Post-auth redirects are centralized in `lib/routing.ts`.
 - **OAuth**: Role selection for Google sign-in is handled via `sessionStorage` (`pendingOAuthRole`) and applied in `app/auth/callback/page.tsx`.
 

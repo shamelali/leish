@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic"
 
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
-import { getProDashboardData } from "@/lib/dashboard"
 import { proConfirmBooking, proCancelBooking } from "@/lib/actions/pro"
 
 const STATUS_COLORS: Record<string, string> = {
@@ -14,22 +13,13 @@ const STATUS_COLORS: Record<string, string> = {
   canceled: "text-red-500 dark:text-red-400",
 }
 
-export default async function ProBookingsPage() {
+export default async function ArtistBookingsPage() {
   const supabase = await getSupabaseSsrClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return <p className="p-8">Not authenticated</p>
 
-  const { data: prov } = await supabase
-    .from("providers")
-    .select("id")
-    .eq("owner_id", user.id)
-    .limit(1)
-    .maybeSingle()
-
-  const data = prov?.id ? await getProDashboardData() : { upcomingBookings: [] }
-
   const nav = [
-    { href: "/artist", label: "Overview" },
+    { href: "/artist/dashboard", label: "Overview" },
     { href: "/artist/bookings", label: "Bookings", active: true },
     { href: "/artist/payments", label: "Payments" },
     { href: "/artist/reviews", label: "Reviews" },
@@ -38,52 +28,59 @@ export default async function ProBookingsPage() {
     { href: "/artist/charges", label: "Charges & Fees" },
   ]
 
+  const { data: prov } = await supabase
+    .from("providers").select("id").eq("owner_id", user.id).eq("kind", "artist").maybeSingle()
+
+  if (!prov) {
+    return (
+      <DashboardShell title="Bookings" subtitle="Manage your incoming and upcoming sessions" nav={nav}>
+        <Panel title="No Artist Profile">
+          <p className="text-sm text-muted-foreground">Complete your artist onboarding to manage bookings.</p>
+        </Panel>
+      </DashboardShell>
+    )
+  }
+
+  const { data: bookings } = await supabase
+    .from("bookings")
+    .select(`id, status, total_amount_myr, created_at, profiles!customer_id(full_name), services!service_id(name)`)
+    .eq("provider_id", prov.id)
+    .order("created_at", { ascending: false })
+    .limit(50)
+
   return (
-    <DashboardShell title="Bookings" subtitle="Manage upcoming appointments, statuses, and scheduling changes." nav={nav}>
-      <Panel title={`Upcoming Bookings (${data.upcomingBookings.length})`}>
-        <div className="space-y-3">
-          {data.upcomingBookings.map((b) => (
-            <div key={b.id} className="grid grid-cols-1 gap-3 border border-border bg-background p-4 md:grid-cols-5">
-              <div>
-                <p className="font-serif text-base text-foreground">{b.client || "—"}</p>
-                <p className="text-xs text-muted-foreground">{b.type}</p>
-              </div>
-              <div>
-                <p className="font-mono text-sm text-foreground">{b.date}</p>
-                <p className="font-mono text-xs text-muted-foreground">{b.slot}</p>
-              </div>
-              <p className="self-center font-mono text-sm text-accent">MYR {b.amountMyr}</p>
-              <span className={`self-center font-mono text-xs ${STATUS_COLORS[b.status] ?? "text-muted-foreground"}`}>
-                {b.status}
-              </span>
-              <div className="flex items-center gap-2">
-                {b.status === "pending" && (
-                  <form action={proConfirmBooking.bind(null, b.id)}>
-                    <button
-                      type="submit"
-                      className="border border-border px-3 py-2 text-xs text-foreground hover:border-emerald-500 hover:text-emerald-600"
-                    >
-                      Confirm
-                    </button>
-                  </form>
-                )}
-                {["pending", "confirmed"].includes(b.status) && (
-                  <form action={proCancelBooking.bind(null, b.id)}>
-                    <button
-                      type="submit"
-                      className="border border-border px-3 py-2 text-xs text-foreground hover:border-red-500 hover:text-red-600"
-                    >
-                      Cancel
-                    </button>
-                  </form>
-                )}
-              </div>
-            </div>
-          ))}
-          {data.upcomingBookings.length === 0 && (
-            <p className="py-6 text-center text-sm text-muted-foreground">No upcoming bookings.</p>
-          )}
-        </div>
+    <DashboardShell title="Bookings" subtitle="Manage your incoming and upcoming sessions" nav={nav}>
+      <Panel title="All Bookings">
+        {bookings && bookings.length > 0 ? (
+          <div className="space-y-3">
+            {bookings.map((b) => {
+              const clientName = (b.profiles as unknown as { full_name?: string }[])?.[0]?.full_name ?? "Client"
+              const serviceName = (b.services as unknown as { name?: string }[])?.[0]?.name ?? "Service"
+              return (
+                <div key={b.id} className="flex items-center justify-between border border-border bg-background p-4">
+                  <div>
+                    <p className="font-serif text-base text-foreground">{clientName}</p>
+                    <p className="text-xs text-muted-foreground">{serviceName}</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <p className={`font-mono text-xs ${STATUS_COLORS[b.status] ?? ""}`}>{b.status.replace("_", " ")}</p>
+                    <p className="font-mono text-sm text-accent">MYR {b.total_amount_myr}</p>
+                    {b.status === "pending" && (
+                      <form action={proConfirmBooking.bind(null, b.id)}>
+                        <button type="submit" className="border border-accent bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent hover:text-accent-foreground">Confirm</button>
+                      </form>
+                    )}
+                    <form action={proCancelBooking.bind(null, b.id)}>
+                      <button type="submit" className="border border-border px-3 py-1.5 text-xs text-muted-foreground hover:border-destructive hover:text-destructive">Cancel</button>
+                    </form>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">No bookings yet.</p>
+        )}
       </Panel>
     </DashboardShell>
   )

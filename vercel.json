@@ -69,11 +69,6 @@
   ],
   "redirects": [
     {
-      "source": "/pro(.*)",
-      "destination": "/artist$1",
-      "permanent": true
-    },
-    {
       "source": "/:path*",
       "has": [
         {

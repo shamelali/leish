@@ -88,7 +88,7 @@ export default async function ArtistOnboardingPage() {
             View Profile
           </Link>
           <Link
-            href="/artist"
+            href="/artist/dashboard"
             className="inline-flex items-center gap-2 border border-border px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-accent"
           >
             Dashboard

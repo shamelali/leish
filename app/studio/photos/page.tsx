@@ -26,8 +26,9 @@ export default function StudioPhotosPage() {
   }, [])
 
   const nav = [
-    { href: "/studio", label: "Overview" },
+    { href: "/studio/dashboard", label: "Overview" },
     { href: "/studio/photos", label: "Photos", active: true },
+    { href: "/studio/rooms", label: "Rooms" },
   ]
 
   return (

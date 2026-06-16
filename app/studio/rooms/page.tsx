@@ -114,8 +114,9 @@ export default function StudioRoomsPage() {
   }
 
   const nav = [
-    { href: "/studio", label: "Overview" },
+    { href: "/studio/dashboard", label: "Overview" },
     { href: "/studio/rooms", label: "Rooms", active: true },
+    { href: "/studio/photos", label: "Photos" },
   ]
 
   let dialogTitle: string

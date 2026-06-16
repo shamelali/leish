@@ -67,7 +67,7 @@ Leish (`leish.my`) is a Malaysian beauty marketplace platform connecting clients
 ## 6. Database — Key Tables & Fields
 
 ### Users (via Supabase Auth)
-- Standard auth fields + `role` enum: `client | artist | studio_manager`
+- Standard auth fields + `role` enum: `client | artist | studio`
 
 ### Artists (providers)
 Pending migration — columns to add:
