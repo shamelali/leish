@@ -194,6 +194,10 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
       }
 
       if (isSignUp) {
+        // Require role selection for signup
+        if (!role) {
+          throw new Error("Please select your role")
+        }
         await handleSignUp(supabase)
       } else {
         await handleSignIn(supabase)
