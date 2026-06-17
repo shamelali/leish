@@ -8,9 +8,16 @@ export async function routeUserAfterSignIn(supabase: NonNullable<ReturnType<type
   }
 
   const { data: profile } = await supabase
-    .from("profiles").select("role").eq("id", userId).maybeSingle()
+    .from("profiles").select("role, created_at").eq("id", userId).maybeSingle()
 
   const role = (profile?.role as UserRole) || "customer"
+
+  const profileAge = profile?.created_at ? Date.now() - new Date(profile.created_at).getTime() : Infinity
+  const isFreshProfile = profileAge < 5 * 60 * 1000
+  if (role === "customer" && isFreshProfile) {
+    return "/auth/pick-role"
+  }
+
   const kind = role === "artist" ? "artist" : "studio"
   const { data: provider } = role === "customer" || role === "admin"
     ? { data: null }

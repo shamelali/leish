@@ -37,7 +37,10 @@ export default function PickRolePage() {
 
     // Already signed in — update profile and redirect
     const userId = user.id
-    await supabase.from("profiles").update({ role }).eq("id", userId).maybeSingle()
+    const { error: updateError } = await supabase.from("profiles").update({ role }).eq("id", userId)
+    if (updateError) {
+      console.error("Failed to update profile role:", updateError)
+    }
 
     const kind = role === "artist" ? "artist" : "studio"
     const { data: provider } = role === "customer" || role === "admin"
@@ -46,7 +49,7 @@ export default function PickRolePage() {
 
     // Clean up
     sessionStorage.removeItem("pendingOAuthRole")
-    document.cookie = "pendingOAuthRole=;path=/;max-age=0"
+    document.cookie = "pendingOAuthRole=;path=/;max-age=0;samesite=none;secure"
 
     router.replace(getPostAuthRedirect(role, !!provider, (provider as { slug?: string } | null)?.slug))
   }

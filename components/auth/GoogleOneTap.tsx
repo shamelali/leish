@@ -2,40 +2,9 @@
 
 import Script from 'next/script'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
-import { getPostAuthRedirect, type UserRole } from '@/lib/routing'
+import { routeUserAfterSignIn } from '@/components/auth/sign-in-helpers'
 
 declare const google: { accounts: { id: { initialize: (options: any) => void; prompt: (momentListener?: () => void) => void }; } }
-
-async function routeUserAfterSignIn(userId: string) {
-  const supabase = getSupabaseBrowserClient()
-  if (!supabase) { window.location.href = "/"; return }
-
-  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-  if (aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2") {
-    window.location.href = "/sign-in/mfa"
-    return
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles").select("role, created_at").eq("id", userId).maybeSingle()
-
-  const role = (profile?.role as UserRole) || "customer"
-
-  // New OneTap users get redirected to role picker instead of silently landing at /account
-  const profileAge = profile?.created_at ? Date.now() - new Date(profile.created_at).getTime() : Infinity
-  const isFreshProfile = profileAge < 5 * 60 * 1000
-  if (role === "customer" && isFreshProfile) {
-    window.location.href = "/auth/pick-role"
-    return
-  }
-
-  const kind = role === "artist" ? "artist" : "studio"
-  const { data: provider } = role === "customer" || role === "admin"
-    ? { data: null }
-    : await supabase.from("providers").select("id, slug").eq("owner_id", userId).eq("kind", kind).maybeSingle()
-
-  window.location.href = getPostAuthRedirect(role, !!provider, (provider as { slug?: string } | null)?.slug)
-}
 
 const generateNonce = async (): Promise<string[]> => {
   const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))))
@@ -54,7 +23,8 @@ const GoogleOneTap = () => {
 
     const { data: sessionData } = await supabase.auth.getSession()
     if (sessionData?.session?.user) {
-      await routeUserAfterSignIn(sessionData.session.user.id)
+      const redirect = await routeUserAfterSignIn(supabase, sessionData.session.user.id)
+      window.location.href = redirect
       return
     }
 
@@ -74,7 +44,8 @@ const GoogleOneTap = () => {
             })
             if (error) throw error
             if (data?.user) {
-              await routeUserAfterSignIn(data.user.id)
+              const redirect = await routeUserAfterSignIn(supabase, data.user.id)
+              window.location.href = redirect
             } else {
               window.location.href = "/account"
             }

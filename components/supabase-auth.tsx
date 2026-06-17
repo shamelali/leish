@@ -243,6 +243,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
       provider: "google",
       options: {
         redirectTo,
+        scopes: "email profile",
       },
     })
 
