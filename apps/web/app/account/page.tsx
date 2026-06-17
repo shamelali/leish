@@ -58,6 +58,52 @@ const STATUS_COLORS: Record<string, string> = {
   refunded: "bg-gray-500/10 text-gray-600 border-gray-500/20",
 }
 
+async function fetchAccountData(supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseSsrClient>>>, userId: string, role: string) {
+  const isCustomer = role === "customer"
+  const isProvider = role === "artist" || role === "studio"
+  const providerKind = role === "artist" ? "artist" : "studio"
+
+  const [bookingsResult, providerResult] = await Promise.all([
+    isCustomer
+      ? supabase
+          .from("bookings")
+          .select(`
+            id,
+            status,
+            total_amount_myr,
+            paid_amount_myr,
+            notes,
+            created_at,
+            services (name, duration_minutes, price_myr),
+            providers (display_name, kind, slug, state, district)
+          `)
+          .eq("customer_id", userId)
+          .order("created_at", { ascending: false })
+      : Promise.resolve({ data: null, error: null }),
+    isProvider
+      ? supabase
+          .from("providers")
+          .select("slug")
+          .eq("owner_id", userId)
+          .eq("kind", providerKind)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ])
+
+  const bookings = bookingsResult.data || []
+  const bookingsError = bookingsResult.error?.message || null
+  const providerSlug = providerResult.data?.slug || null
+
+  const upcomingBookings = bookings.filter(
+    (b) => !["completed", "canceled", "refunded"].includes(b.status)
+  )
+  const pastBookings = bookings.filter((b) =>
+    ["completed", "canceled", "refunded"].includes(b.status)
+  )
+
+  return { bookings, bookingsError, providerSlug, upcomingBookings, pastBookings }
+}
+
 export default async function AccountPage() {
   const supabase = await getSupabaseSsrClient()
   const {
@@ -97,53 +143,7 @@ export default async function AccountPage() {
 
   const role = profile?.role || "customer"
   const fullName = profile?.full_name || user.email?.split("@")[0] || "User"
-
-  // Fetch bookings for customer
-  let bookings: Booking[] = []
-  let bookingsError: string | null = null
-  if (role === "customer") {
-    const { data, error } = await supabase
-      .from("bookings")
-      .select(`
-        id,
-        status,
-        total_amount_myr,
-        paid_amount_myr,
-        notes,
-        created_at,
-        services (name, duration_minutes, price_myr),
-        providers (display_name, kind, slug, state, district)
-      `)
-      .eq("customer_id", user.id)
-      .order("created_at", { ascending: false })
-
-    if (error) {
-      console.error("[account] bookings fetch error:", error)
-      bookingsError = error.message
-    } else {
-      bookings = data || []
-    }
-  }
-
-  // Fetch provider dashboard link if artist or studio owner
-  let providerSlug: string | null = null
-  if (role === "artist" || role === "studio") {
-    const { data: provider } = await supabase
-      .from("providers")
-      .select("slug")
-      .eq("owner_id", user.id)
-      .eq("kind", role === "artist" ? "artist" : "studio")
-      .maybeSingle()
-
-    providerSlug = provider?.slug || null
-  }
-
-  const upcomingBookings = bookings.filter(
-    (b) => !["completed", "canceled", "refunded"].includes(b.status)
-  )
-  const pastBookings = bookings.filter((b) =>
-    ["completed", "canceled", "refunded"].includes(b.status)
-  )
+  const { bookingsError, providerSlug, upcomingBookings, pastBookings } = await fetchAccountData(supabase, user.id, role)
 
   return (
     <section className="bg-background py-16 lg:py-24">

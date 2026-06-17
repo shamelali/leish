@@ -91,7 +91,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
     experience: experienceText,
     specialties: artist.specialties || [],
     portfolio,
-    services: services?.map((s: any) => ({ name: s.name, duration: `${s.duration_minutes} mins`, price: s.price_myr })) || [],
+    services: services?.map((s: any) => ({ name: s.name, duration_minutes: s.duration_minutes, price_myr: s.price_myr })) || [],
     testimonials,
     bookedSlots: {},
   }
@@ -134,9 +134,9 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                     <div key={service.name} className="flex items-center justify-between border border-border p-4">
                       <div>
                         <p className="font-medium text-foreground">{service.name}</p>
-                        <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Clock className="h-3 w-3" />{service.duration}</p>
+                        <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Clock className="h-3 w-3" />{service.duration_minutes} mins</p>
                       </div>
-                      <p className="font-serif text-lg font-medium text-accent">MYR {service.price}</p>
+                      <p className="font-serif text-lg font-medium text-accent">MYR {service.price_myr}</p>
                     </div>
                   )) : <p className="text-sm text-muted-foreground">No services listed yet.</p>}
                 </div>

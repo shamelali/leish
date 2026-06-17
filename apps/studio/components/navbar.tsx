@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, DoorOpen, Image as ImageIcon, CalendarClock, Menu } from "lucide-react"
+import { LayoutDashboard, DoorOpen, Image as ImageIcon, CalendarClock, CreditCard, Star, User, Clock, Menu } from "lucide-react"
 import { cn } from "@leish/shared/lib/utils"
 import {
   Sheet,
@@ -20,6 +20,10 @@ export function Navbar() {
     { href: "/rooms", label: "Rooms", icon: DoorOpen },
     { href: "/photos", label: "Photos", icon: ImageIcon },
     { href: "/bookings", label: "Bookings", icon: CalendarClock },
+    { href: "/payments", label: "Payments", icon: CreditCard },
+    { href: "/reviews", label: "Reviews", icon: Star },
+    { href: "/profile", label: "Profile", icon: User },
+    { href: "/availability", label: "Availability", icon: Clock },
   ]
 
   return (

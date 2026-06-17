@@ -84,7 +84,14 @@ export default async function StudioDashboardPage() {
     },
   ]
 
-  const nav = [{ href: "/", label: "Overview", active: true }]
+  const nav = [
+    { href: "/", label: "Overview", active: true },
+    { href: "/bookings", label: "Bookings" },
+    { href: "/payments", label: "Payments" },
+    { href: "/reviews", label: "Reviews" },
+    { href: "/profile", label: "Profile" },
+    { href: "/availability", label: "Availability" },
+  ]
 
   return (
     <DashboardShell

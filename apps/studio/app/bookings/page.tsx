@@ -68,6 +68,10 @@ export default function BookingsPage() {
   const nav = [
     { href: "/", label: "Overview" },
     { href: "/bookings", label: "Bookings", active: true },
+    { href: "/payments", label: "Payments" },
+    { href: "/reviews", label: "Reviews" },
+    { href: "/profile", label: "Profile" },
+    { href: "/availability", label: "Availability" },
   ]
 
   let body: React.ReactNode

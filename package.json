@@ -3,12 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "packageManager": "pnpm@10.10.0",
-  "pnpm": {
-    "overrides": {
-      "@types/react": "19.2.14",
-      "@types/react-dom": "19.2.3"
-    }
-  },
   "scripts": {
     "dev": "turbo dev",
     "dev:web": "turbo dev --filter=@leish/web",

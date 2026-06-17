@@ -28,6 +28,11 @@ export default function StudioPhotosPage() {
   const nav = [
     { href: "/", label: "Overview" },
     { href: "/photos", label: "Photos", active: true },
+    { href: "/bookings", label: "Bookings" },
+    { href: "/payments", label: "Payments" },
+    { href: "/reviews", label: "Reviews" },
+    { href: "/profile", label: "Profile" },
+    { href: "/availability", label: "Availability" },
   ]
 
   return (
