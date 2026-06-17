@@ -9,7 +9,7 @@ This file provides guidance to agents when working in this repository.
 - Run `pnpm typecheck` before `pnpm lint` - type errors break linting
 - `pnpm test` runs Vitest with coverage - use `pnpm test -- --watch` for TDD
 - `turbo` commands: `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`
-- Individual apps: `pnpm dev:web` (port 3000), `pnpm dev:artist` (port 3001), `pnpm dev:studio` (port 3002)
+- Individual apps: `pnpm dev:web` (port 3005), `pnpm dev:artist` (port 3001), `pnpm dev:studio` (port 3002)
 - Dev root directly: `pnpm dev:root` (uses root next.config, port 3000)
 - Tests can live alongside source files OR in `__tests__/` sibling directory
 

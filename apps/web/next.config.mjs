@@ -46,7 +46,7 @@ const nextConfig = {
     optimizeCss: true,
   },
   turbopack: {
-    root: process.cwd(),
+    root: path.join(__dirname, "../.."),
   },
   async headers() {
     return [
