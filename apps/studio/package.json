@@ -12,12 +12,14 @@
   },
   "dependencies": {
     "@leish/shared": "workspace:*",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.108.2",
+    "framer-motion": "^12.34.3",
+    "lucide-react": "^0.564.0",
     "next": "^16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "lucide-react": "^0.564.0",
-    "sonner": "^1.7.1",
-    "framer-motion": "^12.34.3"
+    "sonner": "^1.7.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.0",
