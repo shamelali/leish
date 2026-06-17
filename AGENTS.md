@@ -457,4 +457,3 @@ leish.my         → redirect → www.leish.my
 - `vercel.json` — updated for pnpm + removed studio redirects
 - `next.config.mjs` — added transpilePackages
 - `AGENTS.md` — monorepo structure section added
->>>>>>> github/turborepo-migration
