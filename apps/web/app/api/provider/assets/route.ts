@@ -33,13 +33,13 @@ export async function POST(req: Request) {
   }
 
   // Check tier limits
-  const { data: photoCount } = await supabase
+  const { count: photoCount } = await supabase
     .from("provider_assets")
-    .select("id", { count: "exact" })
+    .select("id", { count: "exact", head: true })
     .eq("provider_id", providerId)
 
   const maxPhotos = provider.tier === "pro" ? 50 : 20
-  if ((photoCount?.length || 0) >= maxPhotos) {
+  if ((photoCount ?? 0) >= maxPhotos) {
     return NextResponse.json(
       { error: `Photo limit reached. Upgrade to Pro for more.` },
       { status: 403 }

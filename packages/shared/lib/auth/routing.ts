@@ -8,7 +8,7 @@ export function getPostAuthRedirect(role: UserRole, hasProvider: boolean, slug?:
   }
   if (role === "studio") {
     if (slug) return `/studios/${slug}`
-    return hasProvider ? "/studios/dashboard" : "/studios/onboarding"
+    return hasProvider ? "/studio/dashboard" : "/studio/onboarding"
   }
   return "/account"
 }
