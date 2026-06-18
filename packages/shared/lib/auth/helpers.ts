@@ -21,6 +21,6 @@ export async function routeUserAfterSignIn(supabase: any, userId: string): Promi
 
 export function routeUserAfterSignUp(role: UserRole) {
   if (role === "artist") return "/artist/onboarding"
-  if (role === "studio") return "/studios/onboarding"
+  if (role === "studio") return "/studio/onboarding"
   return getPostAuthRedirect(role, false)
 }

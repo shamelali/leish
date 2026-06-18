@@ -1,6 +1,5 @@
 {
   "framework": "nextjs",
-  "rootDirectory": "apps/web",
   "buildCommand": "next build",
   "installCommand": "pnpm install",
   "regions": ["sin1"],
