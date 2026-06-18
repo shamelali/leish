@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 
+import { redirect } from "next/navigation"
 import { DashboardShell, Panel, StatGrid } from "@/components/dashboard-shell"
 import { getSupabaseSsrClient } from "@leish/shared/lib/auth/ssr"
 import { surchargeService, surchargePresets } from "@/lib/services/surcharges"
@@ -15,7 +16,7 @@ const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 export default async function ProChargesPage() {
   const supabase = await getSupabaseSsrClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return <p className="p-8">Not authenticated</p>
+  if (!user) redirect("https://www.leish.my/sign-in")
 
   const { data: prov } = await supabase
     .from("providers")

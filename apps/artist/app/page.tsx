@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic"
 import { Suspense } from "react"
 import Link from "next/link"
 import { Crown, Sparkles } from "lucide-react"
+import { redirect } from "next/navigation"
 import { DashboardShell, Panel, StatGrid } from "@/components/dashboard-shell"
 import { getProDashboardData } from "@/lib/dashboard"
 import { ArtistWelcomeBanner } from "@/components/artist-welcome-banner"
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 export default async function ProDashboardPage() {
   const supabase = await getSupabaseSsrClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return <p className="p-8">Not authenticated</p>
+  if (!user) redirect("https://www.leish.my/sign-in")
 
   const { data: prov } = await supabase
     .from("providers")

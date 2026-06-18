@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 
+import { redirect } from "next/navigation"
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
 import { proConfirmBooking, proCancelBooking } from "@/lib/actions/pro"
@@ -16,7 +17,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default async function ArtistBookingsPage() {
   const supabase = await getSupabaseSsrClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return <p className="p-8">Not authenticated</p>
+  if (!user) redirect("/sign-in")
 
   const nav = [
     { href: "/artist/dashboard", label: "Overview" },
