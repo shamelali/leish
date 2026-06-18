@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
   "buildCommand": "next build",
-  "installCommand": "npm ci",
+  "installCommand": "corepack enable && pnpm install",
   "regions": ["sin1"],
   "headers": [
     {
