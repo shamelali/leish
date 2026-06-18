@@ -37,8 +37,9 @@ export async function resolveUserRole(
 ): Promise<UserRole> {
   let role: UserRole = "customer"
   if (profile) {
-    const r = profile.role as UserRole
-    if (["admin", "artist", "studio"].includes(r)) role = r
+    const r = profile.role as string
+    const normalized = r === "studio_manager" ? "studio" : r
+    if (["admin", "artist", "studio"].includes(normalized)) role = normalized as UserRole
   }
 
   let pendingRole: UserRole | null = null

@@ -1,21 +1,6 @@
--- Ensure profile_role enum exists and fix trigger to be fully tolerant
+-- Fix: sign-up sends role="studio" but trigger only mapped "studio_manager"
+-- This caused all studio signups to default to "customer" role
 
--- 1. Create enum if missing
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'profile_role') THEN
-    CREATE TYPE public.profile_role AS ENUM ('admin', 'artist', 'studio_manager', 'customer');
-  END IF;
-END $$;
-
--- 2. Ensure profiles table has the right columns
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS full_name text,
-  ADD COLUMN IF NOT EXISTS role public.profile_role NOT NULL DEFAULT 'customer',
-  ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(),
-  ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
-
--- 3. Replace trigger function with tolerant version
 create or replace function public.handle_new_auth_user()
 returns trigger
 language plpgsql
@@ -60,10 +45,3 @@ exception
     return new;
 end;
 $$;
-
--- 4. Recreate trigger
-drop trigger if exists on_auth_user_created on auth.users;
-
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function public.handle_new_auth_user();

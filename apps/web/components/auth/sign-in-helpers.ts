@@ -10,7 +10,8 @@ export async function routeUserAfterSignIn(supabase: NonNullable<ReturnType<type
   const { data: profile } = await supabase
     .from("profiles").select("role, created_at").eq("id", userId).maybeSingle()
 
-  const role = (profile?.role as UserRole) || "customer"
+  const rawRole = (profile?.role as string) || "customer"
+  const role: UserRole = rawRole === "studio_manager" ? "studio" : (rawRole as UserRole)
 
   const profileAge = profile?.created_at ? Date.now() - new Date(profile.created_at).getTime() : Infinity
   const isFreshProfile = profileAge < 5 * 60 * 1000

@@ -17,7 +17,7 @@ export default async function StudioDashboardPage() {
     .eq("id", user.id)
     .maybeSingle()
 
-  if (!profile || profile.role !== "studio") redirect("/")
+  if (!profile || (profile.role !== "studio" && profile.role !== "studio_manager")) redirect("/")
 
   const { data: studio } = await supabase
     .from("providers")

@@ -23,13 +23,13 @@ export default async function StudioLayout({ children }: { children: React.React
     redirect("/")
   }
 
-  const allowedRoles = ["studio", "admin"]
+  const allowedRoles = ["studio", "studio_manager", "admin"]
   if (!allowedRoles.includes(profile.role)) {
     redirect("/")
   }
 
   // Guard: if studio has no provider row yet, send to onboarding
-  if (profile.role === "studio") {
+  if (profile.role === "studio" || profile.role === "studio_manager") {
     const { data: provider } = await supabase
       .from("providers")
       .select("id")
