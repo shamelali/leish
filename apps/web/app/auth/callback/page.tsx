@@ -42,7 +42,7 @@ export default function AuthCallbackPage() {
     <div className="flex min-h-screen items-center justify-center">
       <div className="flex flex-col items-center gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
-        <p className="text-sm text-muted-foreground">Completing sign in...</p>
+        <p className="text-sm text-muted-foreground">Completing authentication...</p>
       </div>
     </div>
   )
