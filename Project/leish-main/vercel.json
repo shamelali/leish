@@ -1,5 +1,7 @@
 {
   "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm ci",
   "regions": ["sin1"],
   "headers": [
     {
@@ -32,11 +34,6 @@
     { "source": "/sitemap.xml", "destination": "/api/sitemap" }
   ],
   "redirects": [
-    {
-      "source": "/pro(.*)",
-      "destination": "/artist$1",
-      "permanent": true
-    },
     {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "leish.my" }],
