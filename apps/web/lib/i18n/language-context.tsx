@@ -435,8 +435,8 @@ const translations = {
     },
     // Dashboard
     dashboard: {
-      title: "Papan Pemuka Pro",
-      subtitle: "Ruang kerja operasi untuk artis dan studio untuk menguruskan perkhidmatan, tempahan, ulasan, dan pembayaran.",
+      title: "Papan Pemuka Artis",
+      subtitle: "Urus profil artis, perkhidmatan, tempahan, dan ulasan anda.",
       overview: "Gambaran Keseluruhan",
       upcomingBookings: "Tempahan Akan Datang",
       recentReviews: "Ulasan Terkini",
