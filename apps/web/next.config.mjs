@@ -83,7 +83,7 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://*.supabase.co https://vercel.live https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://plus.unsplash.com https://randomuser.me https://i.pravatar.cc; font-src 'self' *.vercel.com *.gstatic.com vercel.live *.blob.vercel-storage.com; connect-src 'self' https://*.supabase.co https://api.pwnedpasswords.com https://vercel.live https://o4507670020554752.ingest.us.sentry.io; frame-src 'self' https://accounts.google.com; manifest-src 'self';",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://*.supabase.co https://vercel.live https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://plus.unsplash.com https://randomuser.me https://i.pravatar.cc; font-src 'self' *.vercel.com *.gstatic.com vercel.live *.blob.vercel-storage.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.pwnedpasswords.com https://vercel.live https://o4507670020554752.ingest.us.sentry.io; frame-src 'self' https://accounts.google.com; manifest-src 'self';",
           },
         ],
       },
