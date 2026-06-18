@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { enforceRateLimit } from "@/lib/ops/rate-limit"
+import { z } from "zod"
 
 // ── In-memory metric store (resets on server restart) ────────────────────────
 // For production, swap this out for a DB insert or an analytics service call.
@@ -28,6 +29,18 @@ const metrics: MetricBucket = {
 const MAX_EVENTS = 10_000
 const eventLog: unknown[] = []
 
+const trackSchema = z.object({
+  eventType: z.enum([
+    "recommendation_shown",
+    "recommendation_click",
+    "fallback_triggered",
+    "guardrail_triggered",
+    "booking_started",
+    "session_start",
+    "session_end",
+  ]),
+})
+
 // ── Route handlers ────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
@@ -36,26 +49,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 })
   }
 
-  let body: Record<string, unknown>
+  let body: unknown
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 })
   }
 
-  const eventType = body.eventType as string | undefined
-  if (!eventType || typeof eventType !== "string") {
-    return NextResponse.json({ error: "missing_eventType" }, { status: 400 })
+  const parsed = trackSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: "invalid_payload", details: parsed.error.errors }, { status: 400 })
   }
 
-  // Increment counter
-  if (eventType in metrics) {
-    metrics[eventType as keyof MetricBucket]++
-  }
+  metrics[parsed.data.eventType]++
 
-  // Append to event log
   if (eventLog.length < MAX_EVENTS) {
-    eventLog.push({ ...body, receivedAt: new Date().toISOString() })
+    eventLog.push({ ...parsed.data, receivedAt: new Date().toISOString() })
   }
 
   return NextResponse.json({ ok: true })

@@ -27,23 +27,41 @@ A production-ready beauty marketplace platform connecting makeup artists and stu
 | Resend email | ✅ Live | Confirmations and notifications |
 | Mobile-responsive | ✅ Live | Tailwind CSS 4 + Radix UI |
 
-### 📁 Current Project Structure
+### 📁 Current Project Structure (TurboRepo Monorepo)
 
 ```
-├── app/                    # Next.js App Router
-│   ├── (public)/          # Public pages
-│   ├── api/               # API endpoints (25+ routes)
-│   ├── admin/             # Admin dashboard
-│   ├── pro/               # Provider dashboard
-│   └── auth/              # Authentication
-├── components/            # React components
-├── lib/                   # Utilities & services
-│   ├── db/               # Database config
-│   ├── email/            # Email templates
-│   ├── payments/         # Billplz integration
-│   ├── services/         # Business logic
-│   └── supabase/         # Supabase SSR client
-└── supabase/             # Migrations & config
+├── apps/
+│   ├── web/                     # www.leish.my (marketing + admin + customer)
+│   │   ├── app/                 # Next.js App Router
+│   │   │   ├── (public)/       # Public pages
+│   │   │   ├── api/            # API endpoints (25+ routes)
+│   │   │   ├── admin/          # Admin dashboard
+│   │   │   ├── account/        # Customer dashboard
+│   │   │   └── auth/           # Authentication
+│   │   ├── components/         # React components
+│   │   ├── lib/                # Utilities & services
+│   │   │   ├── db/            # Database config
+│   │   │   ├── email/         # Email templates (Brevo)
+│   │   │   ├── ops/           # Rate limiting, alerts
+│   │   │   ├── payments/      # Billplz integration
+│   │   │   ├── services/      # Business logic
+│   │   │   └── supabase/      # Supabase SSR client
+│   │   └── public/            # Static assets (images, icons)
+│   ├── artist/                  # artist.leish.my (artist portal)
+│   │   ├── app/                 # Artist-specific pages
+│   │   ├── components/         # Artist-specific components
+│   │   └── lib/                # Artist-specific utilities
+│   └── studio/                  # studio.leish.my (studio portal)
+│       ├── app/                 # Studio-specific pages
+│       ├── components/         # Studio-specific components
+│       └── lib/                # Studio-specific utilities
+├── packages/
+│   └── shared/                  # @leish/shared (auth, services, i18n, types)
+│       └── lib/
+│           ├── auth/           # Cross-subdomain auth (SSR, callback, routing)
+│           ├── i18n/           # Internationalization (en, ms)
+│           └── services/       # Shared business logic
+└── supabase/                    # Database migrations & config
 ```
 
 ---
@@ -120,10 +138,11 @@ A production-ready beauty marketplace platform connecting makeup artists and stu
 
 ### Infrastructure
 
+- [x] API rate limiting (in-memory, lib/ops/rate-limit)
+- [x] Error alerting (lib/ops/alerts)
 - [ ] Set up Redis for caching (optional)
 - [ ] Configure proper logging (e.g., Sentry)
 - [ ] Set up CI/CD pipeline (GitHub Actions)
-- [ ] Add API rate limiting dashboard
 
 ### Database
 
@@ -133,9 +152,10 @@ A production-ready beauty marketplace platform connecting makeup artists and stu
 
 ### Security
 
-- [ ] Security headers (CSP, X-Frame-Options)
-- [ ] API request validation (Zod schemas)
-- [ ] Audit logging for admin actions
+- [x] Security headers (CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy)
+- [x] API request validation (Zod schemas for auth, email, concierge routes)
+- [x] Audit logging for admin actions (admin_audit_log table + writeAuditLog service)
+- [ ] Complete Zod validation for remaining 25+ API routes
 
 ---
 
@@ -166,31 +186,34 @@ A production-ready beauty marketplace platform connecting makeup artists and stu
 ### Getting Started
 
 ```bash
-# Install dependencies
-npm install
+# Install dependencies (pnpm required — not npm)
+pnpm install
 
 # Set up environment
-cp .env.example .env.local
+cp apps/web/.env.example apps/web/.env.local
 
-# Run typecheck
-npm run typecheck
+# Run typecheck (all packages)
+pnpm typecheck
 
-# Run lint
-npm run lint
+# Run lint (all packages)
+pnpm lint
 
 # Run tests
-npm test
+pnpm test
 
-# Start dev server
-npm run dev
+# Start dev servers
+pnpm dev:web        # www.leish.my (port 3005)
+pnpm dev:artist     # artist.leish.my
+pnpm dev:studio     # studio.leish.my
 ```
 
 ### Code Standards
 
-- Run `npm run typecheck` before `npm run lint`
+- Run `pnpm typecheck` before `pnpm lint`
 - Write tests for new features
-- Use Zod for input validation
-- Follow the existing code patterns in `lib/services/`
+- Use Zod for input validation (see `lib/validate.ts`)
+- Follow existing code patterns in `lib/services/`
+- API routes: keep handlers thin, delegate to `lib/services/`
 
 ### Git Workflow
 
@@ -221,5 +244,5 @@ npm run dev
 
 ---
 
-*Last Updated: 2026-04-27*
-*Version: 1.1.0 (Deployment Update)*
+*Last Updated: 2026-06-18*
+*Version: 1.2.0 (Monorepo + Security Hardening)*

@@ -4,6 +4,16 @@ import {
   recordFailedLoginAttempt,
   clearLoginAttempts,
 } from "@/lib/ops/rate-limit"
+import { z } from "zod"
+
+const querySchema = z.object({
+  email: z.string().email(),
+})
+
+const postSchema = z.object({
+  action: z.enum(["record", "clear"]),
+  email: z.string().email(),
+})
 
 function getRequestIp(req: NextRequest): string {
   const forwardedFor = req.headers.get("x-forwarded-for")
@@ -14,25 +24,35 @@ function getRequestIp(req: NextRequest): string {
 }
 
 export async function GET(req: NextRequest) {
-  const email = req.nextUrl.searchParams.get("email")
-  if (!email) {
-    return NextResponse.json({ error: "email query parameter required" }, { status: 400 })
+  const parsed = querySchema.safeParse({
+    email: req.nextUrl.searchParams.get("email"),
+  })
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid email parameter", details: parsed.error.errors }, { status: 400 })
   }
 
   const ip = getRequestIp(req)
-  const result = checkLoginBlocked(ip, email)
+  const result = checkLoginBlocked(ip, parsed.data.email)
 
   return NextResponse.json(result)
 }
 
 export async function POST(req: NextRequest) {
   const ip = getRequestIp(req)
-  const body = await req.json()
-  const { action, email } = body
 
-  if (!email) {
-    return NextResponse.json({ error: "email field required" }, { status: 400 })
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 })
   }
+
+  const parsed = postSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid payload", details: parsed.error.errors }, { status: 400 })
+  }
+
+  const { action, email } = parsed.data
 
   switch (action) {
     case "record":
@@ -41,7 +61,5 @@ export async function POST(req: NextRequest) {
     case "clear":
       clearLoginAttempts(ip, email)
       return NextResponse.json({ ok: true })
-    default:
-      return NextResponse.json({ error: "action must be 'record' or 'clear'" }, { status: 400 })
   }
 }

@@ -1,4 +1,4 @@
-# 💄 Beaute - Beauty Marketplace Platform
+# Leish - Beauty Marketplace Platform
 
 [![Live Site](https://img.shields.io/badge/Live-leish.my-00C7B7?style=for-the-badge&logo=vercel&logoColor=white)](https://leish.my)
 [![Build Status](https://img.shields.io/badge/Build-Passing-success?style=for-the-badge&logo=github-actions&logoColor=white)](https://github.com/shamelali/b_qRvYZb3eZrv-1771704101499/actions)

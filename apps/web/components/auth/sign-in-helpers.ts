@@ -23,7 +23,7 @@ export async function routeUserAfterSignIn(supabase: NonNullable<ReturnType<type
     ? { data: null }
     : await supabase.from("providers").select("id, slug").eq("owner_id", userId).eq("kind", kind).maybeSingle()
 
-  return getPostAuthRedirect(role, !!provider, (provider as { slug?: string } | null)?.slug)
+  return getPostAuthRedirect(role, !!provider)
 }
 
 export function routeUserAfterSignUp(role: UserRole) {

@@ -91,5 +91,5 @@ export async function handleOAuthCallback(supabase: any) {
   cleanupPendingRole()
 
   const provider = await getProviderInfo(supabase, user.id, role)
-  return { redirect: getPostAuthRedirect(role, !!provider, (provider as { slug?: string } | null)?.slug) }
+  return { redirect: getPostAuthRedirect(role, !!provider) }
 }

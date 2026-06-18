@@ -45,13 +45,13 @@ export default function PickRolePage() {
     const kind = role === "artist" ? "artist" : "studio"
     const { data: provider } = role === "customer" || role === "admin"
       ? { data: null }
-      : await supabase.from("providers").select("id, slug").eq("owner_id", userId).eq("kind", kind).maybeSingle()
+      : await supabase.from("providers").select("id").eq("owner_id", userId).eq("kind", kind).maybeSingle()
 
     // Clean up
     sessionStorage.removeItem("pendingOAuthRole")
     document.cookie = "pendingOAuthRole=;path=/;max-age=0;samesite=none;secure"
 
-    router.replace(getPostAuthRedirect(role, !!provider, (provider as { slug?: string } | null)?.slug))
+    router.replace(getPostAuthRedirect(role, !!provider))
   }
 
   if (loading) {
