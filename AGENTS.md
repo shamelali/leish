@@ -457,3 +457,45 @@ leish.my         → redirect → www.leish.my
 - `vercel.json` — updated for pnpm + removed studio redirects
 - `next.config.mjs` — added transpilePackages
 - `AGENTS.md` — monorepo structure section added
+
+## Session Anchored Summary (18 June 2026)
+
+### Goal
+Fix auth callback routing (serving stale home page from Vercel edge cache), complete security hardening, and deploy all changes to production.
+
+### Done
+- **Root cause identified**: `curl -I https://www.leish.my/auth/callback` returned `200` with `x-vercel-cache: HIT` — Vercel edge was serving a stale prerendered home page. But upon inspecting raw HTML, the page actually renders correctly with `BAILOUT_TO_CLIENT_SIDE_RENDERING` template + loading spinner. The `webfetch` text output was misleading (extracted all visible navbar/footer text making it look like the home page).
+- **Vercel.json**: Created `apps/web/vercel.json` with framework, install, regions, headers, image configs, and crons (avoids CLI warning about vercel.json outside root directory).
+- **Security headers**: Added comprehensive CSP (`script-src`, `connect-src`, `frame-src`, etc.), HSTS (63072000s), Referrer-Policy, Permissions-Policy in `next.config.mjs`.
+- **Zod validation**: Created `lib/validate.ts`; applied schemas to `auth/auto-confirm`, `auth/credential-stuffing`, `email/send`, `concierge/track`.
+- **Studio signup routing**: DB trigger maps `role="studio"` → `studio_manager` in DB; auth helpers normalize `studio_manager` → `studio` when reading profile. Studio pages accept both values.
+- **Callback routing fix**: `emailRedirectTo` includes `?role=` param; Google OAuth `redirectTo` includes `?role=`. `/auth/callback` reads `searchParams.get("role")` and routes directly to onboarding. Error redirect changed from `/` to `/sign-in?error=auth_failed`.
+- **Production deployment**: `vercel --prod` succeeded. Build output confirms `/auth/callback` and `/auth/pick-role` are built as static pages (`○`).
+- **Verification**: Raw HTML of `https://www.leish.my/auth/callback` confirmed correct:
+  ```html
+  <main>
+    <!--$!-->
+    <template data-dgst="BAILOUT_TO_CLIENT_SIDE_RENDERING"></template>
+    <div class="flex min-h-[60vh] items-center justify-center">(spinner)</div>
+    <!--/$-->
+  </main>
+  ```
+- **Removed invalid `export const dynamic = "force-dynamic"`** from both `/auth/callback` and `/auth/pick-role` client components (Next.js 16: not valid in `"use client"` files).
+- **Fixed branding**: Updated `README.md` (`Beaute` → `Leish`), Malay translations, added "Browse Studios" button to hero.
+- **Pushed to both remotes** (GitLab + GitHub).
+
+### Key Decisions
+- Use URL query param (`?role=`) for sign-up role instead of localStorage/sessionStorage — more reliable cross-browser
+- Copy `vercel.json` to `apps/web/` so Vercel CLI assigns correct root directory
+- `/auth/callback` short-circuits to onboarding when `?role` present, falls back to `handleOAuthCallback()` for regular sign-in
+- All security headers centralized in `next.config.mjs` `async headers()` function
+
+### Relevant Files
+- `apps/web/vercel.json` — correct-root Vercel project config
+- `apps/web/next.config.mjs` — CSP, HSTS, security headers
+- `apps/web/app/auth/callback/page.tsx` — `?role` routing, error redirect fix
+- `apps/web/app/auth/pick-role/page.tsx` — removed invalid `dynamic` export
+- `apps/web/components/supabase-auth.tsx` — `?role` in `emailRedirectTo` and OAuth `redirectTo`
+- `apps/web/components/auth/sign-in-helpers.ts` — `routeUserAfterSignIn`, `routeUserAfterSignUp`
+- `apps/web/lib/validate.ts` — reusable Zod validation helper
+- `supabase/migrations/20260618000000_fix_studio_signup_role.sql` — `studio` → `studio_manager` mapping in trigger
