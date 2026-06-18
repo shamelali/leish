@@ -363,7 +363,7 @@ const translations = {
     },
     // Hero Section
     hero: {
-      title: "Tempah Kecantikan. Di Mana-mana.",
+      title: "Tempah Solekan. Di Mana-mana.",
       subtitle: "Cari jurusolek dan studio, lihat ketersediaan masa nyata, dan sahkan tempahan anda dalam beberapa minit.",
       ctaBrowse: "Cari Jurusolek",
       ctaStudios: "Cari Studio",
