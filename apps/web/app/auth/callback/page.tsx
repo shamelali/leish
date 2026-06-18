@@ -19,6 +19,9 @@ export default function AuthCallbackPage() {
     if (processed.current) return
     processed.current = true
 
+    // DEBUG: Cache-bust marker - v2
+    console.log("[AuthCallback] pathname:", window.location.pathname, "search:", window.location.search)
+
     // NEW: Check for sign-up role in URL (email/G signup confirmation)
     const role = searchParams.get("role")
     if (role === "artist" || role === "studio" || role === "customer") {
