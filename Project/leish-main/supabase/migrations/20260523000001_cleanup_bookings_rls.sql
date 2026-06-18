@@ -1,0 +1,5 @@
+-- bookings RLS is already correct on the linked remote:
+--   bookings_party_select  (SELECT)  uses provider_id + (SELECT auth.uid())
+--   bookings_party_update  (UPDATE)  uses provider_id + (SELECT auth.uid())
+--   bookings_customer_insert (INSERT) customer_id check
+-- This file is kept as a no-op to unblock the migration chain.

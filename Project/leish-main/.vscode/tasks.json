@@ -1,0 +1,56 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "i18n-trans.reload",
+      "type": "shell",
+      "command": "node",
+      "args": [
+        "-e",
+        "console.log('🔄 i18n translations reloaded at', new Date().toISOString())"
+      ],
+      "group": "none",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "i18n: Validate Translations",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "tsx",
+        "scripts/validate-translations.ts"
+      ],
+      "group": "none",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "i18n: Sync Translations",
+      "type": "shell",
+      "command": "npx",
+      "args": [
+        "tsx",
+        "scripts/sync-translations.ts"
+      ],
+      "group": "none",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

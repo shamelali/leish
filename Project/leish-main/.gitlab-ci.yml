@@ -1,0 +1,66 @@
+image: node:22-bookworm
+
+stages:
+  - lint
+  - typecheck
+  - test
+  - build
+  - deploy
+
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+
+before_script:
+  - npm ci --prefer-offline
+
+lint:
+  stage: lint
+  script:
+    - npm run lint
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH =~ /^feature\//
+
+typecheck:
+  stage: typecheck
+  script:
+    - npm run typecheck
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH =~ /^feature\//
+
+test:
+  stage: test
+  script:
+    - npm run test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH =~ /^feature\//
+
+build:
+  stage: build
+  script:
+    - npm run build
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  needs:
+    - lint
+    - typecheck
+    - test
+
+deploy:
+  stage: deploy
+  script:
+    - curl -X POST "$VERCEL_DEPLOY_HOOK"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  needs:
+    - build

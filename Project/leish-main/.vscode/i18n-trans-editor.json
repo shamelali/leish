@@ -1,0 +1,42 @@
+{
+  "$schema": "https://raw.githubusercontent.com/lokalise/i18n-ally/master/schemas/i18n-ally.json",
+  "name": "Leish i18n Editor",
+  "version": "1.0.0",
+  "enabled": true,
+  "localesPaths": ["lib/i18n"],
+  "translationFiles": {
+    "en": "translations.ts",
+    "ms": "translations.ts"
+  },
+  "sourceLanguage": "en",
+  "displayLanguage": "en",
+  "framework": "react",
+  "parser": "ts",
+  "commands": {
+    "addLocale": {
+      "title": "i18n: Add New Locale",
+      "description": "Add a new language to the translation system"
+    },
+    "openKey": {
+      "title": "i18n: Open Translation Key",
+      "description": "Navigate to a specific translation key"
+    },
+    "reload": {
+      "title": "i18n: Reload Translations",
+      "description": "Reload translation files from disk"
+    }
+  },
+  "editor": {
+    "enabled": true,
+    "showKeys": true,
+    "showSource": true,
+    "editable": true
+  },
+  "supportedLocales": ["en", "ms", "zh", "ta"],
+  "localeMappings": {
+    "en": "English",
+    "ms": "Bahasa Melayu",
+    "zh": "中文 (Chinese)",
+    "ta": "தமிழ் (Tamil)"
+  }
+}

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet" />
+  <title>Leish — Project Command Hub</title>
+  <style>
+    :root {
+      --background: #faf7f2;
+      --foreground: #2c2420;
+      --card: #ffffff;
+      --card-foreground: #2c2420;
+      --border: #e2dbd0;
+      --accent: #c9a96e;
+      --muted: #f0ebe3;
+      --muted-foreground: #8a7e74;
+      --destructive: #b44a3f;
+      --success: #00d9a5;
+      --radius: 0.5rem;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: var(--background);
+      color: var(--foreground);
+      padding: 32px;
+      line-height: 1.6;
+    }
+    h1, h2, h3, h4 {
+      font-family: 'Outfit', sans-serif;
+      letter-spacing: -0.03em;
+      font-weight: 600;
+    }
+    h1 { font-size: 1.75rem; margin-bottom: 4px; }
+    h3 { font-size: 1.05rem; margin-bottom: 8px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .link {
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: var(--foreground);
+      font-size: 0.875rem;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .link:hover { background: var(--muted); border-color: var(--accent); }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted-foreground); display: inline-block; }
+    .dot.ok { background: var(--success); }
+    .dot.err { background: var(--destructive); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border: 1px solid;
+    }
+    .pill.critical { background: #fef2f2; color: #b44a3f; border-color: #fecaca; }
+    .pill.high { background: #fff7ed; color: #ea580c; border-color: #fed7aa; }
+    .pill.medium { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+    .pill.low { background: #f9fafb; color: #6b7280; border-color: #e5e7eb; }
+    .pill.done { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+    ul { margin: 10px 0 0 20px; }
+    li { margin: 6px 0; font-size: 0.9rem; }
+    small { color: var(--muted-foreground); font-size: 0.825rem; }
+  </style>
+</head>
+<body>
+  <h1>Leish Project Hub</h1>
+  <p><small>All topics, live links, and launch readiness in one place.</small></p>
+  <div class="card">
+    <div class="row">
+      <a class="link" href="https://app.leish.my" target="_blank" rel="noopener noreferrer">Production App</a>
+      <a class="link" href="leish_launch_command_center.html">Launch Command Center</a>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Platform Snapshot</h3>
+      <p><span class="pill done">Pre-launch fixes: 7/7 done</span></p>
+      <ul>
+        <li>Off-platform contact filter deployed</li>
+        <li>Password validation upgraded (zxcvbn + HIBP)</li>
+        <li>MFA enabled with challenge flow</li>
+        <li>Credential stuffing protection added</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Legal & Ops</h3>
+      <p><span class="pill medium">Sdn Bhd conversion pending</span></p>
+      <ul>
+        <li>SSM sole prop active until Jul 2026</li>
+        <li>Cancellation/dispute policy still needed</li>
+        <li>MUA supply seeding ongoing (KL/Penang/JB)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Integration Status</h3>
+      <p><span class="pill done">Build passing + integration tests 39/39 passing</span></p>
+      <ul>
+        <li>Production build completes successfully</li>
+        <li>Registration flow green</li>
+        <li>Booking flow green (compatibility patched)</li>
+        <li>System smoke green</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Today Focus</h3>
+    <ul>
+      <li>Run a real Billplz end-to-end transaction</li>
+      <li>Replace remaining placeholder profile images</li>
+      <li>Finalize cancellation and dispute policy</li>
+      <li>Post first TikTok launch content</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <span id="dot" class="dot"></span>
+      <strong id="health">Checking live health…</strong>
+    </div>
+    <small id="synced">Not synced yet</small>
+  </div>
+
+  <script>
+    function openLink(url) { window.open(url, '_blank', 'noopener,noreferrer'); }
+
+    async function checkHealth() {
+      const dot = document.getElementById('dot');
+      const health = document.getElementById('health');
+      const synced = document.getElementById('synced');
+      const now = new Date().toLocaleString('en-MY');
+
+      try {
+        const res = await fetch('https://app.leish.my/api/health', { cache: 'no-store' });
+        if (!res.ok) throw new Error('non-200');
+        dot.className = 'dot ok';
+        health.textContent = 'Live healthy';
+        synced.textContent = `Last synced: ${now}`;
+      } catch {
+        dot.className = 'dot err';
+        health.textContent = 'Health check unavailable';
+        synced.textContent = `Last checked: ${now}`;
+      }
+    }
+
+    checkHealth();
+    setInterval(checkHealth, 30000);
+  </script>
+</body>
+</html>

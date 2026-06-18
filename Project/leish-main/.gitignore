@@ -1,0 +1,44 @@
+# v0 runtime files
+__v0_runtime_loader.js
+__v0_devtools.tsx
+__v0_jsx-dev-runtime.ts
+
+# Common ignores
+node_modules/
+.next/
+.env*.local
+.env.vercel
+.env.test
+.env.production
+.DS_Store
+.vercel
+
+# Debug logs
+debug.log
+
+# Backup files
+*.bak
+*.backup
+*~
+*.swp
+*.kate-swp
+
+# IDE / AI config
+.claude/
+
+# Build outputs
+dist/
+build/
+
+# Turbo
+.turbo/
+
+# TypeScript
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+/services/
+leish-498007-56e977b1873a.json

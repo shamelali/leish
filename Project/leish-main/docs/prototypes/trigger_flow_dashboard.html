@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automated Artist Provisioning Flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    :root {
+      --primary: #814BE7;
+      --primary-light: #C17BFD;
+      --primary-soft: rgba(129, 75, 231, 0.12);
+      --secondary: #5B6CF9;
+      --success: #34C563;
+      --warning: #D4A740;
+      --danger: #E73B4F;
+      --bg: #F7F7F7;
+      --card-bg: #FFFFFF;
+      --text: #1F1F24;
+      --text-muted: #6E7191;
+      --border: #E2E4ED;
+      --radius: 12px;
+      --shadow: 0 0 0 1px var(--border), 0 2px 8px rgba(7,2,23,0.05);
+      --shadow-hover: 0 0 0 1px var(--border), 0 4px 16px rgba(7,2,23,0.10);
+      --font: 'Open Sans', system-ui, -apple-system, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not(.light) {
+        --bg: #1E2235;
+        --card-bg: #2D3148;
+        --text: #E2E4ED;
+        --text-muted: #A2A7BD;
+        --border: #484D66;
+        --shadow: 0 0 0 1px var(--border), 0 2px 8px rgba(7,2,23,0.15);
+        --shadow-hover: 0 0 0 1px var(--border), 0 4px 16px rgba(7,2,23,0.25);
+      }
+    }
+    :root.dark {
+      --bg: #1E2235;
+      --card-bg: #2D3148;
+      --text: #E2E4ED;
+      --text-muted: #A2A7BD;
+      --border: #484D66;
+      --shadow: 0 0 0 1px var(--border), 0 2px 8px rgba(7,2,23,0.15);
+      --shadow-hover: 0 0 0 1px var(--border), 0 4px 16px rgba(7,2,23,0.25);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60vh;
+      background:
+        radial-gradient(ellipse 55% 50% at 50% 0%, rgba(91,108,249,0.08), transparent 70%),
+        radial-gradient(ellipse 30% 25% at 80% 10%, rgba(129,75,231,0.08), transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .dashboard { max-width: 1400px; margin: 0 auto; padding: 24px; position: relative; z-index: 1; }
+
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+    .header .logo { height: 32px; width: auto; }
+    .title {
+      font-size: 1.85rem;
+      font-weight: 700;
+      line-height: 1.2;
+      background: linear-gradient(135deg, var(--text) 0%, var(--primary) 55%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      max-width: 860px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .col-2  { grid-column: span 2; }
+    .col-3  { grid-column: span 3; }
+    .col-4  { grid-column: span 4; }
+    .col-6  { grid-column: span 6; }
+    .col-8  { grid-column: span 8; }
+    .col-12 { grid-column: span 12; }
+    @media (max-width: 767.98px) {
+      .col-2, .col-3, .col-4, .col-6, .col-8, .col-12 { grid-column: span 12; }
+      .grid { gap: 12px; }
+      .dashboard { padding: 16px; }
+      .kpi-value { font-size: 1.5rem; }
+      .title { font-size: 1.4rem; }
+      .chart-container { min-height: 280px; }
+      .flow-strip { grid-template-columns: 1fr; }
+      .bridge-label { position: static; transform: none; margin-bottom: 10px; display: inline-flex; }
+    }
+
+    .card,
+    .kpi-card,
+    .chart-card,
+    .text-card,
+    .table-card,
+    .flow-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover,
+    .kpi-card:hover,
+    .chart-card:hover,
+    .text-card:hover,
+    .table-card:hover,
+    .flow-card:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-hover);
+    }
+    .card::before,
+    .kpi-card::before,
+    .chart-card::before,
+    .text-card::before,
+    .table-card::before,
+    .flow-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary-light), transparent);
+      opacity: 0.75;
+    }
+
+    .kpi-card { padding: 24px; min-height: 150px; }
+    .kpi-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .kpi-value { font-size: 2rem; font-weight: 700; color: var(--text); line-height: 1.15; }
+    .kpi-note { margin-top: 10px; font-size: 0.88rem; color: var(--text); }
+    .kpi-delta {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-top: 10px;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .kpi-delta.positive { color: var(--success); background: rgba(52,197,99,0.12); }
+    .kpi-delta.negative { color: var(--warning); background: rgba(212,167,64,0.14); }
+
+    .card-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+    .card-subtitle { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px; }
+    .chart-container { min-height: 340px; width: 100%; }
+    .chart-container.tall { min-height: 420px; }
+
+    .flow-card {
+      padding-top: 28px;
+      background:
+        linear-gradient(180deg, rgba(129,75,231,0.07), rgba(129,75,231,0.02) 18%, transparent 45%),
+        var(--card-bg);
+    }
+    .bridge-label {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(129,75,231,0.18), rgba(91,108,249,0.12));
+      color: var(--primary);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      border: 1px solid rgba(129,75,231,0.18);
+      backdrop-filter: blur(6px);
+    }
+    .flow-strip {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+      position: relative;
+    }
+    .flow-step {
+      min-height: 118px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), transparent), var(--card-bg);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+      position: relative;
+    }
+    .flow-step.bridge {
+      background: linear-gradient(180deg, rgba(129,75,231,0.12), rgba(91,108,249,0.05)), var(--card-bg);
+      border-color: rgba(129,75,231,0.22);
+    }
+    .flow-step.final {
+      background: linear-gradient(180deg, rgba(52,197,99,0.12), rgba(52,197,99,0.04)), var(--card-bg);
+      border-color: rgba(52,197,99,0.28);
+    }
+    .flow-index {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .flow-step.final .flow-index {
+      background: rgba(52,197,99,0.14);
+      color: var(--success);
+    }
+    .flow-title { font-size: 0.88rem; font-weight: 700; color: var(--text); line-height: 1.35; margin-bottom: 6px; }
+    .flow-meta { font-size: 0.77rem; color: var(--text-muted); }
+    .flow-arrow {
+      position: absolute;
+      top: 50%;
+      right: -8px;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-weight: 700;
+      opacity: 0.7;
+    }
+    .flow-step:last-child .flow-arrow { display: none; }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      background: rgba(91,108,249,0.04);
+    }
+    .pill.ok { color: var(--success); background: rgba(52,197,99,0.1); border-color: rgba(52,197,99,0.18); }
+    .pill.pending { color: var(--warning); background: rgba(212,167,64,0.12); border-color: rgba(212,167,64,0.18); }
+    .pill.bridge { color: var(--primary); background: rgba(129,75,231,0.12); border-color: rgba(129,75,231,0.2); }
+
+    .text-card p { font-size: 0.93rem; color: var(--text); margin-bottom: 10px; line-height: 1.65; }
+    .text-card p:last-child { margin-bottom: 0; }
+    .highlight {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .table-card { overflow-x: auto; }
+    .table-card table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    .table-card th { text-align: left; padding: 11px 12px; border-bottom: 2px solid var(--border); font-weight: 700; color: var(--text); white-space: nowrap; }
+    .table-card td { padding: 11px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; word-break: break-word; }
+    .table-card tr:last-child td { border-bottom: none; }
+    .table-card tbody tr:nth-child(even) td { background: rgba(91,108,249,0.02); }
+    .table-card tbody tr:hover td { background: rgba(91,108,249,0.06); }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .status-chip.ok { color: var(--success); background: rgba(52,197,99,0.11); }
+    .status-chip.bridge { color: var(--primary); background: rgba(129,75,231,0.12); }
+    .status-chip.pending { color: var(--warning); background: rgba(212,167,64,0.14); }
+    .status-chip.final { color: var(--success); background: rgba(52,197,99,0.14); }
+
+    .theme-toggle {
+      position: absolute;
+      top: 24px;
+      right: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 1rem;
+      line-height: 1;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .theme-toggle:hover { color: var(--text); border-color: var(--primary-light); }
+    .theme-toggle .icon-sun,
+    .theme-toggle .icon-moon { display: none; }
+    .theme-toggle .icon-sun { display: inline; }
+    :root.dark .theme-toggle .icon-sun { display: none; }
+    :root.dark .theme-toggle .icon-moon { display: inline; }
+    @media (prefers-color-scheme: dark) {
+      :root:not(.light) .theme-toggle .icon-sun { display: none; }
+      :root:not(.light) .theme-toggle .icon-moon { display: inline; }
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .footer .logo-sm { height: 18px; width: auto; }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <header class="header">
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+        <span class="icon-sun">&#9788;</span>
+        <span class="icon-moon">&#9790;</span>
+      </button>
+      <img class="logo" src="https://www.energent.ai/images/logos/svg/energent-logo.svg" alt="Energent logo">
+      <div>
+        <h1 class="title">Automated Artist Provisioning Flow</h1>
+        <p class="subtitle">A Postgres trigger closes the registration-to-profile gap in the background so the artist layout reaches its checks with auth, profile, and role already aligned.</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="col-3">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Flow Steps</div>
+          <div class="kpi-value">8</div>
+          <div class="kpi-note">From frontend registration to clean onboarding redirect.</div>
+          <div class="kpi-delta positive">End-to-end mapped</div>
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="kpi-card">
+          <div class="kpi-label">Background Automation</div>
+          <div class="kpi-value">1 Trigger</div>
+          <div class="kpi-note">handle_new_user creates the missing artist profile automatically.</div>
+          <div class="kpi-delta positive">auth.users → public.profiles</div>
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="kpi-card">
+          <div class="kpi-label">Layout Checks Passing</div>
+          <div class="kpi-value">3 / 3</div>
+          <div class="kpi-note">Auth session, profile row, and artist role all resolve before gating.</div>
+          <div class="kpi-delta positive">Auth OK · Profile OK · Role OK</div>
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="kpi-card">
+          <div class="kpi-label">Pending Dependency</div>
+          <div class="kpi-value">1 Row</div>
+          <div class="kpi-note">Provider data is still absent, so the next stop becomes onboarding.</div>
+          <div class="kpi-delta negative">Provider row not created yet</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="col-12">
+        <div class="flow-card">
+          <div class="bridge-label">DATABASE AUTOMATION BRIDGE</div>
+          <div class="card-title">Where the trigger fixes the redirect bug</div>
+          <div class="card-subtitle">The frontend only initiates signup. The critical repair happens behind the scenes between auth creation and layout evaluation.</div>
+          <div class="flow-strip" id="flow-strip"></div>
+          <div class="pill-row">
+            <span class="pill">Frontend kickoff</span>
+            <span class="pill bridge">Trigger-driven profile provisioning</span>
+            <span class="pill ok">Layout gate satisfied</span>
+            <span class="pill pending">Provider setup still pending</span>
+            <span class="pill ok">Onboarding redirect succeeds cleanly</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="col-12">
+        <div class="chart-card">
+          <div class="card-title">Cross-layer handoff from registration to onboarding</div>
+          <div class="card-subtitle">Hover each node to trace how work moves from the frontend into Supabase auth, through Postgres automation, and back into the artist layout.</div>
+          <div class="chart-container tall" id="chart-sankey"></div>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="chart-card">
+          <div class="card-title">Execution path by system boundary</div>
+          <div class="card-subtitle">The highlighted middle band shows the database-only segment that now fills the profile and role requirements before layout checks run.</div>
+          <div class="chart-container" id="chart-lane"></div>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="chart-card">
+          <div class="card-title">State change before vs after the trigger</div>
+          <div class="card-subtitle">The trigger converts profile and role from missing to ready, while provider setup remains intentionally deferred to onboarding.</div>
+          <div class="chart-container" id="chart-heatmap"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="col-6">
+        <div class="text-card">
+          <div class="card-title">Why the redirect bug disappears</div>
+          <p>The original gap was not at sign-up itself; it was the missing <span class="highlight">public.profiles</span> record and artist role at the moment the dashboard layout began validating state. By adding a Postgres trigger on <span class="highlight">auth.users INSERT</span>, the system now provisions the required profile automatically before the layout reaches its access checks.</p>
+          <p>This makes the role-based route stable because the layout sees <span class="highlight">Auth: OK</span>, <span class="highlight">Profile: OK</span>, and <span class="highlight">Role: OK</span> as part of one continuous registration outcome rather than as separate, timing-sensitive operations.</p>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="text-card">
+          <div class="card-title">What still happens after the artist redirect</div>
+          <p>The provider record is still absent immediately after registration, so the layout is expected to identify a <span class="highlight">provider gap</span>. That is not an error in this flow; it becomes the signal to send the user to <span class="highlight">/artist/onboarding</span>.</p>
+          <p>In other words, the trigger solves the authentication-to-profile handoff, and the onboarding redirect continues the product journey by collecting the remaining provider-specific information.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="col-12">
+        <div class="table-card">
+          <div class="card-title">Detailed step breakdown</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Step</th>
+                <th>Layer</th>
+                <th>Operation</th>
+                <th>Status</th>
+                <th>Why it matters</th>
+              </tr>
+            </thead>
+            <tbody id="step-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <img class="logo-sm" src="https://www.energent.ai/images/logos/svg/energent-logo.svg" alt="Energent logo">
+      <a href="https://www.energent.ai" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); text-decoration: none; transition: color 0.2s ease;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'">Powered by energent.ai</a>
+    </footer>
+  </div>
+
+  <script>
+    function getEffectiveDark() {
+      const root = document.documentElement;
+      if (root.classList.contains('dark')) return true;
+      if (root.classList.contains('light')) return false;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    function toggleTheme() {
+      const root = document.documentElement;
+      const currentlyDark = getEffectiveDark();
+      root.classList.remove('dark', 'light');
+      root.classList.add(currentlyDark ? 'light' : 'dark');
+      rebuildCharts();
+    }
+
+    const COLORS = ['#814BE7', '#5B6CF9', '#34C563', '#D4A740', '#E73B4F', '#C17BFD'];
+    const chartRegistry = [];
+
+    function getDefaultLayout() {
+      const dark = getEffectiveDark();
+      return {
+        font: { family: 'Open Sans, system-ui, sans-serif', color: dark ? '#E2E4ED' : '#1F1F24' },
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        autosize: true,
+        margin: { l: 60, r: 40, t: 50, b: 60 },
+        xaxis: { gridcolor: dark ? '#5A5F78' : '#E2E4ED', zerolinecolor: dark ? '#5A5F78' : '#E2E4ED', automargin: true },
+        yaxis: { gridcolor: dark ? '#5A5F78' : '#E2E4ED', zerolinecolor: dark ? '#5A5F78' : '#E2E4ED', automargin: true },
+        colorway: COLORS,
+        legend: { font: { family: 'Open Sans, system-ui, sans-serif', size: 12 }, orientation: 'h', y: -0.18 },
+        hoverlabel: {
+          font: { family: 'Open Sans, system-ui, sans-serif', size: 13 },
+          bgcolor: dark ? '#3D4260' : '#FFFFFF',
+          bordercolor: dark ? '#5A5F78' : '#E2E4ED',
+          namelength: -1
+        }
+      };
+    }
+
+    const NESTED_LAYOUT_KEYS = ['xaxis','yaxis','yaxis2','margin','legend','font','hoverlabel','annotations'];
+    function mergeLayouts(base, overrides) {
+      const merged = { ...base, ...overrides };
+      for (const key of NESTED_LAYOUT_KEYS) {
+        if (base[key] && overrides[key] && typeof base[key] === 'object' && typeof overrides[key] === 'object' && !Array.isArray(base[key]) && !Array.isArray(overrides[key])) {
+          merged[key] = { ...base[key], ...overrides[key] };
+        }
+      }
+      return merged;
+    }
+
+    function createChart(id, traces, layoutOverrides = {}) {
+      const CLIP_TYPES = ['scatter','scattergl','bar','waterfall','funnel','histogram','box','violin'];
+      const processed = traces.map(t =>
+        t.text && t.textposition && t.cliponaxis === undefined && CLIP_TYPES.includes(t.type || 'scatter')
+          ? { ...t, cliponaxis: false }
+          : t
+      );
+      chartRegistry.push({ id, traces: processed, layoutOverrides });
+      Plotly.newPlot(id, processed, mergeLayouts(getDefaultLayout(), layoutOverrides), { responsive: true, displayModeBar: false });
+    }
+
+    function rebuildCharts() {
+      chartRegistry.forEach(({ id, traces, layoutOverrides }) => {
+        Plotly.react(id, traces, mergeLayouts(getDefaultLayout(), layoutOverrides), { responsive: true, displayModeBar: false });
+      });
+    }
+
+    const steps = [
+      {
+        step: 1,
+        title: 'User Registration',
+        layer: 'Frontend',
+        operation: 'User submits sign-up form',
+        status: 'ok',
+        statusLabel: 'Request starts',
+        detail: 'The browser initiates account creation.'
+      },
+      {
+        step: 2,
+        title: 'Supabase Auth',
+        layer: 'Supabase Auth',
+        operation: 'auth.users INSERT',
+        status: 'ok',
+        statusLabel: 'Auth row created',
+        detail: 'A new auth user is persisted.'
+      },
+      {
+        step: 3,
+        title: 'Trigger Fires',
+        layer: 'Postgres',
+        operation: 'handle_new_user executes',
+        status: 'bridge',
+        statusLabel: 'Automation bridge',
+        detail: 'Database logic reacts immediately to the auth insert.'
+      },
+      {
+        step: 4,
+        title: 'Profile Created',
+        layer: 'Postgres',
+        operation: "public.profiles INSERT with role='artist'",
+        status: 'bridge',
+        statusLabel: 'Profile provisioned',
+        detail: 'The artist profile exists before layout checks begin.'
+      },
+      {
+        step: 5,
+        title: 'Artist Redirect',
+        layer: 'Dashboard Layout',
+        operation: 'User lands on /artist',
+        status: 'ok',
+        statusLabel: 'Route entered',
+        detail: 'The app moves into the artist dashboard shell.'
+      },
+      {
+        step: 6,
+        title: 'Layout Checks Pass',
+        layer: 'Dashboard Layout',
+        operation: 'Auth OK · Profile OK · Role OK',
+        status: 'ok',
+        statusLabel: 'Gate satisfied',
+        detail: 'The trigger has already supplied the needed profile state.'
+      },
+      {
+        step: 7,
+        title: 'Provider Check Fails',
+        layer: 'Dashboard Layout',
+        operation: 'No provider row yet',
+        status: 'pending',
+        statusLabel: 'Expected pending state',
+        detail: 'The next missing dependency is provider onboarding data.'
+      },
+      {
+        step: 8,
+        title: 'Final Success',
+        layer: 'Onboarding',
+        operation: 'Redirected to /artist/onboarding',
+        status: 'final',
+        statusLabel: 'Clean success',
+        detail: 'The user advances without getting blocked by profile or role errors.'
+      }
+    ];
+
+    const statusClassMap = {
+      ok: 'ok',
+      bridge: 'bridge',
+      pending: 'pending',
+      final: 'final'
+    };
+
+    function renderFlowStrip() {
+      const container = document.getElementById('flow-strip');
+      steps.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'flow-step' + (item.status === 'bridge' ? ' bridge' : '') + (item.status === 'final' ? ' final' : '');
+
+        const idx = document.createElement('div');
+        idx.className = 'flow-index';
+        idx.textContent = String(item.step);
+
+        const title = document.createElement('div');
+        title.className = 'flow-title';
+        title.textContent = item.title;
+
+        const meta = document.createElement('div');
+        meta.className = 'flow-meta';
+        meta.textContent = item.operation;
+
+        const arrow = document.createElement('div');
+        arrow.className = 'flow-arrow';
+        arrow.textContent = '→';
+
+        card.appendChild(idx);
+        card.appendChild(title);
+        card.appendChild(meta);
+        if (index < steps.length - 1) card.appendChild(arrow);
+        container.appendChild(card);
+      });
+    }
+
+    function renderStepTable() {
+      const tbody = document.getElementById('step-table-body');
+      steps.forEach(item => {
+        const tr = document.createElement('tr');
+
+        const tdStep = document.createElement('td');
+        tdStep.textContent = String(item.step);
+
+        const tdLayer = document.createElement('td');
+        tdLayer.textContent = item.layer;
+
+        const tdOperation = document.createElement('td');
+        tdOperation.textContent = item.operation;
+
+        const tdStatus = document.createElement('td');
+        const statusChip = document.createElement('span');
+        statusChip.className = 'status-chip ' + statusClassMap[item.status];
+        statusChip.textContent = item.statusLabel;
+        tdStatus.appendChild(statusChip);
+
+        const tdDetail = document.createElement('td');
+        tdDetail.textContent = item.detail;
+
+        tr.appendChild(tdStep);
+        tr.appendChild(tdLayer);
+        tr.appendChild(tdOperation);
+        tr.appendChild(tdStatus);
+        tr.appendChild(tdDetail);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function buildCharts() {
+      const sankeyLabels = steps.map(item => item.step + '. ' + item.title);
+      const sankeyNodeColors = ['#5B6CF9', '#5B6CF9', '#814BE7', '#814BE7', '#34C563', '#34C563', '#D4A740', '#34C563'];
+      const sankeyLinks = {
+        source: [0, 1, 2, 3, 4, 5, 6],
+        target: [1, 2, 3, 4, 5, 6, 7],
+        value:  [100, 100, 100, 100, 100, 100, 100],
+        color: ['rgba(91,108,249,0.32)','rgba(129,75,231,0.34)','rgba(129,75,231,0.42)','rgba(84,195,125,0.34)','rgba(52,197,99,0.34)','rgba(212,167,64,0.34)','rgba(52,197,99,0.40)'],
+        customdata: [
+          'Registration hands off to Supabase Auth.',
+          'User creation triggers database-side automation.',
+          'Trigger writes the artist profile and role.',
+          'Profile state is now present before routing.',
+          'Layout enters with auth, profile, and role aligned.',
+          'Provider data is the only remaining missing row.',
+          'Onboarding becomes the correct success path.'
+        ],
+        hovertemplate: '%{customdata}<extra></extra>'
+      };
+
+      createChart('chart-sankey', [{
+        type: 'sankey',
+        arrangement: 'fixed',
+        node: {
+          pad: 22,
+          thickness: 18,
+          line: { color: 'rgba(0,0,0,0)', width: 0.5 },
+          label: sankeyLabels,
+          color: sankeyNodeColors,
+          x: [0.02, 0.15, 0.29, 0.43, 0.61, 0.75, 0.86, 0.97],
+          y: [0.16, 0.28, 0.46, 0.58, 0.32, 0.50, 0.70, 0.42],
+          hovertemplate: '%{label}<extra></extra>'
+        },
+        link: sankeyLinks
+      }], {
+        margin: { l: 20, r: 20, t: 20, b: 20 },
+        font: { family: 'Open Sans, system-ui, sans-serif', size: 12 },
+        xaxis: { visible: false },
+        yaxis: { visible: false }
+      });
+
+      const laneOrder = ['Onboarding', 'Dashboard Layout', 'Postgres', 'Supabase Auth', 'Frontend'];
+      const yMap = {
+        'Onboarding': 1,
+        'Dashboard Layout': 2,
+        'Postgres': 3,
+        'Supabase Auth': 4,
+        'Frontend': 5
+      };
+      const laneX = steps.map(item => item.step);
+      const laneY = steps.map(item => yMap[item.layer]);
+      const markerColors = steps.map(item => {
+        if (item.status === 'bridge') return '#814BE7';
+        if (item.status === 'pending') return '#D4A740';
+        if (item.status === 'final') return '#34C563';
+        return '#5B6CF9';
+      });
+      const markerSizes = steps.map(item => item.status === 'final' ? 21 : item.status === 'bridge' ? 19 : 17);
+      const labelText = steps.map(item => item.step + '. ' + item.title);
+      const customLaneData = steps.map(item => [item.layer, item.operation, item.detail]);
+
+      createChart('chart-lane', [{
+        type: 'scatter',
+        mode: 'lines+markers+text',
+        x: laneX,
+        y: laneY,
+        text: labelText,
+        textposition: ['top center','top center','bottom center','bottom center','top center','top center','bottom center','top center'],
+        line: { color: '#C17BFD', width: 3, shape: 'linear' },
+        marker: {
+          size: markerSizes,
+          color: markerColors,
+          line: { color: '#FFFFFF', width: 2 }
+        },
+        customdata: customLaneData,
+        hovertemplate: '<b>%{text}</b><br>Layer: %{customdata[0]}<br>Operation: %{customdata[1]}<br>%{customdata[2]}<extra></extra>'
+      }], {
+        margin: { l: 90, r: 30, t: 40, b: 60 },
+        xaxis: {
+          tickmode: 'array',
+          tickvals: laneX,
+          ticktext: steps.map(item => 'Step ' + item.step),
+          range: [0.5, 8.5],
+          title: { text: 'Flow sequence' },
+          showgrid: false,
+          zeroline: false
+        },
+        yaxis: {
+          tickmode: 'array',
+          tickvals: [1, 2, 3, 4, 5],
+          ticktext: laneOrder,
+          range: [0.6, 5.4],
+          title: { text: 'System boundary' }
+        },
+        shapes: [
+          {
+            type: 'rect',
+            xref: 'x',
+            yref: 'paper',
+            x0: 2.5,
+            x1: 4.5,
+            y0: 0,
+            y1: 1,
+            fillcolor: 'rgba(129,75,231,0.10)',
+            line: { width: 0 }
+          }
+        ],
+        annotations: [
+          {
+            x: 3.5,
+            y: 1.12,
+            xref: 'x',
+            yref: 'paper',
+            text: 'Database automation bridge',
+            showarrow: false,
+            font: { family: 'Open Sans, system-ui, sans-serif', size: 12, color: '#814BE7' }
+          }
+        ],
+        showlegend: false
+      });
+
+      const heatX = ['Auth session', 'Profile row', 'Artist role', 'Layout gate', 'Provider row', 'Final route'];
+      const heatY = ['Before trigger', 'After trigger'];
+      const heatZ = [
+        [1, 0, 0, 0, 0, 0],
+        [1, 1, 1, 1, 0, 1]
+      ];
+      const heatText = [
+        ['OK', 'Missing', 'Missing', 'Blocked', 'Missing', 'Not resolved'],
+        ['OK', 'OK', 'OK', 'Pass', 'Missing', '/artist/onboarding']
+      ];
+      const heatCustom = [
+        [
+          'Authentication completes, but downstream profile state is absent.',
+          'No profile row exists yet.',
+          'Role cannot be validated.',
+          'Layout cannot safely pass its gating checks.',
+          'Provider row is also missing.',
+          'The route outcome is unstable.'
+        ],
+        [
+          'Authentication still completes normally.',
+          'Trigger inserts the profile record automatically.',
+          'Role is set to artist during provisioning.',
+          'Auth, profile, and role checks all pass.',
+          'Provider remains uncreated, by design at this stage.',
+          'The app cleanly redirects to onboarding.'
+        ]
+      ];
+
+      createChart('chart-heatmap', [{
+        type: 'heatmap',
+        z: heatZ,
+        x: heatX,
+        y: heatY,
+        text: heatText,
+        texttemplate: '%{text}',
+        textfont: { family: 'Open Sans, system-ui, sans-serif', size: 12 },
+        colorscale: [
+          [0, '#E73B4F'],
+          [0.49, '#E73B4F'],
+          [0.50, '#34C563'],
+          [1, '#34C563']
+        ],
+        zmin: 0,
+        zmax: 1,
+        customdata: heatCustom,
+        hovertemplate: '<b>%{y}</b><br>%{x}: %{text}<br>%{customdata}<extra></extra>',
+        showscale: false
+      }], {
+        margin: { l: 100, r: 30, t: 30, b: 70 },
+        xaxis: { tickangle: -20 },
+        yaxis: { autorange: 'reversed' }
+      });
+    }
+
+    renderFlowStrip();
+    renderStepTable();
+    buildCharts();
+  </script>
+</body>
+</html>

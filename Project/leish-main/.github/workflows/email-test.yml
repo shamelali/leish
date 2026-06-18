@@ -1,0 +1,37 @@
+name: Email Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-email:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify environment variables
+        run: npm run verify-env
+        env:
+          TEST_EMAIL_TO: ${{ secrets.TEST_EMAIL_TO }}
+
+      - name: Build Brevo module (compile TS to JS)
+        run: npx tsc lib/email/brevo.ts --module esnext --target es2020 --outDir lib/email
+
+      - name: Run email test
+        run: npm run check-email
+        env:
+          TEST_EMAIL_TO: ${{ secrets.TEST_EMAIL_TO }}
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          FROM_NAME: ${{ secrets.FROM_NAME }}

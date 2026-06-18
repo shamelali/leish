@@ -1,0 +1,22 @@
+version: "1.0"
+
+profile:
+  name: qodana.starter
+
+include:
+  - name: DuplicatedCode
+  - name: UnnecessaryLocalVariableJS
+
+exclude:
+  - name: TypeScriptUMDGlobal
+    paths:
+      - node_modules
+  - name: JSUnusedLocalSymbols
+    paths:
+      - "*.test.ts"
+      - "*.test.tsx"
+      - "**/__tests__/**"
+
+linter: jetbrains/qodana-js:2026.1
+
+bootstrap: npm ci

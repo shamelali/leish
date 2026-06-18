@@ -1,0 +1,20 @@
+{
+  "framework": "nextjs",
+  "regions": ["sin1"],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "https://studio.leish.my" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PATCH, DELETE, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
+      ]
+    }
+  ],
+  "images": {
+    "sizes": [256, 384, 640, 750, 828, 1080, 1200, 1920],
+    "remotePatterns": [
+      { "protocol": "https", "hostname": "*.supabase.co" }
+    ]
+  }
+}

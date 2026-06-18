@@ -1,0 +1,110 @@
+import { describe, expect, it } from "vitest"
+import {
+  applyGuardrails,
+  getClarifyingQuestion,
+  getSuggestions,
+  matchFaq,
+} from "./guardrails"
+import type { ConversationContext } from "./types"
+
+const baseCtx: ConversationContext = {
+  turnCount: 1,
+  eventTypes: ["Bridal"],
+  location: "KL",
+  budget: { min: 300, max: 800 },
+  styleNotes: [],
+  hasInspirationPhoto: false,
+}
+
+describe("applyGuardrails", () => {
+  it("passes all inputs", () => {
+    expect(applyGuardrails()).toEqual({ type: "pass" })
+  })
+})
+
+describe("getClarifyingQuestion", () => {
+  it("asks for event type when missing", () => {
+    const ctx = { ...baseCtx, eventTypes: [] }
+    expect(getClarifyingQuestion(ctx)).toContain("occasion")
+  })
+
+  it("asks for location when missing", () => {
+    const ctx = { ...baseCtx, location: "" }
+    expect(getClarifyingQuestion(ctx)).toContain("Where are you")
+  })
+
+  it("asks for budget when missing", () => {
+    const ctx = { ...baseCtx, budget: null }
+    expect(getClarifyingQuestion(ctx)).toContain("budget")
+  })
+
+  it("asks about style when all core info is present", () => {
+    expect(getClarifyingQuestion(baseCtx)).toContain("style")
+  })
+})
+
+describe("getSuggestions", () => {
+  it("returns base suggestions when context is sparse and no recommendations", () => {
+    const sparseCtx = { ...baseCtx, eventTypes: [], location: "", budget: null }
+    const suggestions = getSuggestions(sparseCtx, false)
+    expect(suggestions).toContain("Bridal makeup in KL")
+  })
+
+  it("returns post-recommendation suggestions when hasRecommendations", () => {
+    const suggestions = getSuggestions(baseCtx, true)
+    expect(suggestions).toContain("Show me more options")
+  })
+})
+
+describe("matchFaq", () => {
+  it("matches greeting on first turn", () => {
+    const ctx = { ...baseCtx, turnCount: 0 }
+    const result = matchFaq("hi", ctx)
+    expect(result.matched).toBe(true)
+  })
+
+  it("matches hello variants", () => {
+    const result = matchFaq("hello", baseCtx)
+    expect(result.matched).toBe(true)
+  })
+
+  it("matches salam greeting", () => {
+    const result = matchFaq("assalamualaikum", baseCtx)
+    expect(result.matched).toBe(true)
+  })
+
+  it("matches availability question", () => {
+    const result = matchFaq("when is she available?", baseCtx)
+    expect(result.matched).toBe(true)
+  })
+
+  it("does not match availability when looking for recommendation", () => {
+    const result = matchFaq("find me an available artist", baseCtx)
+    expect(result.matched).toBe(false)
+  })
+
+  it("matches how to book", () => {
+    const result = matchFaq("how do I book?", baseCtx)
+    expect(result.matched).toBe(true)
+  })
+
+  it("matches pricing question", () => {
+    const result = matchFaq("how much does it cost?", baseCtx)
+    expect(result.matched).toBe(true)
+  })
+
+  it("does not match pricing when specific event is mentioned", () => {
+    const result = matchFaq("how much for bridal makeup?", baseCtx)
+    expect(result.matched).toBe(false)
+  })
+
+  it("matches travel question", () => {
+    const result = matchFaq("do you travel to my location?", baseCtx)
+    expect(result.matched).toBe(true)
+  })
+
+  it("returns unmatched for unknown queries", () => {
+    const result = matchFaq("what is contouring", baseCtx)
+    expect(result.matched).toBe(false)
+  })
+})
