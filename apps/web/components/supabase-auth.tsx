@@ -93,7 +93,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
           full_name: fullName,
           phone,
         },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?role=${encodeURIComponent(role)}`,
       },
     })
 
@@ -238,7 +238,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
     // SameSite=None;Secure required for cross-site redirect from supabase.co back to leish.my
     document.cookie = `pendingOAuthRole=${encodeURIComponent(selectedRole)};path=/;max-age=600;samesite=none;secure`
 
-    const redirectTo = `${window.location.origin}/auth/callback`
+    const redirectTo = `${window.location.origin}/auth/callback?role=${encodeURIComponent(selectedRole)}`
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
