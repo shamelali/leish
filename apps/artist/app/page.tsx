@@ -71,7 +71,7 @@ export default async function ProDashboardPage() {
             </div>
           </div>
           <Button asChild size="sm">
-            <Link href="/pricing">Upgrade</Link>
+            <Link href="https://www.leish.my/pricing">Upgrade</Link>
           </Button>
         </div>
       )}

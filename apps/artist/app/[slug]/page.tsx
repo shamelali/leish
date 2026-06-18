@@ -100,7 +100,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
     <>
       <section className="bg-background py-8 lg:py-16">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <Link href="/artists" className="group mb-8 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground">
+          <Link href="https://www.leish.my/artists" className="group mb-8 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground">
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
             All Artists
           </Link>

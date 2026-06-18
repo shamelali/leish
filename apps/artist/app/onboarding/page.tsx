@@ -21,7 +21,7 @@ export default async function ArtistOnboardingPage() {
         <p className="mt-2 text-sm text-muted-foreground">Please sign in or create an account to set up your artist profile.</p>
         <div className="mt-6 flex items-center justify-center gap-4">
           <Link href="/sign-in" className="inline-flex items-center gap-2 border border-foreground bg-foreground px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-accent hover:border-accent">Sign In</Link>
-          <Link href="/register" className="inline-flex items-center gap-2 border border-border px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-accent">Register</Link>
+          <Link href="https://www.leish.my/sign-up" className="inline-flex items-center gap-2 border border-border px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-accent">Register</Link>
         </div>
       </div>
     )
