@@ -69,13 +69,13 @@ export async function POST(req: Request) {
         provider_id: providerId,
         tier: "pro",
         action: "upgrade",
-        stripe_subscription_id: billId, // Using bill ID as reference
+        billplz_bill_id: billId,
         amount_myr: amountMyr,
         billing_period_start: tierStartedAt.toISOString(),
         billing_period_end: tierExpiresAt.toISOString(),
       })
 
-      console.log(`[billplz-webhook] Provider ${providerId} upgraded to Pro`)
+      console.info(`[billplz-webhook] Provider ${providerId} upgraded to Pro`)
     }
 
     return NextResponse.json({ received: true })

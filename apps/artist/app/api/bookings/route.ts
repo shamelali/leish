@@ -63,7 +63,7 @@ async function applyTravelFee(address: string, providerId: string, bookingId: st
 }
 
 export async function POST(req: Request) {
-  const limit = enforceRateLimit(req, "bookings:create", 20, 60_000);
+  const limit = await enforceRateLimit(req, "bookings:create", 20, 60_000);
   if (!limit.ok) {
     return NextResponse.json(
       { ok: false, error: "Too many booking attempts. Please try again shortly." },

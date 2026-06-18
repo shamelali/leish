@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
+import { getPostAuthRedirect } from "@/lib/routing"
 
 interface ServiceInput {
   name: string
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
 
   // If profile doesn't exist, create it with artist role
   if (!profile) {
-    console.log("[artist-onboarding] Profile missing, creating with artist role")
+    console.info("[artist-onboarding] Profile missing, creating with artist role")
     const { error: profileError } = await supabase
       .from("profiles")
       .insert({
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
     }
   } else if (profile.role !== "artist") {
     // Profile exists but wrong role — upgrade to artist
-    console.log("[artist-onboarding] Upgrading role from", profile.role, "to artist")
+    console.info("[artist-onboarding] Upgrading role from", profile.role, "to artist")
     const { error: updateError } = await supabase
       .from("profiles")
       .update({ role: "artist" })
@@ -132,5 +133,7 @@ export async function POST(req: Request) {
     // Provider was created — don't fail the whole onboarding, just warn
   }
 
-  return NextResponse.json({ ok: true, providerId: provider.id })
+  const redirectTo = `${getPostAuthRedirect("artist", true, slug)}?onboarded=1`
+
+  return NextResponse.json({ ok: true, providerId: provider.id, redirectTo })
 }

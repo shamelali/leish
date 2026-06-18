@@ -150,7 +150,7 @@ export function ArtistOnboardingWizard({
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to create profile")
 
-      router.replace("/artist?onboarded=1")
+      router.replace(data.redirectTo || "/artist?onboarded=1")
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong")
       setSubmitting(false)

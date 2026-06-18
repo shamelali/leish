@@ -35,7 +35,7 @@ export default function UpdatePasswordPage() {
     setMessage(null)
 
     if (password.length < 12) {
-      setMessage({ type: "error", text: "Password must be at least 8 characters." })
+      setMessage({ type: "error", text: "Password must be at least 12 characters." })
       setLoading(false)
       return
     }

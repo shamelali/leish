@@ -362,7 +362,7 @@ export interface Database {
         suspension_reason?: string,
         suspended_at?: string,
         client_limit: number,
-        stripe_subscription_id?: string,
+        billplz_bill_id?: string,
         suspended_by?: string,
         starting_price?: number,
       }
@@ -455,7 +455,7 @@ export interface Database {
         tier: string,
         action: string,
         previous_tier?: string,
-        stripe_subscription_id?: string,
+        billplz_bill_id?: string,
         amount_myr?: number,
         billing_period_start?: string,
         billing_period_end?: string,

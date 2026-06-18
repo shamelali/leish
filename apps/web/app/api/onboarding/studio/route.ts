@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr"
+import { getPostAuthRedirect } from "@/lib/routing"
 
 interface ServiceInput {
   name: string
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
 
   // If profile doesn't exist, create it with studio role
   if (!profile) {
-    console.log("[studio-onboarding] Profile missing, creating with studio role")
+    console.info("[studio-onboarding] Profile missing, creating with studio role")
     const { error: profileError } = await supabase
       .from("profiles")
       .insert({
@@ -57,7 +58,7 @@ export async function POST(req: Request) {
     }
   } else if (profile.role !== "studio") {
     // Profile exists but wrong role — upgrade to studio
-    console.log("[studio-onboarding] Upgrading role from", profile.role, "to studio")
+    console.info("[studio-onboarding] Upgrading role from", profile.role, "to studio")
     const { error: updateError } = await supabase
       .from("profiles")
       .update({ role: "studio" })
@@ -120,7 +121,7 @@ export async function POST(req: Request) {
     review_count: 0,
   }
 
-  console.log("[studio-onboarding] Attempting insert:", JSON.stringify(insertPayload, null, 2))
+  console.info("[studio-onboarding] Inserting provider")
 
   const { data: provider, error: providerError } = await supabase
     .from("providers")
@@ -160,5 +161,7 @@ export async function POST(req: Request) {
     console.error("[studio-onboarding] services insert error:", servicesError)
   }
 
-  return NextResponse.json({ ok: true, providerId: provider.id })
+  const redirectTo = `${getPostAuthRedirect("studio", true, slug)}?onboarded=1`
+
+  return NextResponse.json({ ok: true, providerId: provider.id, redirectTo })
 }

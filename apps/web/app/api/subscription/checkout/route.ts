@@ -86,7 +86,7 @@ export async function POST(req: Request) {
       tier: "pro",
       action: "upgrade",
       amount_myr: amount / 100,
-      stripe_subscription_id: billData.id, // Using bill ID as reference
+      billplz_bill_id: billData.id,
     })
 
     // Redirect to Billplz payment page
