@@ -1,7 +1,5 @@
 "use client"
 
-export const dynamic = "force-dynamic"
-
 import { useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
@@ -36,7 +34,7 @@ export default function AuthCallbackPage() {
       router.replace(redirect)
     }).catch((e) => {
       console.error("[Leish] Auth callback error:", e)
-      router.replace("/")
+      router.replace("/sign-in?error=auth_failed")
     })
   }, [router, searchParams])
 
