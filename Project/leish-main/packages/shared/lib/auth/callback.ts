@@ -40,23 +40,25 @@ export async function resolveUserRole(
     const r = profile.role as string
     const normalized = r === "studio_manager" ? "studio" : r
     if (["admin", "artist", "studio"].includes(normalized)) role = normalized as UserRole
+  } else {
+    const r = (user?.raw_user_meta_data?.role as string) || "customer"
+    const normalized = r === "studio_manager" ? "studio" : r
+    if (["admin", "artist", "studio"].includes(normalized)) role = normalized as UserRole
   }
 
   let pendingRole: UserRole | null = null
-  const ss = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("pendingOAuthRole") : null
-  if (ss && ["artist", "studio", "customer"].includes(ss)) {
-    pendingRole = ss as UserRole
+  if (typeof sessionStorage !== "undefined") {
+    const ss = sessionStorage.getItem("pendingOAuthRole")
+    if (ss && ["artist", "studio", "customer"].includes(ss)) pendingRole = ss as UserRole
   } else {
     const stored = document.cookie.split(";").find(c => c.trim().startsWith("pendingOAuthRole="))
     const raw = stored ? decodeURIComponent(stored.split("=")[1]) : null
-    if (raw && ["artist", "studio", "customer"].includes(raw)) {
-      pendingRole = raw as UserRole
-    }
+    if (raw && ["artist", "studio", "customer"].includes(raw)) pendingRole = raw as UserRole
   }
 
-  if (pendingRole && pendingRole !== "customer" && role === "customer" && profile) {
+  if (pendingRole && pendingRole !== "customer" && role === "customer") {
     role = pendingRole
-    await supabase.from("profiles").update({ role: pendingRole }).eq("id", user.id)
+    if (profile) await supabase.from("profiles").update({ role: pendingRole }).eq("id", user.id)
   }
 
   return role
