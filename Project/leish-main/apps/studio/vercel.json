@@ -1,6 +1,6 @@
 {
   "framework": "nextjs",
-  "installCommand": "pnpm install",
+  "installCommand": "npm install -g pnpm@10.10.0 && pnpm install --ignore-scripts",
   "buildCommand": "pnpm build",
   "regions": ["sin1"],
   "headers": [
