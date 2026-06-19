@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
   "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps --no-optional",
+  "installCommand": "pnpm install",
   "regions": ["sin1"],
   "headers": [
     {
