@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
   "buildCommand": "npm run build",
-  "installCommand": "pnpm install",
+  "installCommand": "corepack enable && pnpm install --prefer-offline",
   "regions": ["sin1"],
   "headers": [
     {
