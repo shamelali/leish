@@ -83,7 +83,7 @@ export async function getProviderInfo(
   return data
 }
 
-export async function handleOAuthCallback(supabase: any) {
+export async function handleAuthCallback(supabase: any) {
   const user = await waitForSession(supabase)
   if (!user) return { redirect: "/sign-in" }
 

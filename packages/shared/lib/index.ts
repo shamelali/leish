@@ -5,7 +5,7 @@ export { getSupabaseSsrClient } from "./auth/ssr"
 export { updateSession } from "./auth/middleware"
 export { getPostAuthRedirect } from "./auth/routing"
 export { routeUserAfterSignIn, routeUserAfterSignUp } from "./auth/helpers"
-export { waitForSession, waitForProfile, resolveUserRole, cleanupPendingRole, getProviderInfo, handleOAuthCallback } from "./auth/callback"
+export { waitForSession, waitForProfile, resolveUserRole, cleanupPendingRole, getProviderInfo, handleAuthCallback } from "./auth/callback"
 
 // Utils
 export { cn } from "./utils"

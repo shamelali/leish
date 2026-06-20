@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic"
 
 import Link from "next/link"
 import { getSupabaseSsrClient } from "@leish/shared/lib/auth/ssr"
-import { ArtistOnboardingWizard } from "@/components/artist-onboarding-wizard"
+import { ArtistOnboardingWizard } from "@leish/web/components/artist-onboarding-wizard"
 
 export const metadata: Metadata = {
   title: "Set Up Your Profile | Leish!",

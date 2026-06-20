@@ -43,3 +43,4 @@ __pycache__/
 *.pyo
 /services/
 leish-498007-56e977b1873a.json
+.aider*

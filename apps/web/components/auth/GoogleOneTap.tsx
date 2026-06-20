@@ -2,7 +2,7 @@
 
 import Script from 'next/script'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
-import { routeUserAfterSignIn } from '@/components/auth/sign-in-helpers'
+import { routeUserAfterSignIn } from "@leish/shared/lib/auth/helpers"
 
 declare const google: { accounts: { id: { initialize: (options: any) => void; prompt: (momentListener?: () => void) => void }; } }
 

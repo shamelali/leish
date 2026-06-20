@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { Eye, EyeOff, Loader2, ShieldAlert } from "lucide-react"
 import { PasswordValidator } from "@/lib/password-check"
-import { routeUserAfterSignIn, routeUserAfterSignUp } from "@/components/auth/sign-in-helpers"
+import { routeUserAfterSignIn, routeUserAfterSignUp } from "@leish/shared/lib/auth/helpers"
 import { RoleSelectDialog } from "@/components/auth/role-select-dialog"
 import { isPasswordPwned } from "@/lib/ops/password-check"
 import type { UserRole } from "@/lib/routing"
@@ -99,17 +99,32 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
 
     if (signUpError) throw signUpError
 
-    // Auto-confirm the user server-side to handle cases where
-    // confirmation email lands in spam (DKIM/DMARC not yet set up)
-    if (data.user?.id) {
-      fetch("/api/auth/auto-confirm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: data.user.id }),
-      }).catch(() => {})
+    if (!data.user) {
+      setMessage({ type: "error", text: "Sign up failed. Please try again." })
+      setLoading(false)
+      return
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    // Auto-confirm server-side, then poll for email confirmation
+    const userId = data.user.id
+    const autoConfirm = async () => {
+      const res = await fetch("/api/auth/auto-confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      })
+      return res.ok
+    }
+
+    await autoConfirm()
+
+    // Poll for email confirmation (max 30s, 2s intervals)
+    let confirmed = false
+    for (let i = 0; i < 15; i++) {
+      await new Promise((r) => setTimeout(r, 2000))
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.email_confirmed_at) { confirmed = true; break }
+    }
 
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
@@ -117,11 +132,16 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
     })
 
     if (signInError) {
-      setMessage({
-        type: "success",
-        text: "Account created! Please sign in to continue.",
-      })
-      setIsSignUp(false)
+      if (confirmed) {
+        setMessage({ type: "error", text: signInError.message })
+      } else {
+        setMessage({
+          type: "success",
+          text: "Account created! Please check your email to confirm, then sign in.",
+        })
+        setIsSignUp(false)
+      }
+      setLoading(false)
       return
     }
 

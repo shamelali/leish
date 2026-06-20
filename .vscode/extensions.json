@@ -19,6 +19,7 @@
     "gruntfuggly.todo-tree",
     "aaron-bond.better-comments",
     "formulahendry.auto-rename-tag",
-    "oderwat.indent-rainbow"
+    "oderwat.indent-rainbow",
+    "saoudrizwan.claude-dev"
   ]
 }

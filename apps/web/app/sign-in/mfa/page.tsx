@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic"
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
-import { routeUserAfterSignIn } from "@/components/auth/sign-in-helpers"
+import { routeUserAfterSignIn } from "@leish/shared/lib/auth/helpers"
 import { Loader2, ShieldCheck } from "lucide-react"
 
 export default function MfaPage() {
