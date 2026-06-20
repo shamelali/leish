@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "packageManager": "pnpm@10.10.0",
+  "pnpm": {
+    "onlyBuiltDependencies": ["@sentry/cli", "esbuild", "sharp"]
+  },
   "scripts": {
     "dev": "turbo dev",
     "dev:web": "turbo dev --filter=@leish/web",
@@ -23,5 +26,10 @@
     "supabase": "^2.77.0",
     "turbo": "^2.9.18",
     "typescript": "5.7.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@sentry/cli"
+    ]
   }
 }
