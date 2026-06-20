@@ -27,8 +27,8 @@ interface Booking {
   paid_amount_myr: number
   notes: string | null
   created_at: string
-  services: BookingService[] | null
-  providers: BookingProvider[] | null
+  services: BookingService | null
+  providers: BookingProvider | null
 }
 
 export const metadata = {
@@ -90,7 +90,7 @@ async function fetchAccountData(supabase: NonNullable<Awaited<ReturnType<typeof 
       : Promise.resolve({ data: null }),
   ])
 
-  const bookings = bookingsResult.data || []
+  const bookings = (bookingsResult.data || []) as unknown as Booking[]
   const bookingsError = bookingsResult.error?.message || null
   const providerSlug = providerResult.data?.slug || null
 
@@ -299,13 +299,13 @@ function BookingCard({
       <div className="flex items-start justify-between">
         <div>
           <h3 className="font-serif text-lg font-medium text-foreground">
-            {booking.providers?.[0]?.display_name || "Unknown Provider"}
+            {booking.providers?.display_name || "Unknown Provider"}
           </h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            {booking.providers?.[0]?.kind === "studio" ? "Studio" : "Artist"} ·{" "}
-            {booking.providers?.[0]?.state}
-            {booking.providers?.[0]?.district
-              ? `, ${booking.providers[0].district}`
+            {booking.providers?.kind === "studio" ? "Studio" : "Artist"} ·{" "}
+            {booking.providers?.state}
+            {booking.providers?.district
+              ? `, ${booking.providers.district}`
               : ""}
           </p>
         </div>
@@ -315,14 +315,14 @@ function BookingCard({
           {statusLabel}
         </span>
       </div>
-      {booking.services && booking.services.length > 0 && (
+      {booking.services && (
         <div className="mt-4 border-t border-border pt-4">
           <p className="text-sm font-medium text-foreground">
-            {booking.services[0].name}
+            {booking.services.name}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {booking.services[0].duration_minutes} minutes · MYR{" "}
-            {booking.services[0].price_myr}
+            {booking.services.duration_minutes} minutes · MYR{" "}
+            {booking.services.price_myr}
           </p>
         </div>
       )}

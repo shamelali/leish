@@ -9,7 +9,7 @@ export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'expired' | 'refunde
 export type PayoutStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
 export type ProfileRole = 'admin' | 'artist' | 'studio' | 'customer'
 export type SurchargeType = 'fixed' | 'percentage' | 'per_km' | 'per_person'
-export type UserRole = 'customer' | 'pro' | 'admin' | 'mua'
+export type UserRole = 'admin' | 'artist' | 'studio' | 'customer'
 
 export interface Database {
   public: {

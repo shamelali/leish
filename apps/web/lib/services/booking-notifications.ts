@@ -41,9 +41,9 @@ export async function sendBookingConfirmationSms(bookingId: string) {
 
     if (!booking) return
 
-    const phone = (booking.profiles as unknown as { phone?: string }[])?.[0]?.phone
-    const customerName = (booking.profiles as unknown as { full_name?: string }[])?.[0]?.full_name || "Customer"
-    const providerName = (booking.providers as unknown as { display_name?: string }[])?.[0]?.display_name || "Provider"
+    const phone = (booking.profiles as unknown as { phone?: string })?.phone
+    const customerName = (booking.profiles as unknown as { full_name?: string })?.full_name || "Customer"
+    const providerName = (booking.providers as unknown as { display_name?: string })?.display_name || "Provider"
 
     const formattedPhone = phone ? formatPhone(phone) : null
     if (formattedPhone && booking.status === "confirmed") {
@@ -73,7 +73,7 @@ export async function sendBookingConfirmationSms(bookingId: string) {
 
     if (booking) {
       const providerName =
-        (booking.providers as unknown as { display_name?: string }[])?.[0]?.display_name || "Provider"
+        (booking.providers as unknown as { display_name?: string })?.display_name || "Provider"
       await notifyBookingStatusChange(bookingId, booking.customer_id, "", "confirmed", providerName)
     }
   } catch {
@@ -98,8 +98,8 @@ export async function sendBookingCancellationSms(bookingId: string) {
 
     if (!booking) return
 
-    const phone = (booking.profiles as unknown as { phone?: string }[])?.[0]?.phone
-    const customerName = (booking.profiles as unknown as { full_name?: string }[])?.[0]?.full_name || "Customer"
+    const phone = (booking.profiles as unknown as { phone?: string })?.phone
+    const customerName = (booking.profiles as unknown as { full_name?: string })?.full_name || "Customer"
 
     const formattedPhone = phone ? formatPhone(phone) : null
     if (formattedPhone) {
@@ -123,7 +123,7 @@ export async function sendBookingCancellationSms(bookingId: string) {
 
     if (booking) {
       const providerName =
-        (booking.providers as unknown as { display_name?: string }[])?.[0]?.display_name || "Provider"
+        (booking.providers as unknown as { display_name?: string })?.display_name || "Provider"
       await notifyBookingStatusChange(bookingId, booking.customer_id, "", "canceled", providerName)
     }
   } catch {

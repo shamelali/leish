@@ -4,8 +4,6 @@ import { useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { handleAuthCallback } from "@leish/shared/lib/auth/callback"
-import { routeUserAfterSignUp } from "@leish/shared/lib/auth/helpers"
-import type { UserRole } from "@/lib/routing"
 import { Loader2 } from "lucide-react"
 
 export default function AuthCallbackPage() {
@@ -24,8 +22,8 @@ export default function AuthCallbackPage() {
 
     const role = searchParams.get("role")
     if (role === "artist" || role === "studio" || role === "customer") {
-      router.replace(routeUserAfterSignUp(role as UserRole))
-      return
+      sessionStorage.setItem("pendingOAuthRole", role)
+      document.cookie = `pendingOAuthRole=${encodeURIComponent(role)};path=/;max-age=600;samesite=none;secure`
     }
 
     handleAuthCallback(supabase).then(({ redirect }) => {

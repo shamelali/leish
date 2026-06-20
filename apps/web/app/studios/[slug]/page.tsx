@@ -100,8 +100,8 @@ export default async function StudioProfilePage({
 
   const amenities = amenitiesData
     ?.map((a) => {
-      const amenity = a.amenity as unknown as { name: string }[]
-      return amenity?.[0]?.name ?? ""
+      const amenity = a.amenity as unknown as { name: string }
+      return amenity?.name ?? ""
     })
     .filter(Boolean) || []
 
@@ -151,11 +151,11 @@ export default async function StudioProfilePage({
 
   const artists: ArtistMember[] =
     artistsData?.map((a) => {
-      const artist = a.artist as unknown as { display_name: string; profile_image_url: string | null }[]
+      const artist = a.artist as unknown as { display_name: string; profile_image_url: string | null }
       return {
-        name: artist?.[0]?.display_name || "",
+        name: artist?.display_name || "",
         role: (a.role as string) || "Artist",
-        image: artist?.[0]?.profile_image_url || "/artists/placeholder.jpg",
+        image: artist?.profile_image_url || "/artists/placeholder.jpg",
       }
     }) || []
 

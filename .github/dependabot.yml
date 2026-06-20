@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    groups:
+      radix:
+        patterns:
+          - "@radix-ui/*"
+      supabase:
+        patterns:
+          - "@supabase/*"
+      sentry:
+        patterns:
+          - "@sentry/*"
+      vercel:
+        patterns:
+          - "@vercel/*"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "ci"

@@ -104,12 +104,12 @@ export async function getProDashboardData(providerId?: string): Promise<ProDashb
     ],
     upcomingBookings: bookings
       .filter((b: { status: string }) => !["completed", "canceled", "refunded"].includes(b.status))
-      .map((b: { id: string; created_at: string; status: string; total_amount_myr: number; services: { name: string }[] | null; customer_id: string }) => ({
+      .map((b: any) => ({
         id: b.id,
         date: formatDate(b.created_at),
         slot: formatTime(b.created_at),
         client: b.customer_id?.slice(0, 8) || "Unknown",
-        type: b.services?.[0]?.name || "Booking",
+        type: b.services?.name || "Booking",
         amountMyr: b.total_amount_myr,
         status: b.status,
       })),

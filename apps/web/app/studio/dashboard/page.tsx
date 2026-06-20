@@ -67,8 +67,8 @@ export default async function StudioDashboardPage() {
             {bookings && bookings.length > 0 ? (
               <div className="space-y-3">
                 {bookings.map((b) => {
-                  const clientName = (b.profiles as unknown as { full_name?: string }[])?.[0]?.full_name ?? "Client"
-                  const serviceName = (b.services as unknown as { name?: string }[])?.[0]?.name ?? "Service"
+                  const clientName = (b.profiles as unknown as { full_name?: string })?.full_name ?? "Client"
+                  const serviceName = (b.services as unknown as { name?: string })?.name ?? "Service"
                   return (
                     <div key={b.id} className="flex items-center justify-between border border-border bg-background p-3">
                       <div>

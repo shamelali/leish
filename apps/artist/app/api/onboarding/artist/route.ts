@@ -41,5 +41,5 @@ export async function POST(req: Request) {
   const serviceRows = services.map((s) => ({ provider_id: provider.id, name: s.name.trim(), duration_minutes: s.durationMinutes, price_myr: s.priceMyr, is_active: true }))
   await supabase.from("services").insert(serviceRows)
 
-  return NextResponse.json({ ok: true, providerId: provider.id })
+  return NextResponse.json({ ok: true, providerId: provider.id, redirectTo: `/${slug}?onboarded=1` })
 }

@@ -1,7 +1,9 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
+import { getSupabaseBrowserClient } from "@leish/shared/lib/auth/client"
 
 interface Booking {
   id: string
@@ -17,12 +19,24 @@ interface Booking {
   services: { name: string } | { name: string }[]
 }
 
+const ALLOWED_ROLES = ["studio", "admin"]
+
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     async function load() {
+      const supabase = getSupabaseBrowserClient()
+      if (!supabase) { router.push("/sign-in"); return }
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push("/sign-in"); return }
+
+      const { data: profile } = await supabase
+        .from("profiles").select("role").eq("id", user.id).maybeSingle()
+      if (!profile || !ALLOWED_ROLES.includes(profile.role)) { router.push("/"); return }
+
       try {
         const res = await fetch("/api/bookings")
         if (res.ok) {
@@ -36,7 +50,7 @@ export default function BookingsPage() {
       }
     }
     load()
-  }, [])
+  }, [router])
 
   const resolveStatus = useCallback((action: string, currentStatus: string) => {
     if (action === "cancel") return "canceled"

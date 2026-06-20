@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic"
 
 import Link from "next/link"
 import { getSupabaseSsrClient } from "@leish/shared/lib/auth/ssr"
-import { StudioOnboardingWizard } from "@leish/web/components/studio-onboarding-wizard"
+import { StudioOnboardingWizard } from "@/components/studio-onboarding-wizard"
 
 export const metadata: Metadata = {
   title: "Set Up Your Studio | Leish!",
@@ -48,12 +48,12 @@ export default async function StudioOnboardingPage() {
     .eq("id", user.id)
     .maybeSingle()
 
-  if (!profile || profile.role !== "studio") {
+  if (!profile || (profile.role !== "studio" && profile.role !== "studio_manager")) {
     return (
       <div className="mx-auto max-w-md px-4 py-24 text-center">
         <h1 className="font-serif text-2xl text-foreground">Studio access only</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          This page is for studio owners. If you&apos;re a studio manager, please contact support to update your role.
+          This page is for studio owners.
         </p>
         <Link
           href="/"
@@ -81,7 +81,7 @@ export default async function StudioOnboardingPage() {
         </p>
         <div className="mt-6 flex items-center justify-center gap-4">
           <Link
-            href={`/${existing.slug}`}
+            href={`/studios/${existing.slug}`}
             className="inline-flex items-center gap-2 border border-foreground bg-foreground px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-accent hover:border-accent"
           >
             View Studio

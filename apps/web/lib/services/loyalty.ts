@@ -1,5 +1,6 @@
 import { getSql } from "@/lib/db/postgres"
 import { sendEmail } from "@/lib/email/brevo"
+import { loyaltyPointsEarnedTemplate } from "@/lib/email/templates"
 
 export interface LoyaltyConfig {
   id: string
@@ -157,57 +158,21 @@ export const loyaltyService = {
       if (!profile?.email) return
 
       const status = await this.getUserStatus(userId)
-      const tierEmoji = { bronze: "🥉", silver: "🥈", gold: "🥇", platinum: "💎" }
       const tier = status?.tier || "bronze"
 
-      const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Points Earned</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: linear-gradient(135deg, #c9a96e 0%, #d4b896 100%); color: white; padding: 30px; text-align: center; }
-    .content { background: #f9f9f9; padding: 30px; margin: 20px 0; }
-    .points-card { background: white; padding: 30px; text-align: center; margin: 20px 0; border-radius: 12px; }
-    .points-value { font-size: 48px; font-weight: bold; color: #c9a96e; }
-    .tier-badge { display: inline-block; background: #1a1a1a; color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; }
-    .balance { font-size: 24px; margin-top: 10px; }
-    .footer { text-align: center; color: #666; font-size: 12px; margin-top: 30px; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>${tierEmoji[tier as keyof typeof tierEmoji]} Points Earned!</h1>
-  </div>
-  
-  <div class="content">
-    <p>Hi ${profile.full_name || "Valued Member"},</p>
-    <p>Great news! You've earned points from your recent booking.</p>
-    
-    <div class="points-card">
-      <div class="points-value">+${pointsEarned}</div>
-      <p>Points Earned</p>
-      <div class="tier-badge">${tier.charAt(0).toUpperCase() + tier.slice(1)} Member</div>
-      <div class="balance">Balance: ${status?.points || 0} points</div>
-    </div>
-    
-    <p>Keep booking to earn more points and unlock exclusive benefits!</p>
-  </div>
-  
-  <div class="footer">
-    <p>© 2026 Leish. All rights reserved.</p>
-  </div>
-</body>
-</html>
-      `
+      const template = loyaltyPointsEarnedTemplate({
+        customerName: profile.full_name || "Valued Member",
+        bookingId,
+        pointsEarned,
+        currentBalance: status?.points || 0,
+        tier,
+      })
 
       await sendEmail({
         to: profile.email,
-        subject: `🎉 You earned ${pointsEarned} points!`,
-        html,
-        text: `Hi ${profile.full_name || "Valued Member"}, You've earned ${pointsEarned} points from your booking! Your balance: ${status?.points || 0} points. Keep booking to earn more! - Leish`,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
       })
     } catch (error) {
       console.error("Failed to send points earned email:", error)

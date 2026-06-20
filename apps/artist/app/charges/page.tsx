@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic"
 import { redirect } from "next/navigation"
 import { DashboardShell, Panel, StatGrid } from "@/components/dashboard-shell"
 import { getSupabaseSsrClient } from "@leish/shared/lib/auth/ssr"
+import { requireRole } from "@leish/shared/lib/auth/require-role"
 import { surchargeService, surchargePresets } from "@/lib/services/surcharges"
 import { MapPin, Clock, Calendar, Users, Sparkles, AlertCircle } from "lucide-react"
 
@@ -15,8 +16,7 @@ const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 export default async function ProChargesPage() {
   const supabase = await getSupabaseSsrClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect("https://www.leish.my/sign-in")
+  const { user } = await requireRole(supabase, ["artist", "admin"])
 
   const { data: prov } = await supabase
     .from("providers")

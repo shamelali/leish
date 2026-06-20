@@ -25,7 +25,7 @@ export default async function StudioDashboardPage() {
     .eq("id", user.id)
     .maybeSingle()
 
-  if (!profile || profile.role !== "studio") redirect("/")
+  if (!profile || (profile.role !== "studio" && profile.role !== "studio_manager")) redirect("https://www.leish.my/account")
 
   const { data: studio } = await supabase
     .from("providers")
@@ -114,10 +114,9 @@ export default async function StudioDashboardPage() {
               <div className="space-y-3">
                 {bookings.map((b) => {
                   const clientName =
-                    (b.profiles as unknown as { full_name?: string }[])?.[0]
-                      ?.full_name ?? "Client"
+                    (b.profiles as unknown as { full_name?: string })?.full_name ?? "Client"
                   const serviceName =
-                    (b.services as unknown as { name?: string }[])?.[0]?.name ??
+                    (b.services as unknown as { name?: string })?.name ??
                     "Service"
                   return (
                     <div

@@ -44,6 +44,13 @@ async function main() {
       console.error(`${u.email}: ${error.message}`)
     } else {
       console.log(`✓ ${u.email} (id: ${data.user.id})`)
+      const dbRole = u.user_metadata.role === "studio" ? "studio" : u.user_metadata.role
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .upsert({ id: data.user.id, role: dbRole, full_name: u.user_metadata.full_name })
+      if (profileError) {
+        console.error(`  profile error: ${profileError.message}`)
+      }
     }
   }
 }

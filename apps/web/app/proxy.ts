@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { updateSession } from "@/lib/supabase/middleware"
 
 export async function proxy(request: NextRequest) {
+  const requestId = crypto.randomUUID()
   const { pathname } = request.nextUrl
 
   // Skip password check for gate page, auth, static files, and API routes
@@ -25,7 +26,10 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  return updateSession(request)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const response = await updateSession(request as any)
+  response.headers.set("X-Request-ID", requestId)
+  return response
 }
 
 export const config = {

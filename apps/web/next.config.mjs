@@ -1,5 +1,7 @@
 import { fileURLToPath } from "url"
 import path from "path"
+import { withSentryConfig } from "@sentry/nextjs"
+import createBundleAnalyzer from "@next/bundle-analyzer"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -83,7 +85,7 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://*.supabase.co https://vercel.live https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://plus.unsplash.com https://randomuser.me https://i.pravatar.cc; font-src 'self' *.vercel.com *.gstatic.com vercel.live *.blob.vercel-storage.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.pwnedpasswords.com https://vercel.live https://o4507670020554752.ingest.us.sentry.io; frame-src 'self' https://accounts.google.com; manifest-src 'self';",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://*.supabase.co https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://plus.unsplash.com https://randomuser.me https://i.pravatar.cc; font-src 'self' *.vercel.com *.gstatic.com *.blob.vercel-storage.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.pwnedpasswords.com https://o4507670020554752.ingest.us.sentry.io; frame-src 'self' https://accounts.google.com; manifest-src 'self';",
           },
         ],
       },
@@ -100,4 +102,26 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+const withBundleAnalyzer = createBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+})
+
+const sentryWebpackPluginOptions = {
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+  automaticVercelMonitors: true,
+}
+
+let config = nextConfig
+if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  config = withSentryConfig(config, sentryWebpackPluginOptions)
+}
+if (process.env.ANALYZE === "true") {
+  config = withBundleAnalyzer(config)
+}
+export default config

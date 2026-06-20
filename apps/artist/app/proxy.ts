@@ -2,7 +2,10 @@ import { type NextRequest } from "next/server"
 import { createClient } from "@/utils/supabase/middleware"
 
 export async function proxy(request: NextRequest) {
-  return createClient(request)
+  const requestId = crypto.randomUUID()
+  const response = await createClient(request)
+  response.headers.set("X-Request-ID", requestId)
+  return response
 }
 
 export const config = {

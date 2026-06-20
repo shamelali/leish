@@ -63,7 +63,7 @@ export async function getStudioDashboardData(providerId?: string): Promise<Studi
       { label: "Rating", value: avgRating, hint: `From ${reviews.length} reviews` },
       { label: "Pending", value: String(pendingCount), hint: "Need confirmation" },
     ],
-    upcomingBookings: bookings.filter((b: any) => !["completed","canceled","refunded"].includes(b.status)).map((b: any) => ({ id: b.id, date: formatDate(b.created_at), slot: formatTime(b.created_at), client: b.customer_id?.slice(0, 8) || "Unknown", type: b.services?.[0]?.name || "Booking", amountMyr: b.total_amount_myr, status: b.status })),
+    upcomingBookings: bookings.filter((b: any) => !["completed","canceled","refunded"].includes(b.status)).map((b: any) => ({ id: b.id, date: formatDate(b.created_at), slot: formatTime(b.created_at), client: b.customer_id?.slice(0, 8) || "Unknown", type: b.services?.name || "Booking", amountMyr: b.total_amount_myr, status: b.status })),
     reviews: reviews.map((r: any) => ({ id: r.id, author: r.author_id?.slice(0, 8) || "Anonymous", status: r.status, rating: r.rating, text: r.body, createdAt: r.created_at })),
     payouts: payouts.map((p: any) => ({ period: "This month", status: "pending", gross: `MYR ${(p.gross_revenue || 0).toLocaleString()}`, fees: `MYR ${(p.platform_fees || 0).toLocaleString()}`, net: `MYR ${(p.net_payout || 0).toLocaleString()}` })),
   }

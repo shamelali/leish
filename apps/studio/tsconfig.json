@@ -28,9 +28,6 @@
       ],
       "@leish/shared/*": [
         "../../packages/shared/*"
-      ],
-      "@leish/web/*": [
-        "../../apps/web/*"
       ]
     }
   },

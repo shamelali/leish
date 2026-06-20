@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Plus, Pencil, Trash2, GripVertical } from "lucide-react"
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
 import { Button } from "@/components/ui/button"
@@ -13,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useTranslation } from "@leish/shared/lib/i18n/context"
+import { getSupabaseBrowserClient } from "@leish/shared/lib/auth/client"
 
 interface Room {
   id: string
@@ -142,10 +144,20 @@ export default function StudioRoomsPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const { lang } = useTranslation()
+  const router = useRouter()
 
   useEffect(() => {
     let cancelled = false
     async function load() {
+      const supabase = getSupabaseBrowserClient()
+      if (!supabase) { router.push("/sign-in"); return }
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push("/sign-in"); return }
+
+      const { data: profile } = await supabase
+        .from("profiles").select("role").eq("id", user.id).maybeSingle()
+      if (!profile || !["studio", "admin"].includes(profile.role)) { router.push("/"); return }
+
       try {
         const res = await fetch("/api/rooms")
         if (res.ok && !cancelled) {
@@ -160,7 +172,7 @@ export default function StudioRoomsPage() {
     }
     load()
     return () => { cancelled = true }
-  }, [])
+  }, [router])
 
   const openNew = () => {
     setEditing(defaultRoom)

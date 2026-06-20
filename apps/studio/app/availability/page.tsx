@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic"
 import { redirect } from "next/navigation"
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
 import { getSupabaseSsrClient } from "@leish/shared/lib/auth/ssr"
+import { requireRole } from "@leish/shared/lib/auth/require-role"
 import { ProAvailabilityManager } from "@/components/pro-availability-manager"
 
 export const metadata = {
@@ -12,8 +13,7 @@ export const metadata = {
 
 export default async function StudioAvailabilityPage() {
   const supabase = await getSupabaseSsrClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect("https://www.leish.my/sign-in")
+  const { user } = await requireRole(supabase, ["studio", "admin"])
 
   const { data: prov } = await supabase
     .from("providers")

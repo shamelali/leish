@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic"
 
 import Link from "next/link"
 import { getSupabaseSsrClient } from "@leish/shared/lib/auth/ssr"
-import { ArtistOnboardingWizard } from "@leish/web/components/artist-onboarding-wizard"
+import { ArtistOnboardingWizard } from "@/components/artist-onboarding-wizard"
 
 export const metadata: Metadata = {
   title: "Set Up Your Profile | Leish!",
@@ -47,7 +47,7 @@ export default async function ArtistOnboardingPage() {
         <h1 className="font-serif text-2xl text-foreground">Profile already set up</h1>
         <p className="mt-2 text-sm text-muted-foreground">You already have an artist profile as <strong>{existing.display_name}</strong>.</p>
         <div className="mt-6 flex items-center justify-center gap-4">
-          <Link href={`/${existing.slug}`} className="inline-flex items-center gap-2 border border-foreground bg-foreground px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-accent hover:border-accent">View Profile</Link>
+          <Link href={`/artists/${existing.slug}`} className="inline-flex items-center gap-2 border border-foreground bg-foreground px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-accent hover:border-accent">View Profile</Link>
           <Link href="/" className="inline-flex items-center gap-2 border border-border px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-accent">Dashboard</Link>
         </div>
       </div>

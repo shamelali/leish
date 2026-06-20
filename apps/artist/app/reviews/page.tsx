@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic"
 import { redirect } from "next/navigation"
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
 import { getSupabaseSsrClient } from "@leish/shared/lib/auth/ssr"
+import { requireRole } from "@leish/shared/lib/auth/require-role"
 import { getProDashboardData } from "@/lib/dashboard"
 
 export const metadata: Metadata = {
@@ -28,8 +29,7 @@ const nav = [
 
 export default async function ProReviewsPage() {
   const supabase = await getSupabaseSsrClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect("https://www.leish.my/sign-in")
+  const { user } = await requireRole(supabase, ["artist", "admin"])
 
   const { data: prov } = await supabase
     .from("providers")

@@ -11,6 +11,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { sendEmail } from "@/lib/email/brevo"
+import { bookingExpiredTemplate, bookingAutoCanceledTemplate, bookingReminderTemplate } from "@/lib/email/templates"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -93,25 +94,21 @@ export async function GET(req: Request) {
           },
         })
 
-        // Send cancellation email to customer
         const customerEmail = (booking as unknown as { profiles: { email: string; full_name: string } }).profiles?.email
         if (customerEmail) {
+          const template = bookingExpiredTemplate({
+            customerName: (booking as unknown as { profiles: { full_name: string } }).profiles?.full_name || "there",
+            bookingId: booking.id,
+            providerName: (booking as unknown as { providers: { name: string } }).providers?.name || "Provider",
+            amount: booking.total_amount_myr / 100,
+            createdAt: new Date(booking.created_at).toLocaleString("en-MY"),
+          })
+
           await sendEmail({
             to: customerEmail,
-            subject: "Your Booking Has Expired - Leish",
-            html: `
-              <h2>Booking Expired</h2>
-              <p>Hi ${(booking as unknown as { profiles: { full_name: string } }).profiles?.full_name || "there"},</p>
-              <p>Your booking with <strong>${(booking as unknown as { providers: { name: string } }).providers?.name}</strong> has expired because payment was not completed within 2 hours.</p>
-              <p><strong>Booking Details:</strong></p>
-              <ul>
-                <li>Amount: RM ${(booking.total_amount_myr / 100).toFixed(2)}</li>
-                <li>Created: ${new Date(booking.created_at).toLocaleString("en-MY")}</li>
-              </ul>
-              <p>You can make a new booking at any time.</p>
-              <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/artists" style="background: #000; color: #fff; padding: 10px 20px; text-decoration: none;">Browse Artists</a></p>
-            `,
-            text: `Your booking has expired because payment was not completed within 2 hours. You can make a new booking at ${process.env.NEXT_PUBLIC_APP_URL}/artists`,
+            subject: template.subject,
+            html: template.html,
+            text: template.text,
           })
         }
 
@@ -201,23 +198,23 @@ export async function GET(req: Request) {
 
           // Send reminder email
           if (customer?.email) {
+            const reminderDate = new Date(slot.starts_at).toLocaleDateString("en-MY", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+            const reminderTime = new Date(slot.starts_at).toLocaleTimeString("en-MY", { hour: "2-digit", minute: "2-digit" })
+
+            const template = bookingReminderTemplate({
+              customerName: customer.full_name || "there",
+              bookingId: booking.id,
+              serviceName: "Appointment",
+              providerName: provider?.name || "Provider",
+              date: reminderDate,
+              time: reminderTime,
+            })
+
             await sendEmail({
               to: customer.email,
-              subject: "Reminder: Your Appointment is Tomorrow - Leish",
-              html: `
-                <h2>Appointment Reminder</h2>
-                <p>Hi ${customer.full_name || "there"},</p>
-                <p>This is a friendly reminder that you have an appointment with <strong>${provider?.name}</strong> tomorrow.</p>
-                <p><strong>Appointment Details:</strong></p>
-                <ul>
-                  <li>Date: ${new Date(slot.starts_at).toLocaleDateString("en-MY", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</li>
-                  <li>Time: ${new Date(slot.starts_at).toLocaleTimeString("en-MY", { hour: "numeric", minute: "2-digit" })}</li>
-                  <li>Provider: ${provider?.name}</li>
-                </ul>
-                <p>Please arrive on time. If you need to reschedule, please contact us as soon as possible.</p>
-                <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/booking/${booking.id}" style="background: #000; color: #fff; padding: 10px 20px; text-decoration: none;">View Booking</a></p>
-              `,
-              text: `Reminder: You have an appointment with ${provider?.name} tomorrow at ${new Date(slot.starts_at).toLocaleTimeString("en-MY")}.`,
+              subject: template.subject,
+              html: template.html,
+              text: template.text,
             })
           }
 
