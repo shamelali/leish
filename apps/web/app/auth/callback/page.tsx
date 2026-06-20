@@ -15,8 +15,6 @@ export default function AuthCallbackPage() {
     if (processed.current) return
     processed.current = true
 
-    console.log("[AuthCallback] pathname:", window.location.pathname, "search:", window.location.search)
-
     const supabase = getSupabaseBrowserClient()
     if (!supabase) { router.replace("/sign-in"); return }
 
@@ -27,7 +25,12 @@ export default function AuthCallbackPage() {
     }
 
     handleAuthCallback(supabase).then(({ redirect }) => {
-      router.replace(redirect)
+      const target = redirect.startsWith("/artist/")
+        ? `https://artist.leish.my${redirect.replace("/artist", "") || "/"}`
+        : redirect.startsWith("/studio/")
+        ? `https://studio.leish.my${redirect === "/studio/dashboard" ? "" : redirect.replace("/studio", "") || "/"}`
+        : redirect
+      router.replace(target)
     }).catch((e) => {
       console.error("[Leish] Auth callback error:", e)
       router.replace("/sign-in?error=auth_failed")
