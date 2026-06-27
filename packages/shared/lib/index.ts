@@ -19,3 +19,14 @@ export type { UserRole } from "./types"
 // i18n
 export { LanguageProvider, useLanguage, useTranslation } from "./i18n/context"
 export type { Language } from "./i18n/translations"
+
+// Malaysia data
+export {
+  MALAYSIAN_STATES,
+  MALAYSIA_DISTRICTS,
+  SERVICE_NAMES,
+  MALAYSIA_LANGUAGES,
+  DURATION_MINUTES_OPTIONS,
+  formatDuration,
+  formatDurationShort,
+} from "./malaysia"
