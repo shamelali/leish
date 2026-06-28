@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { auth } from "@leish/shared/lib/auth/next-auth"
+import { auth } from "@leish/shared/lib/auth/next-auth.server"
 import { generateSecret, generateURI } from "otplib"
 import QRCode from "qrcode"
 
@@ -9,7 +9,7 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const { prisma } = await import("@leish/shared/lib/auth/prisma")
+  const { prisma } = await import("@leish/shared/lib/auth/prisma.server")
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } })
   if (user?.mfaEnabled) {

@@ -9,7 +9,7 @@ import { StickyBookBar } from "@/components/sticky-book-bar"
 import { ArtistChat } from "@/components/artist-chat"
 import { SocialShare } from "@/components/social-share"
 import { MapDisplay } from "@/components/maps/map-display"
-import { getSupabaseServerClient } from "@leish/shared/lib/auth/server"
+import { getSupabaseServerClient } from "@leish/shared/lib/auth/supabase.server"
 
 export async function generateStaticParams() {
   return []

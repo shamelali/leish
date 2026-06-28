@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import type { SupabaseClient } from "@supabase/supabase-js"
-import { auth } from "./next-auth"
+import { auth } from "./next-auth.server"
 
 export type AppRole = "admin" | "artist" | "studio" | "customer"
 

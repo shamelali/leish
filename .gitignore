@@ -45,3 +45,4 @@ __pycache__/
 /services/
 leish-498007-56e977b1873a.json
 .aider*
+.env*

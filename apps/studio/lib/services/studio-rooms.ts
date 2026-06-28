@@ -1,4 +1,4 @@
-import { getSupabaseServerClient } from "@leish/shared/lib/auth/server"
+import { getSupabaseServerClient } from "@leish/shared/lib/auth/supabase.server"
 
 export interface StudioRoom {
   id: string

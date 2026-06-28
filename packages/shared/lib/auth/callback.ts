@@ -1,4 +1,4 @@
-import { auth } from "./next-auth"
+import { auth } from "./next-auth.server"
 import { getSupabaseSsrClient } from "./ssr"
 import { getPostAuthRedirect } from "./routing"
 

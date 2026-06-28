@@ -1,4 +1,4 @@
-import { auth } from "./next-auth"
+import { auth } from "./next-auth.server"
 import { type NextRequest, NextResponse } from "next/server"
 
 const PUBLIC_PATHS = [

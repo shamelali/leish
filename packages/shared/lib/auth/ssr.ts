@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js"
-import { auth } from "./next-auth"
+import { auth } from "./next-auth.server"
 
 export async function getSupabaseSsrClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL

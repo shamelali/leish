@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
   }
 
-  const { prisma } = await import("@leish/shared/lib/auth/prisma")
+  const { prisma } = await import("@leish/shared/lib/auth/prisma.server")
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) {
     return NextResponse.json({ error: "User already exists" }, { status: 409 })

@@ -6,13 +6,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Code is required" }, { status: 400 })
   }
 
-  const { auth: getSession } = await import("@leish/shared/lib/auth/next-auth")
+  const { auth: getSession } = await import("@leish/shared/lib/auth/next-auth.server")
   const session = await getSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const { prisma } = await import("@leish/shared/lib/auth/prisma")
+  const { prisma } = await import("@leish/shared/lib/auth/prisma.server")
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { mfaSecret: true },

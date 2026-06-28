@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { auth } from "@leish/shared/lib/auth/next-auth"
+import { auth } from "@leish/shared/lib/auth/next-auth.server"
 
 const SKIP_PATHS = [
   "/gate", "/auth", "/api", "/_next",

@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { getSupabaseSsrClient } from "@leish/shared/lib/auth/ssr";
-import { getSupabaseServerClient } from "@leish/shared/lib/auth/server";
+import { getSupabaseServerClient } from "@leish/shared/lib/auth/supabase.server";
 import { bookingSupabaseService } from "@/lib/services/booking-supabase";
 import { notificationService } from "@/lib/services/notifications";
 import {

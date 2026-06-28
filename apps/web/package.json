@@ -13,6 +13,9 @@
     "clean": "rm -rf .next node_modules",
     "analyze": "ANALYZE=true pnpm build"
   },
+  "prisma": {
+    "schema": "../../packages/shared/prisma/schema.prisma"
+  },
   "dependencies": {
     "@apollo/client": "^4.1.6",
     "@apollo/server": "^5.5.0",

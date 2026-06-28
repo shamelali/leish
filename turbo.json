@@ -5,7 +5,20 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULTS$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "DATABASE_URL",
+        "AUTH_SECRET",
+        "AUTH_GOOGLE_ID",
+        "AUTH_GOOGLE_SECRET",
+        "NEXT_PUBLIC_APP_URL",
+        "STUDIO_SOURCE",
+        "EXTERNAL_STUDIO_API_BASE_URL",
+        "EXTERNAL_STUDIO_API_KEY"
+      ]
     },
     "dev": {
       "cache": false,
@@ -19,6 +32,9 @@
     },
     "test": {
       "dependsOn": ["^build"]
+    },
+    "db:generate": {
+      "cache": true
     }
   }
 }

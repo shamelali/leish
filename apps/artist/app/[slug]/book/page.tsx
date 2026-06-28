@@ -6,7 +6,7 @@ import { notFound } from "next/navigation"
 import { ArrowLeft, CalendarClock, CheckCircle2, MapPin, ShieldCheck } from "lucide-react"
 import { BookingCalendar } from "@/components/booking-calendar"
 import { StickyBookBar } from "@/components/sticky-book-bar"
-import { getSupabaseServerClient } from "@leish/shared/lib/auth/server"
+import { getSupabaseServerClient } from "@leish/shared/lib/auth/supabase.server"
 
 interface Artist {
   id: string

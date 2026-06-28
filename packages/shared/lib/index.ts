@@ -1,8 +1,9 @@
-// Auth
+// Auth - server-only
+export { getSupabaseServerClient } from "./auth/supabase.server"
+// Auth - client and server safe
 export { getSupabaseBrowserClient, supabase } from "./auth/client"
-export { getSupabaseServerClient } from "./auth/server"
 export { getSupabaseSsrClient } from "./auth/ssr"
-export { auth, signIn, signOut } from "./auth/next-auth"
+export { signIn, signOut } from "./auth/next-auth"
 export { getPostAuthRedirect } from "./auth/routing"
 export { routeUserAfterSignIn, routeUserAfterSignUp } from "./auth/helpers"
 export { handleAuthCallback } from "./auth/callback"
