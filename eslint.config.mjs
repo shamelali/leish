@@ -10,7 +10,7 @@ const config = [
   sonarjs.configs.recommended,
   {
     ignores: [
-      ".next/**",
+      "**/.next/**",
       "node_modules/**",
       ".vercel/**",
       "supabase/functions/**",

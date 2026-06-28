@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getSql } from "@/lib/db/postgres"
 import { getSupabaseSsrClient } from "@leish/shared/lib/auth/ssr"
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export async function PATCH(req: Request) {
   const supabase = await getSupabaseSsrClient()
   const { data: { user } } = await supabase.auth.getUser()

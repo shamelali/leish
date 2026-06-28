@@ -3,12 +3,13 @@
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { signIn } from "@leish/shared/lib/auth/next-auth"
 import { Eye, EyeOff, Loader2, ShieldAlert } from "lucide-react"
 import { PasswordValidator } from "@/lib/password-check"
-import { routeUserAfterSignIn, routeUserAfterSignUp } from "@leish/shared/lib/auth/helpers"
+import { routeUserAfterSignIn } from "@leish/shared/lib/auth/helpers"
 import { RoleSelectDialog } from "@/components/auth/role-select-dialog"
 import { isPasswordPwned } from "@/lib/ops/password-check"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import type { UserRole } from "@/lib/routing"
 
 export type { UserRole }
@@ -64,7 +65,7 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
     }
   }
 
-  async function handleSignUp(supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>) {
+  async function handleSignUp() {
     const result = await validator.validate(password, userInputs)
     setPasswordResult(result)
 
@@ -84,73 +85,41 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
       return
     }
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          role,
-          full_name: fullName,
-          phone,
-        },
-        emailRedirectTo: `${window.location.origin}/auth/callback?role=${encodeURIComponent(role)}`,
-      },
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, role, fullName, phone }),
     })
 
-    if (signUpError) throw signUpError
-
-    if (!data.user) {
-      setMessage({ type: "error", text: "Sign up failed. Please try again." })
+    if (!res.ok) {
+      const err = await res.json()
+      setMessage({ type: "error", text: err.error || "Registration failed" })
       setLoading(false)
       return
     }
 
-    // Auto-confirm server-side, then poll for email confirmation
-    const userId = data.user.id
-    const autoConfirm = async () => {
-      const res = await fetch("/api/auth/auto-confirm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      })
-      return res.ok
-    }
+    // Auto sign-in after registration
+    const supabase = getSupabaseBrowserClient()
+    const signInResult = await signIn("credentials", { email, password, redirect: false })
 
-    await autoConfirm()
-
-    // Poll for email confirmation (max 30s, 2s intervals)
-    let confirmed = false
-    for (let i = 0; i < 15; i++) {
-      await new Promise((r) => setTimeout(r, 2000))
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user?.email_confirmed_at) { confirmed = true; break }
-    }
-
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (signInError) {
-      if (confirmed) {
-        setMessage({ type: "error", text: signInError.message })
-      } else {
-        setMessage({
-          type: "success",
-          text: "Account created! Please check your email to confirm, then sign in.",
-        })
-        setIsSignUp(false)
-      }
+    if (signInResult?.error) {
+      setMessage({ type: "success", text: "Account created! Please sign in." })
+      setIsSignUp(false)
       setLoading(false)
       return
     }
 
-    if (!signInData.user) {
-      router.replace("/")
-      return
-    }
+    // Get the user ID from the session after sign-in
+    const { data: sessionData } = await supabase.auth.getSession()
+    const userId = sessionData?.session?.user?.id
 
-    router.replace(routeUserAfterSignUp(role))
+    router.refresh()
+    if (userId) {
+      const redirectUrl = await routeUserAfterSignIn(supabase, userId)
+      router.replace(redirectUrl)
+    } else {
+      router.replace("/account")
+    }
   }
 
   async function checkCredentialStuffing() {
@@ -177,27 +146,29 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
     }).catch(() => {})
   }
 
-  async function handleSignIn(supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>) {
+  async function handleSignIn() {
     await checkCredentialStuffing()
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const signInResult = await signIn("credentials", { email, password, redirect: false })
 
-    if (error) {
+    if (signInResult?.error) {
       recordFailedAttempt()
-      throw error
+      throw new Error(signInResult.error)
     }
 
     clearFailedAttempts()
 
-    if (!data.user) {
+    // Get the session to retrieve user ID
+    const supabase = getSupabaseBrowserClient()
+    const { data: sessionData } = await supabase.auth.getSession()
+    const userId = sessionData?.session?.user?.id
+
+    if (!userId) {
       router.replace("/")
       return
     }
 
-    const redirectUrl = await routeUserAfterSignIn(supabase, data.user.id)
+    const redirectUrl = await routeUserAfterSignIn(supabase, userId)
     router.replace(redirectUrl)
   }
 
@@ -206,21 +177,14 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
     setLoading(true)
     setMessage(null)
 
-    const supabase = getSupabaseBrowserClient()
-
     try {
-      if (!supabase) {
-        throw new Error("Supabase client not initialized")
-      }
-
       if (isSignUp) {
-        // Require role selection for signup
         if (!role) {
           throw new Error("Please select your role")
         }
-        await handleSignUp(supabase)
+        await handleSignUp()
       } else {
-        await handleSignIn(supabase)
+        await handleSignIn()
       }
     } catch (err: unknown) {
       const error = err as { message?: string }
@@ -231,7 +195,6 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
   }
 
   const handleGoogleSignIn = () => {
-    // If a role was already selected on /auth/pick-role, use it directly
     const stored = document.cookie.split(";").find(c => c.trim().startsWith("pendingOAuthRole="))
     const storedRole = stored ? decodeURIComponent(stored.split("=")[1]) : null
     if (storedRole && ["artist", "studio", "customer"].includes(storedRole)) {
@@ -246,28 +209,15 @@ export function SupabaseAuthForm({ defaultMode = "signin", hideOAuth, hideToggle
     setLoading(true)
     setMessage(null)
 
-    const supabase = getSupabaseBrowserClient()
-    if (!supabase) {
-      setMessage({ type: "error", text: "Supabase client not initialized" })
-      setLoading(false)
-      return
-    }
-
     sessionStorage.setItem("pendingOAuthRole", selectedRole)
-    // Cookie survives cross-origin OAuth redirect (sessionStorage can be unreliable)
-    // SameSite=None;Secure required for cross-site redirect from supabase.co back to leish.my
     document.cookie = `pendingOAuthRole=${encodeURIComponent(selectedRole)};path=/;max-age=600;samesite=none;secure`
 
-    const redirectTo = `${window.location.origin}/auth/callback?role=${encodeURIComponent(selectedRole)}`
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo,
-        scopes: "email profile",
-      },
-    })
-
-    if (error) {
+    try {
+      await signIn("google", {
+        callbackUrl: `${window.location.origin}/auth/callback?role=${encodeURIComponent(selectedRole)}`,
+      })
+    } catch (err: unknown) {
+      const error = err as { message?: string }
       sessionStorage.removeItem("pendingOAuthRole")
       document.cookie = "pendingOAuthRole=;path=/;max-age=0;samesite=none;secure"
       setMessage({ type: "error", text: error.message || "Failed to sign in with Google" })

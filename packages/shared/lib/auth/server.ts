@@ -1,10 +1,11 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js"
-import { getSupabasePublicConfig } from "../env"
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 export function getSupabaseServerClient(): SupabaseClient {
-  const config = getSupabasePublicConfig()
-  if (!config) {
-    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY — check .env.local")
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY — check .env.local")
   }
-  return createClient(config.url, config.anonKey, { auth: { persistSession: false } })
+  return createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } })
 }

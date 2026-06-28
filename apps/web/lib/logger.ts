@@ -1,5 +1,4 @@
 import pino from "pino"
-import pretty from "pino-pretty"
 
 const isDevelopment = process.env.NODE_ENV !== "production"
 

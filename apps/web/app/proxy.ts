@@ -1,22 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { updateSession } from "@/lib/supabase/middleware"
+import { auth } from "@leish/shared/lib/auth/next-auth"
+
+const SKIP_PATHS = [
+  "/gate", "/auth", "/api", "/_next",
+  "/favicon.ico", "/sitemap.xml", "/robots.txt",
+]
+
+const PROTECTED_PATHS = ["/account", "/admin", "/artist", "/studio"]
 
 export async function proxy(request: NextRequest) {
   const requestId = crypto.randomUUID()
   const { pathname } = request.nextUrl
 
-  // Skip password check for gate page, auth, static files, and API routes
-  const skipPaths = [
-    "/gate",
-    "/auth",
-    "/api",
-    "/_next",
-    "/favicon.ico",
-    "/sitemap.xml",
-    "/robots.txt",
-  ]
-
-  const shouldSkip = skipPaths.some((p) => pathname.startsWith(p)) ||
+  const shouldSkip = SKIP_PATHS.some((p) => pathname.startsWith(p)) ||
     /\.(svg|png|jpg|jpeg|gif|webp|css|js)$/.test(pathname)
 
   if (!shouldSkip) {
@@ -26,9 +22,30 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const response = await updateSession(request as any)
+  const response = NextResponse.next({ request: { headers: request.headers } })
   response.headers.set("X-Request-ID", requestId)
+
+  const session = await auth()
+  if (session?.user?.id) {
+    response.cookies.set("session-user-id", session.user.id, {
+      domain: ".leish.my",
+      path: "/",
+      sameSite: "lax",
+      secure: true,
+      httpOnly: true,
+    })
+
+    const isProtected = PROTECTED_PATHS.some((p) =>
+      pathname === p || pathname.startsWith(p + "/")
+    )
+    const mfaEnabled = (session.user as any)?.mfaEnabled
+    const mfaVerified = (session.user as any)?.mfaVerified
+
+    if (isProtected && mfaEnabled && !mfaVerified) {
+      return NextResponse.redirect(new URL("/sign-in/mfa", request.url))
+    }
+  }
+
   return response
 }
 

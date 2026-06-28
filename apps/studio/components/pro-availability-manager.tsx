@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 
 interface Slot { id: string; provider_id: string; starts_at: string; ends_at: string; is_booked: boolean }
 
@@ -16,7 +16,7 @@ export function ProAvailabilityManager({ providerId }: { providerId: string }) {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
   }
 
-  const fetchSlots = async () => {
+  const fetchSlots = useCallback(async () => {
     if (!providerId) return
     setLoading(true)
     try {
@@ -24,9 +24,11 @@ export function ProAvailabilityManager({ providerId }: { providerId: string }) {
       if (res.ok) setSlots(await res.json())
     } catch (e) { console.error(e) }
     finally { setLoading(false) }
-  }
+  }, [providerId])
 
-  useEffect(() => { queueMicrotask(() => fetchSlots()) }, [providerId])
+  useEffect(() => {
+    queueMicrotask(() => fetchSlots())
+  }, [providerId, fetchSlots])
 
   const handleCreate = async () => {
     setError(null)

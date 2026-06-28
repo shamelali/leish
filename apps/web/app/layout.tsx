@@ -10,6 +10,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { LanguageProvider } from '@/lib/i18n/language-context'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { ClientInit } from '@/components/client-init'
+import { AuthProvider } from '@/components/auth-provider'
 import './globals.css'
 
 const inter = Outfit({
@@ -83,20 +84,22 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${playfair.variable} ${mono.variable}`}>
       <body className="font-sans antialiased" suppressHydrationWarning>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <ClientInit />
-          <LanguageProvider>
-            <ErrorBoundary>
-              <Navbar />
-              <main>{children}</main>
-              <Footer />
-              <AiConcierge />
-              {process.env.NODE_ENV !== 'development' && <Analytics />}
-              {process.env.NODE_ENV !== 'development' && <SpeedInsights />}
-              <CloudflareAnalytics />
-            </ErrorBoundary>
-          </LanguageProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            <ClientInit />
+            <LanguageProvider>
+              <ErrorBoundary>
+                <Navbar />
+                <main>{children}</main>
+                <Footer />
+                <AiConcierge />
+                {process.env.NODE_ENV !== 'development' && <Analytics />}
+                {process.env.NODE_ENV !== 'development' && <SpeedInsights />}
+                <CloudflareAnalytics />
+              </ErrorBoundary>
+            </LanguageProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   )

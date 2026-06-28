@@ -53,7 +53,7 @@ export function ArtistOnboardingWizard({ userId, initialName }: { userId: string
   const handleSubmit = async () => {
     setSubmitting(true); setError(null)
     const baseSlug = slugify(form.displayName)
-    const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`
+    const slug = `${baseSlug}-${crypto.randomUUID().slice(0, 8)}`
     try {
       const res = await fetch("/api/onboarding/artist", {
         method: "POST",

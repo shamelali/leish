@@ -1,32 +1,19 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr"
-import { cookies } from "next/headers"
+import { createClient } from "@supabase/supabase-js"
+import { auth } from "./next-auth"
 
 export async function getSupabaseSsrClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY — check .env.local")
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY — check .env.local")
   }
 
-  const cookieStore = await cookies()
-
-  return createServerClient(supabaseUrl, supabaseKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll()
-      },
-      setAll(cookiesToSet: Array<{ name: string; value: string; options?: CookieOptions }>) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, {
-            ...options,
-            domain: ".leish.my",
-            path: "/",
-            sameSite: "lax",
-            secure: true,
-          })
-        })
-      },
-    },
+  return createClient(supabaseUrl, supabaseKey, {
+    auth: { persistSession: false },
   })
+}
+
+export async function getSession() {
+  return auth()
 }

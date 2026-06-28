@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import type { SupabaseClient } from "@supabase/supabase-js"
+import { auth } from "./next-auth"
 
 export type AppRole = "admin" | "artist" | "studio" | "customer"
 
@@ -8,23 +9,21 @@ export async function requireRole(
   allowedRoles: AppRole[],
   redirectTo = "/"
 ) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const session = await auth()
 
-  if (!user) {
+  if (!session?.user?.id) {
     redirect("https://www.leish.my/sign-in")
   }
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
-    .eq("id", user.id)
+    .eq("id", session.user.id)
     .maybeSingle()
 
   if (!profile || !allowedRoles.includes(profile.role as AppRole)) {
     redirect(redirectTo)
   }
 
-  return { user, role: profile.role as AppRole }
+  return { user: { id: session.user.id, email: session.user.email! }, role: profile.role as AppRole }
 }

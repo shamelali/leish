@@ -1,1 +1,1 @@
-export { updateSession } from "@leish/shared/lib/auth/middleware"
+export { auth } from "@leish/shared/lib/auth/middleware"

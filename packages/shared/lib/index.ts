@@ -2,10 +2,10 @@
 export { getSupabaseBrowserClient, supabase } from "./auth/client"
 export { getSupabaseServerClient } from "./auth/server"
 export { getSupabaseSsrClient } from "./auth/ssr"
-export { updateSession } from "./auth/middleware"
+export { auth, signIn, signOut } from "./auth/next-auth"
 export { getPostAuthRedirect } from "./auth/routing"
 export { routeUserAfterSignIn, routeUserAfterSignUp } from "./auth/helpers"
-export { waitForSession, waitForProfile, resolveUserRole, cleanupPendingRole, getProviderInfo, handleAuthCallback } from "./auth/callback"
+export { handleAuthCallback } from "./auth/callback"
 
 // Utils
 export { cn } from "./utils"

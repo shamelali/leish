@@ -15,21 +15,19 @@ export default function AuthCallbackPage() {
     if (processed.current) return
     processed.current = true
 
-    const supabase = getSupabaseBrowserClient()
-    if (!supabase) { router.replace("/sign-in"); return }
-
     const role = searchParams.get("role")
     if (role === "artist" || role === "studio" || role === "customer") {
       sessionStorage.setItem("pendingOAuthRole", role)
       document.cookie = `pendingOAuthRole=${encodeURIComponent(role)};path=/;max-age=600;samesite=none;secure`
     }
 
-    handleAuthCallback(supabase).then(({ redirect }) => {
-      const target = redirect.startsWith("/artist/")
-        ? `https://artist.leish.my${redirect.replace("/artist", "") || "/"}`
-        : redirect.startsWith("/studio/")
-        ? `https://studio.leish.my${redirect === "/studio/dashboard" ? "" : redirect.replace("/studio", "") || "/"}`
-        : redirect
+    handleAuthCallback().then(({ redirect }) => {
+      let target = redirect
+      if (redirect.startsWith("/artist/")) {
+        target = `https://artist.leish.my${redirect.replace("/artist", "") || "/"}`
+      } else if (redirect.startsWith("/studio/")) {
+        target = `https://studio.leish.my${redirect === "/studio/dashboard" ? "" : redirect.replace("/studio", "") || "/"}`
+      }
       router.replace(target)
     }).catch((e) => {
       console.error("[Leish] Auth callback error:", e)

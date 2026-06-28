@@ -1,70 +1,22 @@
 'use client'
 
-import Script from 'next/script'
-import { getSupabaseBrowserClient } from '@/lib/supabase/client'
-import { routeUserAfterSignIn } from "@leish/shared/lib/auth/helpers"
-
-declare const google: { accounts: { id: { initialize: (options: any) => void; prompt: (momentListener?: () => void) => void }; } }
-
-const generateNonce = async (): Promise<string[]> => {
-  const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))))
-  const encoder = new TextEncoder()
-  const encodedNonce = encoder.encode(nonce)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', encodedNonce)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const hashedNonce = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
-  return [nonce, hashedNonce]
-}
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { signIn } from '@leish/shared/lib/auth/next-auth'
 
 const GoogleOneTap = () => {
-  const initializeGoogleOneTap = async () => {
-    const supabase = getSupabaseBrowserClient()
-    if (!supabase) return
+  const router = useRouter()
 
-    const { data: sessionData } = await supabase.auth.getSession()
-    if (sessionData?.session?.user) {
-      const redirect = await routeUserAfterSignIn(supabase, sessionData.session.user.id)
-      window.location.href = redirect
-      return
-    }
+  useEffect(() => {
+    const pendingRole = sessionStorage.getItem('pendingOAuthRole')
+    const callbackUrl = pendingRole
+      ? `${window.location.origin}/auth/callback?role=${encodeURIComponent(pendingRole)}`
+      : window.location.href
 
-    if (!google?.accounts?.id) return
+    signIn('google', { callbackUrl })
+  }, [router])
 
-    const [nonce, hashedNonce] = await generateNonce()
-
-    try {
-      google.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-        callback: async (response: any) => {
-          try {
-            const { data, error } = await supabase.auth.signInWithIdToken({
-              provider: 'google',
-              token: response.credential,
-              nonce,
-            })
-            if (error) throw error
-            if (data?.user) {
-              const redirect = await routeUserAfterSignIn(supabase, data.user.id)
-              window.location.href = redirect
-            } else {
-              window.location.href = "/account"
-            }
-          } catch (error) {
-            console.error('Google One Tap sign-in failed:', error)
-          }
-        },
-        cancel_on_tap_outside: true,
-        params: {
-          nonce: hashedNonce,
-        },
-      })
-      google.accounts.id.prompt()
-    } catch {
-      // FedCM unavailable or user not signed into Google — silent fail
-    }
-  }
-
-  return <Script onReady={() => { initializeGoogleOneTap() }} src="https://accounts.google.com/gsi/client" />
+  return null
 }
 
 export default GoogleOneTap

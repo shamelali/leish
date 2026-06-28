@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 
 interface Service { id: string; provider_id: string; name: string; duration_minutes: number; price_myr: number; is_active: boolean }
 
@@ -12,7 +12,7 @@ export function ProServiceManager({ providerId }: { providerId: string }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchServices = async () => {
+  const fetchServices = useCallback(async () => {
     if (!providerId) return
     setLoading(true)
     try {
@@ -20,9 +20,9 @@ export function ProServiceManager({ providerId }: { providerId: string }) {
       if (res.ok) setServices(await res.json())
     } catch (e) { console.error(e) }
     finally { setLoading(false) }
-  }
+  }, [providerId])
 
-  useEffect(() => { queueMicrotask(() => fetchServices()) }, [providerId])
+  useEffect(() => { queueMicrotask(() => fetchServices()) }, [providerId, fetchServices])
 
   const handleCreate = async () => {
     setError(null)

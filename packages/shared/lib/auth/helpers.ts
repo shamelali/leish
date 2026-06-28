@@ -2,10 +2,7 @@ import type { UserRole } from "../types"
 import { getPostAuthRedirect } from "./routing"
 
 export async function routeUserAfterSignIn(supabase: any, userId: string): Promise<string> {
-  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-  if (aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2") {
-    return "/sign-in/mfa"
-  }
+  if (!userId) return "/sign-in"
 
   const { data: profile } = await supabase
     .from("profiles").select("role, created_at").eq("id", userId).maybeSingle()

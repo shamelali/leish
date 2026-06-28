@@ -5,3 +5,8 @@ packages:
 overrides:
   "@types/react": "19.2.14"
   "@types/react-dom": "19.2.3"
+
+allowBuilds:
+  "@sentry/cli": true
+  esbuild: true
+  sharp: true

@@ -1,9 +1,8 @@
-import { type NextRequest } from "next/server"
-import { createClient } from "@/utils/supabase/middleware"
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function proxy(request: NextRequest) {
   const requestId = crypto.randomUUID()
-  const response = await createClient(request)
+  const response = NextResponse.next({ request: { headers: request.headers } })
   response.headers.set("X-Request-ID", requestId)
   return response
 }

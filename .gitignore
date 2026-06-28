@@ -12,6 +12,7 @@ node_modules/
 .env.production
 .DS_Store
 .vercel
+**/next-env.d.ts
 
 # Debug logs
 debug.log

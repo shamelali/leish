@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 export const dynamic = "force-dynamic"
 
-import { redirect } from "next/navigation"
 import { DashboardShell, Panel } from "@/components/dashboard-shell"
 import { getSupabaseSsrClient } from "@leish/shared/lib/auth/ssr"
 import { requireRole } from "@leish/shared/lib/auth/require-role"
