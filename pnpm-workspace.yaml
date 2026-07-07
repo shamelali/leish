@@ -1,14 +1,15 @@
 packages:
-  - "apps/*"
-  - "packages/*"
-
-overrides:
-  "@types/react": "19.2.14"
-  "@types/react-dom": "19.2.3"
-
+  - apps/*
+  - packages/*
 allowBuilds:
-  "@sentry/cli": true
+  '@sentry/cli': true
   esbuild: true
   sharp: true
-  "@prisma/engines": true
+  '@prisma/engines': true
   prisma: true
+ignoredBuiltDependencies:
+  - '@prisma/engines'
+  - prisma
+overrides:
+  '@types/react': 19.2.14
+  '@types/react-dom': 19.2.3
