@@ -30,7 +30,7 @@
     ]
   },
   "devDependencies": {
-    "@opencode-ai/plugin": "^1.15.0",
+    "@opencode-ai/plugin": "^1.17.14",
     "@opencode-ai/sdk": "^1.15.0",
     "@types/bcryptjs": "^3.0.0",
     "@types/pg": "^8.20.0",
