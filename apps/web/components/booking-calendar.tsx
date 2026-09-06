@@ -31,6 +31,29 @@ interface AvailableSlot {
   startsAt: string;
   endsAt: string;
   available: boolean;
+  /** true when this slot came from the studio booking engine (computed). */
+  engine?: boolean;
+  /** Studio timezone, needed when creating an engine booking. */
+  timezone?: string;
+}
+
+/** Response shape of /api/availability in ENGINE mode. */
+interface EngineAvailabilityResponse {
+  mode?: "engine";
+  timezone?: string;
+  requiresService?: boolean;
+  depositMode?: string;
+  depositAmountMyr?: number;
+  slots?: {
+    resourceId: string;
+    resourceName: string;
+    resourceKind: string;
+    startTs: string;
+    endTs: string;
+    durationMinutes: number;
+    priceMyr: number;
+    label: string;
+  }[];
 }
 
 function generateCalendarDays(year: number, month: number) {
@@ -92,6 +115,11 @@ export function BookingCalendar({
 
   // Payment
   const [paymentOption, setPaymentOption] = useState<PaymentOption>("full");
+  /** Per-studio deposit rule (engine mode only), surfaced from availability. */
+  const [engineDepositRule, setEngineDepositRule] = useState<{
+    mode: string;
+    amount: number;
+  } | null>(null);
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
@@ -113,6 +141,8 @@ export function BookingCalendar({
     : "";
 
   const [availableSlots, setAvailableSlots] = useState<AvailableSlot[]>([]);
+  /** true when the latest availability response came from the booking engine. */
+  const [isEngineSlots, setIsEngineSlots] = useState(false);
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -138,19 +168,47 @@ export function BookingCalendar({
     };
   }, []);
 
-  // fetch availability when dateKey changes
+  // fetch availability when dateKey or the selected service changes
   useEffect(() => {
     if (!dateKey) return;
 
     let active = true;
 
     const fetchSlots = async () => {
-      const res = await fetch(
-        `/api/availability?providerId=${entity.id}&date=${encodeURIComponent(dateKey)}`,
-      );
+      const params = new URLSearchParams({
+        providerId: entity.id,
+        date: dateKey,
+      });
+      const svc = selectedService !== null ? entity.services[selectedService] : null;
+      if (svc?.name) params.set("service", svc.name);
+
+      const res = await fetch(`/api/availability?${params.toString()}`);
       if (!active) return;
       if (res.ok) {
-        const slots = (await res.json()) as AvailableSlot[];
+        const data = (await res.json()) as AvailableSlot[] | EngineAvailabilityResponse;
+        let slots: AvailableSlot[] = [];
+        if (Array.isArray(data)) {
+          // Legacy pre-materialised slots (array contract)
+          slots = data;
+          setEngineDepositRule(null);
+          setIsEngineSlots(false);
+        } else {
+          // Engine-computed slots (service-duration driven)
+          slots = (data.slots ?? []).map((s) => ({
+            id: `eng:${s.startTs}:${s.resourceId}`,
+            slot: s.label,
+            startsAt: s.startTs,
+            endsAt: s.endTs,
+            available: true,
+            engine: true,
+            timezone: data.timezone,
+          }));
+          setEngineDepositRule({
+            mode: data.depositMode ?? "none",
+            amount: Number(data.depositAmountMyr ?? 0),
+          });
+          setIsEngineSlots(true);
+        }
         setAvailableSlots(slots);
         const firstAvailable = slots.find((slot) => slot.available);
         setSelectedTimeId((current) => {
@@ -166,12 +224,14 @@ export function BookingCalendar({
       } else {
         setAvailableSlots([]);
         setSelectedTimeId(null);
+        setEngineDepositRule(null);
+        setIsEngineSlots(false);
       }
     };
     fetchSlots();
 
     return () => { active = false };
-  }, [dateKey, entity.id]);
+  }, [dateKey, entity.id, selectedService, entity.services]);
 
   const prevMonth = () => {
     if (viewMonth === 0) {
@@ -247,11 +307,23 @@ export function BookingCalendar({
         const candidate = new Date(start);
         candidate.setDate(start.getDate() + offset);
         const candidateKey = `${candidate.getFullYear()}-${String(candidate.getMonth() + 1).padStart(2, "0")}-${String(candidate.getDate()).padStart(2, "0")}`;
-        const res = await fetch(
-          `/api/availability?providerId=${entity.id}&date=${encodeURIComponent(candidateKey)}`,
-        );
+        const params = new URLSearchParams({
+          providerId: entity.id,
+          date: candidateKey,
+        });
+        const svc = selectedService !== null ? entity.services[selectedService] : null;
+        if (svc?.name) params.set("service", svc.name);
+        const res = await fetch(`/api/availability?${params.toString()}`);
         if (!res.ok) continue;
-        const slots = (await res.json()) as AvailableSlot[];
+        const data = (await res.json()) as AvailableSlot[] | EngineAvailabilityResponse;
+        const slots = Array.isArray(data) ? data : (data.slots ?? []).map((s) => ({
+          id: `eng:${s.startTs}:${s.resourceId}`,
+          slot: s.label,
+          startsAt: s.startTs,
+          endsAt: s.endTs,
+          available: true,
+          engine: true,
+        }));
         if (slots.some((slot) => slot.available)) {
           suggestions.push(candidateKey);
         }
@@ -260,8 +332,9 @@ export function BookingCalendar({
     } finally {
       setSearchingNextSlots(false);
     }
-  }, [entity.id, selectedDate, viewMonth, viewYear]);
+  }, [entity.id, selectedDate, viewMonth, viewYear, selectedService, entity.services]);
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const handlePayment = async () => {
     setProcessing(true);
     setAuthError(null);
@@ -281,22 +354,40 @@ export function BookingCalendar({
     // first create booking record on server
     let createdBookingId = "";
     try {
+      const isEngineSlot = selectedSlot?.engine === true;
+      const bookingPayload = isEngineSlot
+        ? {
+            customerId: authUserId,
+            providerId: entity.id,
+            serviceId: service?.name ?? "",
+            startTs: selectedSlot?.startsAt ?? "",
+            timezone: selectedSlot?.timezone,
+            notes: contactNotes,
+            address: selectedPlace?.label ?? "",
+            totalAmountMyr: totalPrice,
+          }
+        : {
+            customerId: authUserId,
+            providerId: entity.id,
+            serviceId: service?.name ?? "",
+            slotId: selectedTimeId || "",
+            notes: contactNotes,
+            address: selectedPlace?.label ?? "",
+            totalAmountMyr: totalPrice,
+          };
       const bookingResp = await fetch(`/api/bookings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customerId: authUserId,
-          providerId: entity.id,
-          serviceId: service?.name ?? "",
-          slotId: selectedTimeId || "",
-          notes: contactNotes,
-          address: selectedPlace?.label ?? "",
-          totalAmountMyr: totalPrice,
-        }),
+        body: JSON.stringify(bookingPayload),
       });
       const bookingData = await bookingResp.json();
       if (!bookingData.ok) {
-        throw new Error(bookingData.error || "booking creation failed");
+        const message = (bookingData.error as string) || "booking creation failed";
+        throw new Error(
+          bookingData.conflict
+            ? "That time was just taken — please pick another slot."
+            : message,
+        );
       }
       createdBookingId = bookingData.bookingId as string;
       setBookingRef(createdBookingId);
@@ -312,10 +403,20 @@ export function BookingCalendar({
     }
 
     let payableAmount: number;
-    if (paymentOption === "full") {
+    const enginePartial =
+      selectedSlot?.engine === true &&
+      engineDepositRule !== null &&
+      engineDepositRule.amount > 0 &&
+      engineDepositRule.amount < totalPrice;
+    const engineOnlyFull = selectedSlot?.engine === true && !enginePartial;
+    const useOption = engineOnlyFull ? "full" : paymentOption;
+    if (useOption === "full") {
       payableAmount = totalPrice;
-    } else if (paymentOption === "deposit") {
-      payableAmount = depositAmount;
+    } else if (useOption === "deposit") {
+      payableAmount =
+        enginePartial && engineDepositRule !== null
+          ? engineDepositRule.amount
+          : depositAmount;
     } else {
       payableAmount = bnplAmount;
     }
@@ -377,33 +478,50 @@ export function BookingCalendar({
   const service =
     selectedService !== null ? entity.services[selectedService] : null;
   const totalPrice = service?.price ?? 0;
-  const depositAmount = Math.round(totalPrice * 0.3);
+  const selectedSlot =
+    availableSlots.find((slot) => slot.id === selectedTimeId) ?? null;
+
+  // Engine studios may configure a per-studio deposit rule (studio_settings).
+  // When it exists and is less than the total, a deposit option is offered;
+  // otherwise only the full amount is available. BNPL stays for legacy flows.
+  const engineSelected = selectedSlot?.engine === true;
+  const enginePartialAllowed =
+    engineSelected &&
+    engineDepositRule !== null &&
+    engineDepositRule.amount > 0 &&
+    engineDepositRule.amount < totalPrice;
+  const chosenOption =
+    engineSelected && !enginePartialAllowed ? "full" : paymentOption;
+  const depositAmount = enginePartialAllowed
+    ? engineDepositRule!.amount
+    : Math.round(totalPrice * 0.3);
   const bnplAmount = Math.round(totalPrice / 4);
+  const depositLabel = enginePartialAllowed ? "Pay Deposit" : "Pay 30% Deposit";
+  const showDepositOption = engineSelected ? enginePartialAllowed : totalPrice > 0;
+  const showBnplOption = !engineSelected && totalPrice > 0;
   let payableAmountDisplay: number;
-  if (paymentOption === "full") {
+  if (chosenOption === "full") {
     payableAmountDisplay = totalPrice;
-  } else if (paymentOption === "deposit") {
+  } else if (chosenOption === "deposit") {
     payableAmountDisplay = depositAmount;
   } else {
     payableAmountDisplay = bnplAmount;
   }
-  const selectedSlot =
-    availableSlots.find((slot) => slot.id === selectedTimeId) ?? null;
 
   // ── Confirmation screen ──
   if (confirmed && service) {
     let paymentLabel: string;
-    if (paymentOption === "full") {
+    if (chosenOption === "full") {
       paymentLabel = "Paid";
-    } else if (paymentOption === "deposit") {
+    } else if (chosenOption === "deposit") {
       paymentLabel = "Deposit Paid";
     } else {
       paymentLabel = "1st Installment";
     }
     let formattedPaymentOption: number;
-    if (paymentOption === "full") {
+    if (chosenOption === "full") {
       formattedPaymentOption = totalPrice;
-    } else if (paymentOption === "deposit") {
+    } else if (chosenOption === "deposit") {
       formattedPaymentOption = depositAmount;
     } else {
       formattedPaymentOption = bnplAmount;
@@ -740,8 +858,9 @@ export function BookingCalendar({
                   </div>
                 ) : null}
                 <p className="mt-3 text-xs text-muted-foreground">
-                  Slots are 30-minute intervals. Same-day and next-24-hour slots
-                  are unavailable.
+                  {isEngineSlots
+                    ? "Times are shown in the studio's local timezone and match the service you picked."
+                    : "Slots are 30-minute intervals. Same-day and next-24-hour slots are unavailable."}
                 </p>
               </div>
             )}
@@ -987,7 +1106,7 @@ export function BookingCalendar({
                   onClick={() => setPaymentOption("full")}
                   className={cn(
                     "flex min-h-12 sm:min-h-14 items-center justify-between border p-3 sm:p-4 text-left transition-all",
-                    paymentOption === "full"
+                    chosenOption === "full"
                       ? "border-accent bg-secondary"
                       : "border-border hover:border-accent",
                   )}
@@ -1004,49 +1123,53 @@ export function BookingCalendar({
                     MYR {totalPrice}
                   </span>
                 </button>
-                <button
-                  onClick={() => setPaymentOption("deposit")}
-                  className={cn(
-                    "flex min-h-12 sm:min-h-14 items-center justify-between border p-3 sm:p-4 text-left transition-all",
-                    paymentOption === "deposit"
-                      ? "border-accent bg-secondary"
-                      : "border-border hover:border-accent",
-                  )}
-                >
-                  <div className="flex-1 min-w-0 pr-2">
-                    <p className="text-sm font-medium text-foreground">
-                      Pay 30% Deposit
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Remaining MYR {totalPrice - depositAmount} due on
-                      appointment day
-                    </p>
-                  </div>
-                  <span className="font-serif text-base sm:text-lg text-foreground shrink-0">
-                    MYR {depositAmount}
-                  </span>
-                </button>
-                <button
-                  onClick={() => setPaymentOption("bnpl")}
-                  className={cn(
-                    "flex min-h-12 sm:min-h-14 items-center justify-between border p-3 sm:p-4 text-left transition-all",
-                    paymentOption === "bnpl"
-                      ? "border-accent bg-secondary"
-                      : "border-border hover:border-accent",
-                  )}
-                >
-                  <div className="flex-1 min-w-0 pr-2">
-                    <p className="text-sm font-medium text-foreground">
-                      Pay in 4 Installments
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Interest-free, bi-weekly payments
-                    </p>
-                  </div>
-                  <span className="font-serif text-base sm:text-lg text-foreground shrink-0">
-                    4 x MYR {bnplAmount}
-                  </span>
-                </button>
+                {showDepositOption && (
+                  <button
+                    onClick={() => setPaymentOption("deposit")}
+                    className={cn(
+                      "flex min-h-12 sm:min-h-14 items-center justify-between border p-3 sm:p-4 text-left transition-all",
+                      chosenOption === "deposit"
+                        ? "border-accent bg-secondary"
+                        : "border-border hover:border-accent",
+                    )}
+                  >
+                    <div className="flex-1 min-w-0 pr-2">
+                      <p className="text-sm font-medium text-foreground">
+                        {depositLabel}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Remaining MYR {totalPrice - depositAmount} due on
+                        appointment day
+                      </p>
+                    </div>
+                    <span className="font-serif text-base sm:text-lg text-foreground shrink-0">
+                      MYR {depositAmount}
+                    </span>
+                  </button>
+                )}
+                {showBnplOption && (
+                  <button
+                    onClick={() => setPaymentOption("bnpl")}
+                    className={cn(
+                      "flex min-h-12 sm:min-h-14 items-center justify-between border p-3 sm:p-4 text-left transition-all",
+                      chosenOption === "bnpl"
+                        ? "border-accent bg-secondary"
+                        : "border-border hover:border-accent",
+                    )}
+                  >
+                    <div className="flex-1 min-w-0 pr-2">
+                      <p className="text-sm font-medium text-foreground">
+                        Pay in 4 Installments
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Interest-free, bi-weekly payments
+                      </p>
+                    </div>
+                    <span className="font-serif text-base sm:text-lg text-foreground shrink-0">
+                      4 x MYR {bnplAmount}
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
 

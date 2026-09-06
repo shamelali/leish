@@ -420,9 +420,20 @@ Also worth doing as clean-up along the way:
 | Studio schedule manager API (windows, blocked, resources, settings) | ✅ Implemented | `apps/studio/app/api/studio/schedule/route.ts` |
 | Typed engine access layer | ✅ Implemented | `apps/studio/lib/services/studio-engine.ts` |
 | Studio dashboard: weekly schedule / closures / resources / rules UI | ✅ Implemented (replaces legacy 30-min slot manager) | `apps/studio/components/schedule-manager.tsx`, `apps/studio/app/availability/page.tsx` |
-| Customer-facing book flow wired to computed slots + payments | ⏳ Next | `apps/studio/app/[slug]/book/page.tsx` (currently a stub), Billplz checkout step |
+| Customer-facing book flow wired to computed slots + payments | ✅ Implemented (marketplace, engine dual-mode) | `apps/web/components/booking-calendar.tsx` (legacy + engine slots), `apps/web/app/api/availability/route.ts` (computed or legacy), `apps/web/app/api/bookings/route.ts` (engine `book_appointment` path), existing Billplz create/webhook used unchanged |
+| Studio app's own public book page (`apps/studio/app/[slug]/book`) | ⏳ Stub (pre-existing) | Customers book studios on the marketplace (`www.leish.my`); the studio app redirects sign-in there. Copy updated to reflect flexible scheduling |
 | Legacy slot → window backfill & retirement | ⏳ Next | one-time script when windows are adopted per studio |
 | Group/multi-seat slots (`max_bookings_per_slot > 1`) | ⏳ Later | engine currently assumes 1 seat per slot |
+
+Engine-facing behaviour notes (marketplace slice)
+
+- `GET /api/availability` (both apps) runs in one of two modes:
+  - **engine** — providers with `availability_windows` get computed slots; the call must carry a service (`serviceId` uuid or `service` name) or `durationMinutes`; responses include `mode: "engine"`, the studio `timezone`, and the studio's deposit rule (`depositMode`, `depositAmountMyr`).
+  - **legacy** — unchanged 30-min pre-materialised `availability_slots` array contract (artists and not-yet-migrated studios keep working untouched).
+  - Provider dashboard calls without a date/service keep the legacy array shape.
+- The marketplace booking widget (`booking-calendar.tsx`) now understands both shapes and posts engine bookings (`startTs` + service name/timezone) or legacy bookings (`slotId`) accordingly; a 409 conflict shows "that time was just taken".
+- Deposit options honour the studio's `studio_settings`: when a deposit rule exists (< total) the customer may pay the configured deposit, otherwise only full payment is offered; BNPL/30% remain legacy-only options. Payment still runs through the existing Billplz create route + webhook (which already updates any booking by id).
+- Engine bookings are created with status `payment_required`; the existing Billplz webhook promotes them to `paid_deposit`/`paid_full`.
 
 Notes
 - Validation: migration SQL parses cleanly (pg parser via pglast, 58 top-level statements); `@leish/studio` typechecks + lints clean. The only typecheck error in the workspace is the shared package's `@prisma/client` generation, which the sandbox network blocked (`binaries.prisma.sh` unreachable) — unrelated to this change; it resolves on environments where `pnpm install` can run `prisma generate`.

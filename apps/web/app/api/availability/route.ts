@@ -13,22 +13,179 @@ function formatSlotLabel(iso: string) {
   })
 }
 
+function formatSlotLabelTz(iso: string, tz: string) {
+  return new Date(iso).toLocaleTimeString("en-US", {
+    timeZone: tz,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  })
+}
+
+/**
+ * Resolve a service reference for the availability engine. Accepts a uuid
+ * (serviceId) or a service NAME (service) scoped to the provider.
+ */
+async function resolveService(
+  sql: ReturnType<typeof getSql>,
+  providerId: string,
+  serviceId: string | null,
+  serviceName: string | null,
+): Promise<{ id: string; duration_minutes: number; price_myr: number } | null> {
+  if (serviceId) {
+    const [row] = await sql<{ id: string; duration_minutes: number; price_myr: number }[]>`
+      select id, duration_minutes, price_myr from public.services
+      where id = ${serviceId} and provider_id = ${providerId} and is_active
+      limit 1
+    `
+    return row ?? null
+  }
+  if (serviceName) {
+    const [row] = await sql<{ id: string; duration_minutes: number; price_myr: number }[]>`
+      select id, duration_minutes, price_myr from public.services
+      where provider_id = ${providerId} and name = ${serviceName} and is_active
+      limit 1
+    `
+    return row ?? null
+  }
+  return null
+}
+
+// Providers that define weekly availability windows get COMPUTED slots from
+// the studio booking engine. Response: { mode, timezone, date, slots }.
+async function computeEngineAvailability(
+  sql: ReturnType<typeof getSql>,
+  params: {
+    providerId: string
+    dateKey: string | null
+    serviceId: string | null
+    serviceName: string | null
+    resourceId: string | null
+    timezoneParam: string | null
+    durationRaw: string | null
+    priceRaw: string | null
+  },
+): Promise<NextResponse | null> {
+  const [engineRow] = await sql<{ ok: boolean }[]>`
+    select public.studio_has_windows(${params.providerId}) as ok
+  `
+  if (!(engineRow?.ok ?? false)) return null
+
+  // Provider dashboards still call this endpoint WITHOUT a date/service to
+  // list legacy rows; keep the legacy array shape for those calls.
+  if (!params.dateKey && !params.serviceId && !params.serviceName && !params.durationRaw) {
+    return null
+  }
+
+  const [settingsRow] = await sql<{
+    timezone: string
+    deposit_mode: string | null
+    deposit_amount: string | null
+  }[]>`
+    select timezone, deposit_mode, deposit_amount
+    from public.studio_settings where provider_id = ${params.providerId}
+  `
+  const tz = params.timezoneParam || settingsRow?.timezone || "Asia/Kuala_Lumpur"
+  const depositMode = settingsRow?.deposit_mode ?? "none"
+  const depositAmountMyr = Math.ceil(Number(settingsRow?.deposit_amount ?? 0))
+
+  const service = await resolveService(sql, params.providerId, params.serviceId, params.serviceName)
+  const durationMinutes = params.durationRaw ? Number.parseInt(params.durationRaw, 10) : null
+  const priceMyr = params.priceRaw ? Number.parseInt(params.priceRaw, 10) : null
+
+  if (!service && !durationMinutes) {
+    return NextResponse.json({
+      mode: "engine",
+      timezone: tz,
+      date: params.dateKey,
+      requiresService: true,
+      depositMode,
+      depositAmountMyr,
+      slots: [],
+    })
+  }
+
+  const todayInTz = new Date().toLocaleDateString("en-CA", { timeZone: tz })
+  const resolvedDate = params.dateKey || todayInTz
+
+  const rows = await sql<{
+    resource_id: string
+    resource_name: string
+    resource_kind: string
+    start_ts: Date
+    end_ts: Date
+    duration_minutes: number
+    price_myr: number
+  }[]>`
+    select distinct on (resource_id, start_ts)
+      resource_id, resource_name, resource_kind,
+      start_ts, end_ts, duration_minutes, price_myr
+    from public.get_available_slots(
+      ${params.providerId},
+      ${service?.id ?? null},
+      ${params.resourceId ?? null},
+      ${resolvedDate},
+      ${tz},
+      ${service ? null : durationMinutes},
+      ${service ? null : priceMyr}
+    )
+    order by resource_id, start_ts
+  `
+
+  return NextResponse.json({
+    mode: "engine",
+    timezone: tz,
+    date: resolvedDate,
+    depositMode,
+    depositAmountMyr,
+    slots: rows.map((row) => ({
+      resourceId: row.resource_id,
+      resourceName: row.resource_name,
+      resourceKind: row.resource_kind,
+      startTs: row.start_ts.toISOString(),
+      endTs: row.end_ts.toISOString(),
+      durationMinutes: row.duration_minutes,
+      priceMyr: row.price_myr,
+      label: formatSlotLabelTz(row.start_ts.toISOString(), tz),
+    })),
+  })
+}
+
 // CRUD for availability slots (provider owner only)
 export async function GET(req: Request) {
   const url = new URL(req.url)
   const providerId = url.searchParams.get("providerId")
   const dateKey = url.searchParams.get("date")
+  const serviceId = url.searchParams.get("serviceId")
+  const serviceName = url.searchParams.get("service")
+  const resourceId = url.searchParams.get("resourceId")
+  const timezoneParam = url.searchParams.get("timezone")
+  const durationRaw = url.searchParams.get("durationMinutes")
+  const priceRaw = url.searchParams.get("priceMyr")
   if (!providerId) {
     return NextResponse.json({ error: "Missing providerId" }, { status: 400 })
   }
-  
+
   let sql
   try {
     sql = getSql()
   } catch {
     return NextResponse.json({ error: "Database not configured" }, { status: 503 })
   }
-  
+
+  const engineResponse = await computeEngineAvailability(sql, {
+    providerId,
+    dateKey,
+    serviceId,
+    serviceName,
+    resourceId,
+    timezoneParam,
+    durationRaw,
+    priceRaw,
+  })
+  if (engineResponse) return engineResponse
+
+  // ---- LEGACY mode (array contract, unchanged) ---------------------------
   let rows
   if (dateKey) {
     const rawRows = await sql<{

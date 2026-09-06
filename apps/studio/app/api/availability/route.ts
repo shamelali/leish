@@ -66,17 +66,25 @@ export async function GET(req: Request) {
 
   const engineActive = await engineHasWindows(sql, providerId)
   const useEngine =
-    forcedMode !== "legacy" && (forcedMode === "engine" || engineActive)
+    forcedMode !== "legacy" &&
+    (forcedMode === "engine" || engineActive) &&
+    // Provider dashboards call without a date/service to list legacy rows —
+    // keep the legacy array shape for those calls.
+    (Boolean(dateKey) || Boolean(serviceId) || Boolean(resourceId) || Boolean(durationRaw))
 
   if (useEngine) {
-    // Resolve studio timezone when the caller did not pass one.
-    let tz = timezoneParam || null
-    if (!tz) {
-      const [settings] = await sql<{ timezone: string }[]>`
-        select timezone from public.studio_settings where provider_id = ${providerId}
-      `
-      tz = settings?.timezone || "Asia/Kuala_Lumpur"
-    }
+    const [settings] = await sql<{
+      timezone: string
+      deposit_mode: string | null
+      deposit_amount: string | null
+    }[]>`
+      select timezone, deposit_mode, deposit_amount
+      from public.studio_settings where provider_id = ${providerId}
+    `
+    // Caller-provided timezone wins; otherwise use the studio timezone.
+    const tz = timezoneParam || settings?.timezone || "Asia/Kuala_Lumpur"
+    const depositMode = settings?.deposit_mode ?? "none"
+    const depositAmountMyr = Math.ceil(Number(settings?.deposit_amount ?? 0))
 
     const todayInTz = new Date().toLocaleDateString("en-CA", { timeZone: tz })
     const durationMinutes = durationRaw ? Number.parseInt(durationRaw, 10) : null
@@ -89,6 +97,9 @@ export async function GET(req: Request) {
         mode: "engine",
         timezone: tz,
         date: dateKeyResolved,
+        requiresService: true,
+        depositMode,
+        depositAmountMyr,
         slots: [],
       })
     }
@@ -107,6 +118,8 @@ export async function GET(req: Request) {
       mode: "engine",
       timezone: tz,
       date: dateKeyResolved,
+      depositMode,
+      depositAmountMyr,
       slots: slots.map((s) => ({
         resourceId: s.resourceId,
         resourceName: s.resourceName,
