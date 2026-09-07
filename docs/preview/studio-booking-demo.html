@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Leish — Studio Booking Engine · interactive demo</title>
+<style>
+  :root{
+    --bg:#f7f6f2; --card:#ffffff; --ink:#1c1917; --muted:#78716c;
+    --line:#e7e5e4; --line2:#d6d3d1; --accent:#0d9488; --accent-ink:#fff;
+    --accent-soft:#ccfbf1; --destructive:#dc2626; --soft:#f5f5f4; --warn:#b45309;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);
+    font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  .eyebrow{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  h1,h2,h3{font-family:Georgia,"Times New Roman",serif;font-weight:600;margin:0;letter-spacing:.1px}
+  .muted{color:var(--muted)} .small{font-size:12.5px} .tiny{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .bar{background:#1c1917;color:#f5f5f4;padding:13px 0}
+  .bar .inner{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .logo{font-family:Georgia,serif;font-size:20px;font-weight:700}
+  .logo b{color:#5eead4}
+  .inner{max-width:1200px;margin:0 auto;padding:0 22px}
+  section{padding:34px 0 10px}
+  .grid{display:grid;gap:20px}
+  .g2{grid-template-columns:minmax(340px,1fr) 1.35fr}
+  @media(max-width:1000px){.g2{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);padding:22px}
+  .card+.card{margin-top:16px}
+  .hint{margin:4px 0 0;font-size:12.5px}
+  .fields{display:grid;gap:10px}
+  .f2{grid-template-columns:1fr 1fr}
+  .f4{grid-template-columns:repeat(4,1fr)}
+  .f3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:700px){.f4,.f3{grid-template-columns:1fr 1fr}}
+  .field label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:5px;font-weight:600}
+  .ctrl{width:100%;border:1px solid var(--line2);background:#fff;border-radius:6px;padding:8px 10px;font-size:13.5px;color:var(--ink)}
+  .btn{border-radius:6px;padding:8px 15px;font-size:13.5px;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+  .btn.block{width:100%}
+  .btn.soft{border-color:var(--line2);background:#fff;color:var(--ink)}
+  .btn.danger{border-color:#fca5a5;background:#fff;color:var(--destructive)}
+  .btn.mini{padding:4px 10px;font-size:12px;border-radius:5px}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+  .rowline{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;border-top:1px solid var(--line);padding:11px 0}
+  .daycol{width:92px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--muted)}
+  .chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line2);border-radius:999px;padding:3px 11px;font-size:12.5px;background:#fff}
+  .chip .x{color:var(--muted);cursor:pointer;font-size:14px;line-height:1}
+  .chip .x:hover{color:var(--destructive)}
+  .chip .for{color:var(--muted);font-size:11px}
+  .listitem{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-top:8px;font-size:13.5px;background:#fff}
+  .listitem .rside{display:flex;gap:7px;align-items:center}
+  .tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;background:#f0efed;color:var(--muted);border-radius:999px;padding:2px 8px}
+  .checks{display:flex;flex-direction:column;gap:9px;margin-top:12px;font-size:13.5px}
+  .checks label{display:flex;gap:9px;align-items:center}
+  .checks input{accent-color:var(--accent);width:15px;height:15px}
+  .empty{color:var(--muted);font-size:12.5px}
+  .note{font-size:12.5px;color:#0f766e;border-left:3px solid #14b8a6;background:#f0fdfa;padding:8px 13px;border-radius:0 6px 6px 0}
+  .warn{border-left-color:#f59e0b;color:var(--warn);background:#fffbeb}
+
+  /* Customer widget */
+  .widget{border:1px solid var(--line);background:#fff;padding:24px}
+  .stephead{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:18px 0 2px;display:flex;gap:8px;align-items:center}
+  .stephead .n{display:inline-flex;width:18px;height:18px;border-radius:99px;background:var(--accent);color:#fff;align-items:center;justify-content:center;font-size:11px}
+  .servicebtn{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--line2);background:#fff;border-radius:8px;padding:11px 14px;margin-top:8px;cursor:pointer;text-align:left}
+  .servicebtn.on{border-color:var(--accent);background:var(--accent-soft)}
+  .servicebtn .nm{font-weight:600;font-size:14px}
+  .servicebtn .dur{font-size:12px;color:var(--muted)}
+  .price{font-family:Georgia,serif;font-size:17px}
+  .resGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px}
+  .resbtn{border:1px solid var(--line2);border-radius:8px;padding:10px;font-size:13px;background:#fff;cursor:pointer;text-align:left}
+  .resbtn.on{border-color:var(--accent);background:var(--accent-soft)}
+  .calnav{display:flex;align-items:center;justify-content:space-between;margin:8px 0 2px}
+  .calnav button{border:1px solid var(--line2);background:#fff;border-radius:6px;width:30px;height:30px;cursor:pointer}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+  .dow{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:4px 0}
+  .day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:6px;background:#fff;border:0;cursor:pointer}
+  .day.past{color:#d6d3d1;cursor:not-allowed}
+  .day.todaybox{box-shadow:inset 0 0 0 1px var(--line2)}
+  .day.sel{background:var(--ink);color:#fff}
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;margin-top:10px}
+  .slot{border:1px solid var(--line2);padding:10px 4px;text-align:center;font-size:12.5px;border-radius:4px;background:#fff;cursor:pointer}
+  .slot.sel{border-color:var(--ink);background:var(--ink);color:#fff}
+  .slot.no{background:var(--soft);color:#d6d3d1;text-decoration:line-through;cursor:not-allowed}
+  .footnote{font-size:12px;color:var(--muted);margin-top:10px}
+  .payopt{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--line2);border-radius:8px;padding:11px 14px;margin-top:8px;background:#fff;cursor:pointer;text-align:left}
+  .payopt.on{border-color:var(--accent);background:var(--accent-soft)}
+  .payopt .amt{font-family:Georgia,serif;font-size:16px}
+  .billstrip{display:flex;gap:10px;align-items:center;border:1px solid var(--accent);background:var(--accent-soft);border-radius:8px;padding:10px 14px;margin-top:12px;font-size:13px}
+  .cta{display:flex;gap:10px;margin-top:14px}
+  .cta .btn{flex:1}
+  .conf{border:2px solid var(--accent);border-radius:8px;background:#f0fdfa;padding:22px;text-align:center}
+  .conf .big{font-family:Georgia,serif;font-size:24px;margin-top:6px}
+  .confrow{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-top:1px dashed var(--line2)}
+  .log{background:#111827;color:#a5f3fc;border-radius:8px;padding:12px 14px;font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}
+  .log .ok{color:#6ee7b7}.log .err{color:#fda4af}.log .dim{color:#9ca3af}
+  .sticky{position:sticky;top:12px}
+  .pill-tag{display:inline-block;background:var(--accent-soft);color:#0f766e;font-size:11px;font-weight:700;border-radius:999px;padding:3px 10px}
+  @media(max-width:1000px){.sticky{position:static}}
+  .mt{margin-top:10px}.mb{margin-bottom:8px}
+</style>
+</head>
+<body>
+
+<header class="bar"><div class="inner">
+  <span class="logo">Leish<b>!</b></span>
+  <span class="small" style="color:#a8a29e">Studio Booking Engine — interactive demo (no database; state kept in your browser)</span>
+  <span style="margin-left:auto"><button class="btn mini" style="background:transparent;border-color:#57534e;color:#e7e5e4" onclick="resetDemo()">Reset demo</button></span>
+</div></header>
+
+<section>
+  <div class="inner">
+    <div class="eyebrow">How “any studio” works</div>
+    <h1 style="font-size:30px;margin-top:4px">Configure the studio → watch availability compute live</h1>
+    <p class="small muted" style="max-width:60ch">This is a browser-side re-implementation of the booking engine shipped in the repo
+      (<code style="font-size:12px">get_available_slots()</code> · <code style="font-size:12px">book_appointment()</code> · <code style="font-size:12px">booking_transition()</code>).
+      Everything you change on the left (weekly hours, rooms/artists, deposit, buffers, advance notice)
+      is instantly reflected in the customer flow on the right — exactly like the real engine reads <code style="font-size:12px">studio_settings</code>.
+      Pay, then try the <b>double-booking race</b> to see the engine’s conflict guard.</p>
+
+    <div class="grid g2" style="margin-top:16px">
+      <!-- ============ LEFT: STUDIO DASHBOARD ============ -->
+      <div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 style="font-size:19px">Studio settings</h3><span class="pill-tag">studio_settings</span>
+          </div>
+          <div class="fields f2" style="margin-top:12px">
+            <div class="field"><label>Timezone</label>
+              <select id="cfg-tz" class="ctrl"></select></div>
+            <div class="field"><label>Booking style</label>
+              <select id="cfg-style" class="ctrl">
+                <option value="studio">Whole studio (single unit)</option>
+                <option value="room">Customers pick a room</option>
+                <option value="artist">Customers pick an artist</option>
+              </select></div>
+            <div class="field"><label>Slot grid (min)</label>
+              <input id="cfg-grid" class="ctrl" type="number" min="5" max="240" step="5"/></div>
+            <div class="field"><label>Gap between appts (min)</label>
+              <input id="cfg-buffer" class="ctrl" type="number" min="0" max="480" step="5"/></div>
+            <div class="field"><label>Advance notice (min)</label>
+              <input id="cfg-advance" class="ctrl" type="number" min="0" step="30"/></div>
+            <div class="field"><label>Horizon (days)</label>
+              <input id="cfg-horizon" class="ctrl" type="number" min="1" max="730"/></div>
+            <div class="field"><label>Deposit</label>
+              <select id="cfg-depmode" class="ctrl">
+                <option value="none">None</option><option value="percent">Percent</option><option value="fixed">Fixed MYR</option>
+              </select></div>
+            <div class="field"><label id="cfg-depamt-label">Percent (%)</label>
+              <input id="cfg-depamt" class="ctrl" type="number" min="0"/></div>
+          </div>
+          <div class="checks">
+            <label><input type="checkbox" id="cfg-allowcancel" checked/> Customers may cancel online (free up to policy)</label>
+            <label><input type="checkbox" id="cfg-autoconfirm"/> Auto-confirm bookings</label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size:19px">Resources</h3>
+          <p class="small muted hint">Anything bookable: venue (whole studio), rooms, artists, chairs…</p>
+          <div id="res-list"></div>
+          <div class="fields f2" style="margin-top:12px">
+            <div class="field"><label>Kind</label>
+              <select id="newres-kind" class="ctrl">
+                <option value="room">room</option><option value="artist">artist</option>
+                <option value="chair">chair</option><option value="equipment">equipment</option>
+              </select></div>
+            <div class="field"><label>Name</label><input id="newres-name" class="ctrl" placeholder="e.g. Studio C — Content room"/></div>
+          </div>
+          <button class="btn mt" onclick="addResource()">Add resource</button>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size:19px">Weekly opening hours</h3>
+          <p class="small muted hint">Recurring hours per resource. “All resources” applies to every bookable unit.</p>
+          <div class="fields f4" style="margin-top:12px">
+            <div class="field"><label>Day</label>
+              <select id="win-day" class="ctrl"></select></div>
+            <div class="field"><label>Resource</label>
+              <select id="win-res" class="ctrl"></select></div>
+            <div class="field"><label>Opens</label><input id="win-start" type="time" value="09:00" class="ctrl"/></div>
+            <div class="field"><label>Closes</label><input id="win-end" type="time" value="17:00" class="ctrl"/></div>
+          </div>
+          <button class="btn mt" onclick="addWindow()">Add hours</button>
+          <div id="win-list" style="margin-top:10px"></div>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size:19px">Closed / blocked times</h3>
+          <div class="fields f2" style="margin-top:12px">
+            <div class="field"><label>From</label><input id="blk-start" type="datetime-local" class="ctrl"/></div>
+            <div class="field"><label>To</label><input id="blk-end" type="datetime-local" class="ctrl"/></div>
+            <div class="field"><label>Reason (optional)</label><input id="blk-reason" class="ctrl" placeholder="e.g. Deepavali"/></div>
+            <div class="field"><label>Resource</label><select id="blk-res" class="ctrl"></select></div>
+          </div>
+          <button class="btn danger mt" onclick="addBlocked()">Block time</button>
+          <div id="blk-list" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- ============ RIGHT: CUSTOMER WIDGET ============ -->
+      <div class="sticky">
+        <div class="widget" id="widget">
+          <h2 style="font-size:22px" id="w-title">Book Glam Studio KL</h2>
+          <div class="small muted" id="w-style-note" style="margin-top:2px"></div>
+          <div id="w-steps"></div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <h3 style="font-size:16px">⚡ Engine safety log</h3>
+          <p class="small muted hint">Shows what the engine would log — bookings, payments, and the double-booking race guard.</p>
+          <div class="log" id="engine-log" style="margin-top:10px"></div>
+          <button class="btn soft block mt" onclick="runRace()" id="race-btn">⚡ Simulate a double-booking race on the currently selected slot</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="note" style="margin:22px 0">
+      <b>Where this lives in the repo:</b> the panel on the left mirrors
+      <code>apps/studio/components/schedule-manager.tsx</code> + <code>studio_settings</code>; the widget on the right mirrors
+      <code>apps/web/components/booking-calendar.tsx</code> speaking to <code>/api/availability</code> and <code>/api/bookings</code>.
+      Rules are enforced in SQL by <code>supabase/migrations/20260907000000_studio_booking_engine.sql</code>.
+    </div>
+  </div>
+</section>
+
+<script>
+"use strict";
+/* =====================================================================
+   Leish studio booking engine — interactive demo
+   Mirrors: public.studio_settings, availability_windows,
+   blocked_periods, bookable_resources, get_available_slots(),
+   book_appointment(), booking_transition() + Billplz payment step.
+   ===================================================================== */
+
+// ---------- helpers ----------
+const $ = (id) => document.getElementById(id);
+const pad = (n) => String(n).padStart(2, "0");
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "id-" + Math.random().toString(36).slice(2));
+const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const SHORT = ["Su","Mo","Tu","We","Th","Fr","Sa"];
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const TIMEZONES = ["Asia/Kuala_Lumpur","Asia/Singapore","Asia/Bangkok","Asia/Jakarta","Asia/Manila","Asia/Hong_Kong","Asia/Tokyo","Asia/Seoul","Australia/Perth","Europe/London","Etc/UTC"];
+const now = () => Date.now();
+
+function fmtMoney(n){ return "MYR " + n.toLocaleString("en-MY"); }
+
+// timezone offset in minutes at a given epoch (UTC-based trick)
+function tzOffsetMin(tz, epoch){
+  const s = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "longOffset" })
+                .formatToParts(epoch).find(p => p.type === "timeZoneName").value;
+  const m = s.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
+  if (!m) return 0;
+  const sign = m[1] === "-" ? -1 : 1;
+  return sign * (parseInt(m[2],10)*60 + (m[3] ? parseInt(m[3],10) : 0));
+}
+// wall clock (y,mo,d,h,mi) IN studio tz -> epoch ms
+function wallToEpoch(tz, y, mo, d, h, mi){
+  const guess = Date.UTC(y, mo, d, h, mi);
+  return guess - tzOffsetMin(tz, guess) * 60000;
+}
+function epochPartsInTz(tz, epoch){
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone: tz,
+    year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit", hour12:false })
+    .formatToParts(epoch);
+  const get = (t) => parseInt(parts.find(p=>p.type===t).value,10);
+  let h = get("hour"); if (h === 24) h = 0;
+  return { y:get("year"), mo:get("month")-1, d:get("day"), h, mi:get("minute") };
+}
+function startOfDayInTz(tz, epoch){
+  const p = epochPartsInTz(tz, epoch);
+  return wallToEpoch(tz, p.y, p.mo, p.d, 0, 0);
+}
+function fmtTimeInTz(tz, epoch){
+  return new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit", hour12: true }).format(epoch);
+}
+function fmtDayInTz(tz, epoch){
+  return new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short", day: "numeric", month: "short" }).format(epoch);
+}
+function fmtDT(tz, epoch){
+  return new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday:"short", day:"numeric", month:"short", hour:"numeric", minute:"2-digit" }).format(epoch);
+}
+
+// ---------- demo state (mirrors DB tables) ----------
+const SERVICES = [
+  { id:"svc-rental", name:"Studio Hourly Rental",  duration:60,  price:120 },
+  { id:"svc-bridal", name:"Bridal Makeup Trial",   duration:120, price:300 },
+  { id:"svc-editorial", name:"Editorial Session",  duration:90,  price:450 },
+  { id:"svc-hair", name:"Hair Styling",            duration:45,  price:90 },
+];
+
+function defaults(){
+  return {
+    tz: "Asia/Kuala_Lumpur",
+    style: "room",               // studio | room | artist
+    grid: 15, buffer: 15, advance: 720, horizon: 90,
+    depositMode: "percent", depositAmt: 20,
+    allowCancel: true, autoConfirm: false,
+    resources: [
+      { id: uid(), kind:"venue",  name:"Glam Studio KL (whole studio)", active:true, system:true },
+      { id: uid(), kind:"room",   name:"Studio A — Main hall",          active:true },
+      { id: uid(), kind:"room",   name:"Studio B — Bridal suite",       active:true },
+      { id: uid(), kind:"artist", name:"Artist #2 — Nurul",             active:true },
+    ],
+    windows: [
+      { id: uid(), day:1, start:"09:00", end:"18:00", resource:null },
+      { id: uid(), day:2, start:"09:00", end:"21:00", resource:null },
+      { id: uid(), day:3, start:"09:00", end:"21:00", resource:null },
+      { id: uid(), day:4, start:"09:00", end:"18:00", resource:null },
+      { id: uid(), day:5, start:"09:00", end:"18:00", resource:null },
+      { id: uid(), day:6, start:"10:00", end:"16:00", resource:null },
+      { id: uid(), day:2, start:"10:00", end:"21:00", resource:null, second:true }, // artist-specific handled below? replace at load
+    ],
+    blocked: [],
+    bookings: [],   // { id, actor, resourceId, resourceName, service, start, end, total, paid, depositAmt, status, createdAt }
+    events: [],
+  };
+}
+
+// fix the last seeded window to point at the seeded artist is hard pre-uid; just drop it in seed()
+function seed(){
+  const s = defaults();
+  s.windows = s.windows.filter(w => !w.second);
+  const artist = s.resources.find(r => r.kind === "artist");
+  s.windows.push({ id: uid(), day:2, start:"10:00", end:"21:00", resource: artist.id });
+  s.windows.push({ id: uid(), day:6, start:"09:00", end:"18:00", resource: s.resources[0].id });
+  return s;
+}
+
+let state = seed();
+const LS = "leish-engine-demo-v1";
+try {
+  const saved = JSON.parse(localStorage.getItem(LS));
+  if (saved && saved.resources) state = Object.assign(seed(), saved);
+} catch(e){}
+
+function persist(){ try { localStorage.setItem(LS, JSON.stringify(state)); } catch(e){} }
+
+// engine log
+function log(msg, cls){
+  state.events.push({ msg, cls, t: Date.now() });
+  if (state.events.length > 40) state.events = state.events.slice(-40);
+  const el = $("engine-log");
+  if (el) el.innerHTML = state.events.map(e =>
+    `<span class="dim">[${new Date(e.t).toLocaleTimeString()}]</span> <span class="${e.cls||""}">${e.msg}</span>`).join("\n");
+  persist();
+}
+
+// deposit per engine rules: percent -> ceil(total*amt/100); fixed -> min(amt,total)
+function depositFor(total){
+  if (state.depositMode === "percent") return Math.ceil(total * state.depositAmt / 100);
+  if (state.depositMode === "fixed")   return Math.min(Math.ceil(state.depositAmt), total);
+  return 0;
+}
+
+// ---------- availability engine (mirror of get_available_slots) ----------
+function selectableResources(){
+  const kind = state.style === "artist" ? "artist" : state.style === "room" ? "room" : "venue";
+  return state.resources.filter(r => r.active && r.kind === kind);
+}
+function windowApplies(win, res){
+  return !win.resource || win.resource === res.id;
+}
+function resourceName(id){ const r = state.resources.find(x=>x.id===id); return r ? r.name : "All resources"; }
+
+// bookings overlapping [start,end) for a resource
+function overlapsAny(resId, start, end, ignoreId){
+  return state.bookings.some(b =>
+    (b.id !== ignoreId) &&
+    b.resourceId === resId &&
+    b.status !== "canceled" && b.status !== "refunded" && b.status !== "no_show" &&
+    start < b.end && end > b.start);
+}
+function isBlocked(resId, start, end){
+  return state.blocked.some(b =>
+    (!b.resource || b.resource === resId) && start < b.end && end > b.start);
+}
+
+/** Returns [{start,end}] computed open starts (epoch ms) for one resource on a
+ *  given studio-local date (y,mo,d), for a service duration. Mirrors engine. */
+function computeSlotsForDate(res, y, mo, d, duration){
+  const tz = state.tz;
+  const dow = new Date(Date.UTC(y, mo, d)).getUTCDay(); // day of week of that calendar date
+  const dayStart = wallToEpoch(tz, y, mo, d, 0, 0);
+  const dayEnd = dayStart + 86400000;
+  const out = [];
+  const wins = state.windows.filter(w => w.day === dow && w.isActive !== false && windowApplies(w, res));
+  for (const w of wins){
+    const [hs, ms] = w.start.split(":").map(Number);
+    const [he, me] = w.end.split(":").map(Number);
+    let t = wallToEpoch(tz, y, mo, d, hs, ms);
+    const winEnd = wallToEpoch(tz, y, mo, d, he, me);
+    // align to grid
+    const g = state.grid;
+    const off = (g - (ms % g)) % g;
+    t += off * 60000;
+    const dur = duration * 60000;
+    for (let s = t; s + dur <= winEnd + 500 && s < dayEnd; s += g * 60000){
+      const e = s + dur;
+      // advance notice
+      if (s < now() + state.advance * 60000) continue;
+      // horizon (appointment must end within horizon)
+      if (e > now() + state.horizon * 86400000) continue;
+      // conflicts (buffered): a booking occupies [start,end+buffer]
+      const buf = state.buffer * 60000;
+      let taken = false;
+      for (const b of state.bookings){
+        if (b.resourceId !== res.id) continue;
+        if (["canceled","refunded","no_show"].includes(b.status)) continue;
+        if (s < b.end + buf && e > b.start) { taken = true; break; }
+      }
+      if (taken) continue;
+      if (isBlocked(res.id, s, e)) continue;
+      out.push({ start: s, end: e });
+    }
+  }
+  // unique + sort
+  const seen = new Set(); const uniq = [];
+  for (const o of out){ if (!seen.has(o.start)){ seen.add(o.start); uniq.push(o); } }
+  return uniq.sort((a,b) => a.start - b.start);
+}
+
+// ---------- RENDERING ----------
+function syncConfigToForm(){
+  $("cfg-tz").value = state.tz;
+  $("cfg-style").value = state.style;
+  $("cfg-grid").value = state.grid;
+  $("cfg-buffer").value = state.buffer;
+  $("cfg-advance").value = state.advance;
+  $("cfg-horizon").value = state.horizon;
+  $("cfg-depmode").value = state.depositMode;
+  $("cfg-depamt").value = state.depositAmt;
+  $("cfg-allowcancel").checked = state.allowCancel;
+  $("cfg-autoconfirm").checked = state.autoConfirm;
+  updateDepositLabel();
+}
+function updateDepositLabel(){
+  $("cfg-depamt-label").textContent = state.depositMode === "percent" ? "Percent (%)" : state.depositMode === "fixed" ? "Amount (MYR)" : "Percent (%)";
+}
+function readConfigFromForm(){
+  state.tz = $("cfg-tz").value;
+  state.style = $("cfg-style").value;
+  state.grid = clampInt($("cfg-grid").value, 5, 240, 15);
+  state.buffer = clampInt($("cfg-buffer").value, 0, 480, 0);
+  state.advance = clampInt($("cfg-advance").value, 0, 60*24*14, 0);
+  state.horizon = clampInt($("cfg-horizon").value, 1, 730, 90);
+  state.depositMode = $("cfg-depmode").value;
+  state.depositAmt = clampInt($("cfg-depamt").value, 0, 100000, 0);
+  state.allowCancel = $("cfg-allowcancel").checked;
+  state.autoConfirm = $("cfg-autoconfirm").checked;
+}
+function clampInt(v, lo, hi, dflt){
+  const n = parseInt(v,10);
+  if (Number.isNaN(n)) return dflt;
+  return Math.min(hi, Math.max(lo, n));
+}
+
+function renderTzSelect(){
+  const sel = $("cfg-tz");
+  sel.innerHTML = TIMEZONES.map(t => `<option value="${t}">${t}</option>`).join("");
+}
+function resourceOptionHtml(includeAll, label){
+  let h = "";
+  if (includeAll) h += `<option value="">${label || "All resources"}</option>`;
+  h += state.resources.filter(r=>r.active).map(r => `<option value="${r.id}">${r.name}</option>`).join("");
+  return h;
+}
+function refillSelects(){
+  const winRes = $("win-res"); if (winRes) winRes.innerHTML = resourceOptionHtml(true);
+  const blkRes = $("blk-res"); if (blkRes) blkRes.innerHTML = resourceOptionHtml(true);
+}
+function renderDaySelect(){
+  const sel = $("win-day");
+  sel.innerHTML = DAYS.map((d,i) => `<option value="${i}">${d}</option>`).join("");
+  if (state.winDaySel) sel.value = state.winDaySel;
+  sel.onchange = () => { state.winDaySel = +sel.value; };
+}
+
+function renderResources(){
+  const el = $("res-list");
+  el.innerHTML = state.resources.map(r => `
+    <div class="listitem">
+      <span><span class="tag">${r.kind}</span> <b style="margin-left:7px">${r.name}</b>
+        ${!r.active ? ' <span class="small muted">(hidden)</span>' : ""}</span>
+      <span class="rside">
+        ${r.system ? "" : `<button class="btn danger mini" onclick="delResource('${r.id}')">Delete</button>`}
+        <button class="btn soft mini" onclick="toggleResource('${r.id}')">${r.active ? "Hide" : "Show"}</button>
+      </span>
+    </div>`).join("") || '<div class="empty">No resources.</div>';
+}
+
+function renderWindows(){
+  const el = $("win-list");
+  const groups = DAYS.map((name, idx) => ({
+    name, items: state.windows.filter(w => w.day === idx && w.isActive !== false),
+  }));
+  el.innerHTML = groups.map(g => g.items.length ? `
+    <div class="rowline"><span class="daycol">${g.name}</span>
+      ${g.items.map(w => `<span class="chip">${w.start}–${w.end}
+        <span class="for">${w.resource ? resourceName(w.resource) : "All resources"}</span>
+        <span class="x" title="Remove" onclick="delWindow('${w.id}')">×</span></span>`).join("")}
+    </div>` : "").join("") || '<div class="empty">No opening hours yet — add some above.</div>';
+}
+
+function renderBlocked(){
+  const el = $("blk-list");
+  el.innerHTML = state.blocked.map(b => `
+    <div class="listitem">
+      <div><b>${fmtDT(state.tz, b.start)} → ${fmtDT(state.tz, b.end)}</b><br/>
+        <span class="small muted">${b.resource ? resourceName(b.resource) : "All resources"}${b.reason ? " · " + b.reason : ""}</span></div>
+      <button class="btn danger mini" onclick="delBlocked('${b.id}')">Remove</button>
+    </div>`).join("") || '<div class="empty">No blocked periods.</div>';
+}
+
+// ---- customer widget state ----
+let w = { svc: 0, res: null, viewY: null, viewM: null, dateKey: null, slotStart: null, step: 0, payOpt: "full", busy: false, paid: false };
+
+function widgetInit(){
+  if (w.viewY === null){
+    const p = epochPartsInTz(state.tz, now());
+    w.viewY = p.y; w.viewM = p.mo;
+  }
+  const res = selectableResources();
+  if (!res.some(r => r.id === w.res)) w.res = res[0] ? res[0].id : null;
+  w.slotStart = null; w.dateKey = null;
+  // show the earliest day with availability by default
+}
+
+function renderWidget(){
+  const services = SERVICES;
+  const res = selectableResources();
+  if (!res.length){ $("w-steps").innerHTML = '<p class="empty">This studio has no active bookable unit for style “' + state.style + '”. Add a resource or switch the booking style.</p>'; return; }
+
+  const svc = services[w.svc] || services[0];
+  const noteTxt = state.style === "studio"
+    ? "Whole-studio booking · availability is computed for the venue unit."
+    : state.style === "room"
+    ? "Pick a room — each has its own weekly hours."
+    : "Pick an artist — each has their own weekly hours.";
+  $("w-style-note").textContent = noteTxt;
+
+  // calendar
+  const y = w.viewY, mo = w.viewM;
+  const firstDow = new Date(Date.UTC(y, mo, 1)).getUTCDay();
+  const dim = new Date(Date.UTC(y, mo + 1, 0)).getUTCDate();
+  const todayP = epochPartsInTz(state.tz, now());
+  const todayUTC = Date.UTC(todayP.y, todayP.mo, todayP.d);
+  const cells = [];
+  for (let i=0;i<firstDow;i++) cells.push('<span></span>');
+  for (let d=1; d<=dim; d++){
+    const utc = Date.UTC(y, mo, d);
+    const past = utc < todayUTC;
+    const isToday = utc === todayUTC;
+    const sel = w.dateKey === `${y}-${mo}-${d}`;
+    cells.push(`<button class="day ${past?'past':''} ${isToday?'todaybox':''} ${sel?'sel':''}" ${past?'disabled':''}
+      onclick="pickDay(${y},${mo},${d})">${d}</button>`);
+  }
+  const dowH = SHORT.map(x=>`<span class="dow">${x}</span>`).join("");
+
+  // slots for the picked day/resource/service
+  let slotHtml = "", slotNote = "";
+  if (w.dateKey && w.res && svc){
+    const [yy, mmo, dd] = w.dateKey.split("-").map(Number);
+    const slots = computeSlotsForDate(res.find(r=>r.id===w.res), yy, mmo, dd, svc.duration);
+    slotNote = `Computed · ${svc.duration} min · ${state.grid}-min grid · ${state.buffer} min gap between appointments.`;
+    if (!slots.length){
+      slotHtml = '<p class="empty">No open times for this day. Pick another day or adjust the studio hours.</p>';
+    } else {
+      slotHtml = '<div class="slots">' + slots.map(s =>
+        `<button class="slot ${w.slotStart===s.start?'sel':''}" onclick="pickSlot(${s.start})">${fmtTimeInTz(state.tz, s.start)}</button>`
+      ).join("") + '</div>';
+    }
+  }
+
+  // resource grid
+  const needRes = state.style !== "studio";
+  const resHtml = needRes ? `<div class="resGrid">${res.map(r =>
+    `<button class="resbtn ${w.res===r.id?'on':''}" onclick="pickRes('${r.id}')"><b>${r.name}</b><br/>
+       <span class="small muted">${r.kind}</span></button>`).join("")}</div>` : "";
+
+  // step area
+  let stepHtml = "";
+  const selectedSlotLabel = w.slotStart ? fmtTimeInTz(state.tz, w.slotStart) : "";
+  const durMin = svc ? svc.duration : 0;
+
+  if (!w.paid){
+    stepHtml = `
+      <div class="stephead"><span class="n">1</span> Select a service</div>
+      ${SERVICES.map((s,i)=>`
+        <button class="servicebtn ${w.svc===i?'on':''}" onclick="pickSvc(${i})">
+          <span><span class="nm">${s.name}</span><br/><span class="dur">${s.duration} minutes</span></span>
+          <span class="price">${fmtMoney(s.price)}</span></button>`).join("")}
+
+      ${needRes ? `<div class="stephead"><span class="n">2</span> Pick a ${state.style==="room"?"room":"artist"}</div>${resHtml}` : ""}
+
+      <div class="stephead"><span class="n">${needRes?3:2}</span> Pick a date</div>
+      <div class="calnav"><button onclick="moveMonth(-1)">‹</button>
+        <b class="small">${MONTHS[mo]} ${y}</b>
+        <button onclick="moveMonth(1)">›</button></div>
+      <div class="cal">${dowH}${cells.join("")}</div>
+
+      ${w.dateKey ? `
+      <div class="stephead"><span class="n">${needRes?4:3}</span> Choose a time
+        <span class="tiny" style="margin-left:4px">· ${fmtDayInTz(state.tz, dateKeyEpoch())}</span></div>
+      ${slotHtml}
+      <p class="footnote">${slotNote}</p>` : ""}
+
+      ${w.dateKey && w.slotStart ? `
+      <div class="stephead"><span class="n">${needRes?5:4}</span> Payment</div>
+      <div class="small muted mb">${svc.name} · ${fmtMoney(svc.price)} · ${fmtDayInTz(state.tz, dateKeyEpoch())}, ${selectedSlotLabel}</div>
+      ${paymentOptionsHtml(svc.price)}
+      <div class="billstrip"><b>Billplz</b>&nbsp;·&nbsp;you will be redirected to pay securely (simulated here).</div>
+      <div class="cta">
+        <button class="btn soft" onclick="w.slotStart=null;renderAll()">Back</button>
+        <button class="btn" ${w.busy?"disabled":""} onclick="pay()">Pay ${payLabel(svc.price)} →</button>
+      </div>` : ""}
+    `;
+  } else {
+    const bk = state.bookings.find(b => b.justPaid);
+    stepHtml = `
+      <div class="conf" style="margin-top:12px">
+        <div style="font-size:34px">✓</div>
+        <h2>Booking Confirmed</h2>
+        <div class="small muted">Reference: <b>${bk ? bk.id.slice(0,8).toUpperCase() : ""}</b></div>
+        <div class="confrow" style="margin-top:14px"><span>Service</span><b>${bk ? bk.service : ""}</b></div>
+        <div class="confrow"><span>Unit</span><b>${bk ? bk.resourceName : ""}</b></div>
+        <div class="confrow"><span>When</span><b>${bk ? fmtDT(state.tz, bk.start) : ""}</b></div>
+        <div class="confrow"><span>Paid</span><b>${bk ? fmtMoney(bk.paid) : ""}</b></div>
+        <button class="btn block" style="margin-top:16px" onclick="resetWidget()">Book another appointment</button>
+      </div>`;
+  }
+  $("w-steps").innerHTML = stepHtml;
+  $("race-btn").disabled = !(w.dateKey && w.slotStart && !w.paid);
+}
+function dateKeyEpoch(){ const [yy,mm,dd] = w.dateKey.split("-").map(Number); return wallToEpoch(state.tz, yy, mm, dd, 12, 0); }
+
+function depositAmountFor(total){
+  const d = depositFor(total);
+  return (d > 0 && d < total) ? d : null;
+}
+function paymentOptionsHtml(total){
+  const d = depositAmountFor(total);
+  const opts = [];
+  opts.push({ id:"full", label:"Pay Full Amount", sub:"One-time payment", amt: total });
+  if (d !== null) opts.push({ id:"deposit", label:"Pay Deposit", sub:"Studio-set deposit · " + fmtMoney(total-d) + " due on the day", amt: d });
+  if (!opts.some(o=>o.id===w.payOpt)) w.payOpt = opts[0].id;
+  return opts.map(o => `
+    <button class="payopt ${w.payOpt===o.id?'on':''}" onclick="w.payOpt='${o.id}';renderWidget()">
+      <span><b style="font-size:14px">${o.label}</b><br/><span class="small muted">${o.sub}</span></span>
+      <span class="amt">${fmtMoney(o.amt)}</span></button>`).join("");
+}
+function payLabel(total){
+  const d = depositAmountFor(total);
+  if (w.payOpt === "deposit" && d !== null) return fmtMoney(d);
+  return fmtMoney(total);
+}
+
+// ---------- actions: studio ----------
+function addResource(){
+  const kind = $("newres-kind").value, name = $("newres-name").value.trim();
+  if (!name) return;
+  state.resources.push({ id: uid(), kind, name, active: true });
+  $("newres-name").value = "";
+  log(`manager added bookable resource "${name}" (${kind})`, "ok");
+  persist(); refillSelects(); renderAll();
+}
+function toggleResource(id){
+  const r = state.resources.find(x=>x.id===id); if (!r) return;
+  r.active = !r.active;
+  log(r.active ? `resource "${r.name}" is bookable again` : `resource "${r.name}" hidden from customers`, "dim");
+  if (w.res === id && !r.active){ w.res = null; w.dateKey=null; w.slotStart=null; }
+  persist(); refillSelects(); renderAll();
+}
+function delResource(id){
+  state.resources = state.resources.filter(x=>x.id!==id);
+  state.windows = state.windows.map(w2 => w2.resource===id ? Object.assign({}, w2, {resource:null}) : w2);
+  log("resource deleted; its per-resource hours now apply to all resources");
+  persist(); refillSelects(); renderAll();
+}
+function addWindow(){
+  const day = +$("win-day").value, start = $("win-start").value, end = $("win-end").value;
+  const resource = $("win-res").value || null;
+  if (end <= start){ alert("Closes must be after Opens"); return; }
+  if (state.windows.some(w2 => w2.day===day && w2.start===start && w2.end===end && (w2.resource||"")===(resource||""))){
+    alert("That window already exists"); return;
+  }
+  state.windows.push({ id: uid(), day, start, end, resource });
+  log(`added ${DAYS[day]} ${start}–${end} for ${resource ? resourceName(resource) : "all resources"}`, "ok");
+  persist(); renderAll();
+}
+function delWindow(id){
+  state.windows = state.windows.filter(w2 => w2.id !== id);
+  log("opening window removed");
+  persist(); renderAll();
+}
+function addBlocked(){
+  const s = new Date($("blk-start").value).getTime();
+  const e = new Date($("blk-end").value).getTime();
+  const reason = $("blk-reason").value.trim();
+  const resource = $("blk-res").value || null;
+  if (Number.isNaN(s) || Number.isNaN(e) || e <= s){ alert("Pick a valid From/To range"); return; }
+  state.blocked.push({ id: uid(), start: s, end: e, reason, resource });
+  log(`blocked ${resource ? resourceName(resource) : "all resources"} ${fmtDT(state.tz, s)} → ${fmtDT(state.tz, e)}${reason ? " (" + reason + ")" : ""}`, "warn");
+  persist(); renderAll();
+}
+function delBlocked(id){ state.blocked = state.blocked.filter(b => b.id !== id); log("blocked period removed"); persist(); renderAll(); }
+
+function onConfigChange(){
+  readConfigFromForm();
+  persist();
+  widgetInit();
+  log("settings updated → recomputed availability", "dim");
+  renderAll();
+}
+
+// ---------- actions: customer ----------
+function pickSvc(i){ w.svc = i; w.dateKey = null; w.slotStart = null; persist(); renderAll(); }
+function pickRes(id){ w.res = id; w.dateKey = null; w.slotStart = null; persist(); renderAll(); }
+function pickDay(y, mo, d){
+  w.dateKey = `${y}-${mo}-${d}`; w.slotStart = null; persist(); renderWidget();
+}
+function pickSlot(start){ w.slotStart = start; persist(); renderWidget(); }
+function moveMonth(delta){
+  let m = w.viewM + delta, y = w.viewY;
+  if (m < 0){ m = 11; y--; } if (m > 11){ m = 0; y++; }
+  w.viewY = y; w.viewM = m; persist(); renderWidget();
+}
+function resetWidget(){ state.bookings.forEach(b => { b.justPaid = false; }); w.slotStart=null; w.dateKey=null; w.paid=false; w.payOpt="full"; w.busy=false; widgetInit(); renderAll(); }
+
+/** The booking transaction: re-check availability (as book_appointment does
+ *  under the advisory lock) then insert. Returns {ok, booking?, conflict?}. */
+function bookTransaction(actor, svcId, resId, start, resourceName){
+  const svc = SERVICES.find(s=>s.id===svcId);
+  const dur = svc.duration * 60000;
+  const end = start + dur;
+  const [yy,mm,dd] = (() => { const p = epochPartsInTz(state.tz, start); return [p.y,p.mo,p.d]; })();
+  const res = state.resources.find(r=>r.id===resId);
+  const buf = state.buffer * 60000;
+  let conflict = false;
+  for (const b of state.bookings){
+    if (b.resourceId !== resId) continue;
+    if (["canceled","refunded","no_show"].includes(b.status)) continue;
+    if (start < b.end + buf && end > b.start) { conflict = true; break; }
+  }
+  if (conflict || isBlocked(resId, start, end)) return { conflict: true };
+
+  const total = svc.price;
+  const booking = {
+    id: "LEISH-" + Math.random().toString(36).slice(2,8).toUpperCase(),
+    actor, resourceId: resId, resourceName: resourceName || (res && res.name), service: svc.name,
+    start, end, total, paid: 0, status: "payment_required", createdAt: Date.now(),
+  };
+  state.bookings.push(booking);
+  log(`${actor} → ${svc.name} · ${resourceName || (res && res.name)} · ${fmtDT(state.tz, start)} · ${fmtMoney(total)} · status=payment_required`, "ok");
+  return { booking };
+}
+
+function pay(){
+  if (!(w.dateKey && w.slotStart)) return;
+  w.busy = true; renderWidget();
+  const svc = SERVICES[w.svc];
+  const res = state.resources.find(r=>r.id===w.res);
+  const t0 = Date.now();
+  setTimeout(() => {
+    // book (idempotency + advisory lock simulated by re-check)
+    const attempt = bookTransaction("You", svc.id, w.res, w.slotStart, res && res.name);
+    if (attempt.conflict){
+      w.busy = false;
+      log("⛔ conflict — that time was just taken (another customer won the slot)", "err");
+      alert("That time was just taken — please pick another slot.");
+      w.dateKey = null; w.slotStart = null; renderAll();
+      return;
+    }
+    const bk = attempt.booking;
+    const total = bk.total;
+    const d = depositFor(total);
+    let paid = 0, ptype = "full";
+    if (w.payOpt === "deposit" && d > 0 && d < total){ paid = d; ptype = "deposit"; }
+    else { paid = total; ptype = "full"; }
+    // simulate Billplz redirect + webhook
+    state.bookings.forEach(b => { b.justPaid = false; });
+    bk.paid = paid;
+    bk.status = ptype === "deposit" ? "paid_deposit" : "paid_full";
+    bk.justPaid = true;
+    log(`Billplz webhook → ${fmtMoney(paid)} received (${ptype}) · booking ${bk.id} → ${bk.status}`, "ok");
+    if (state.autoConfirm){
+      bk.status = "confirmed";
+      log(`auto-confirm on → booking ${bk.id} confirmed`, "ok");
+    } else {
+      log(`booking ${bk.id} awaiting studio confirmation`);
+    }
+    w.paid = true; w.busy = false;
+    persist(); renderWidget();
+  }, 350);
+}
+
+/** Simulate two customers racing for the same slot — shows the advisory-lock
+ *  behaviour: exactly one wins, the other gets a 409 + next alternatives. */
+function runRace(){
+  if (!(w.dateKey && w.slotStart)) return;
+  if (w.paid){ alert("Reset the booking first (Book another appointment)."); return; }
+  const svc = SERVICES[w.svc];
+  const res = state.resources.find(r=>r.id===w.res);
+  const start = w.slotStart;
+  const resourceName = res && res.name;
+  const t0 = Date.now();
+
+  log("════ double-booking race ════", "dim");
+  log(`two customers both saw "${fmtTimeInTz(state.tz,start)}" open on ${resourceName} and submit simultaneously…`, "dim");
+
+  setTimeout(() => {
+    // customer A wins the advisory lock first
+    const a = bookTransaction("Customer A", svc.id, w.res, start, resourceName);
+    if (a.conflict){ log("A: conflict (shouldn’t happen first)", "err"); return; }
+    log(`Customer A → booked ${fmtDT(state.tz, a.booking.start)} ✓ (advisory lock held, then re-checked availability)`, "ok");
+
+    // customer B now acquires the lock — re-check sees A's booking → 409
+    setTimeout(() => {
+      const b = bookTransaction("Customer B", svc.id, w.res, start, resourceName);
+      if (b.conflict){
+        log(`Customer B → 409 CONFLICT: "Time slot is no longer available"`, "err");
+        // alternatives: next 3 open starts after the requested one
+        const alt = computeSlotsForDate(res, epochPartsInTz(state.tz,start).y, epochPartsInTz(state.tz,start).mo, epochPartsInTz(state.tz,start).d, svc.duration)
+          .filter(o => o.start > start).slice(0,3);
+        if (alt.length) log(`    alternatives offered: ${alt.map(o=>fmtTimeInTz(state.tz,o.start)).join(", ")}`, "dim");
+        else log("    alternatives: none later that day", "dim");
+      } else {
+        log("B: unexpected success", "err");
+      }
+      persist();
+      // A's booking occupies the slot: refresh view so the chosen slot disappears
+      w.dateKey = null; w.slotStart = null;
+      renderAll();
+      log(`(refresh the widget — the raided slot is now occupied by Customer A's pending booking)`, "dim");
+    }, 250);
+  }, 150);
+}
+
+function resetDemo(){
+  if (!confirm("Reset all demo data (settings, bookings, log)?")) return;
+  state = seed(); state.events = [];
+  try { localStorage.removeItem(LS); } catch(e){}
+  w = { svc:0, res:null, viewY:null, viewM:null, dateKey:null, slotStart:null, step:0, payOpt:"full", busy:false, paid:false };
+  syncConfigToForm(); widgetInit(); renderAll();
+  log("demo reset", "dim");
+}
+
+function renderAll(){ persist(); renderResources(); renderWindows(); renderBlocked(); renderWidget(); }
+
+// ---------- boot ----------
+document.addEventListener("DOMContentLoaded", () => {
+  renderTzSelect();
+  renderDaySelect();
+  // bind config change listeners
+  ["cfg-tz","cfg-style","cfg-grid","cfg-buffer","cfg-advance","cfg-horizon","cfg-depmode","cfg-depamt","cfg-allowcancel","cfg-autoconfirm"]
+    .forEach(id => $(id).addEventListener("change", onConfigChange));
+  ["win-start","win-end"].forEach(id => $(id).addEventListener("change", onConfigChange));
+  syncConfigToForm();
+  refillSelects();
+  widgetInit();
+  renderAll();
+  const nowTz = epochPartsInTz(state.tz, now());
+  log(`engine ready · timezone ${state.tz} · local now ${fmtTimeInTz(state.tz, now())} · ${state.resources.length} resources · ${state.windows.length} weekly windows`, "ok");
+});
+</script>
+</body>
+</html>

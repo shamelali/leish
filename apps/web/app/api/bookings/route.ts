@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { getSql } from "@/lib/db/postgres";
 import { getSupabaseSsrClient } from "@/lib/supabase/ssr";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { bookingSupabaseService } from "@/lib/services/booking-supabase";
@@ -24,10 +25,43 @@ interface BookingPayload {
   totalAmountMyr: number;
 }
 
+/** Engine-based booking (studio booking engine): created against a computed
+ *  time interval (startTs) instead of a pre-materialised availability slot. */
+interface EngineBookingPayload extends Record<string, unknown> {
+  customerId: string;
+  providerId: string;
+  serviceId?: string; // uuid or service NAME (resolved server-side)
+  startTs: string;
+  timezone?: string;
+  resourceId?: string;
+  notes?: string;
+  address?: string;
+  totalAmountMyr?: number;
+  durationMinutes?: number;
+  priceMyr?: number;
+  idempotencyKey?: string;
+}
+
+interface EngineBookResult {
+  ok: boolean;
+  duplicate?: boolean;
+  booking_id?: string;
+  total_amount_myr?: number;
+  deposit_mode?: string;
+  deposit_amount_myr?: number;
+  error?: string;
+  conflict?: boolean;
+  alternatives?: { resource_id: string; start_ts: string; end_ts: string }[];
+}
+
 interface PatchPayload {
   bookingId: string;
   action: "confirm" | "cancel" | "complete" | "refund" | "reschedule";
   slotId?: string;
+}
+
+function isEnginePayload(payload: Record<string, unknown>): payload is EngineBookingPayload {
+  return typeof payload.startTs === "string" && payload.startTs.length > 0;
 }
 
 async function resolveAndCreateBooking(payload: BookingPayload) {
@@ -39,6 +73,75 @@ async function resolveAndCreateBooking(payload: BookingPayload) {
   }
   const booking = await bookingSupabaseService.create({ ...payload, serviceId: resolvedServiceId });
   return { booking };
+}
+
+/** Creates an engine booking via public.book_appointment() (atomic,
+ *  conflict-safe). The service reference may be a uuid or a service name. */
+async function createEngineBooking(payload: EngineBookingPayload) {
+  if (!payload.customerId || !payload.providerId) {
+    return NextResponse.json({ ok: false, error: "Missing customerId or providerId" }, { status: 400 });
+  }
+  const start = new Date(payload.startTs);
+  if (Number.isNaN(start.getTime())) {
+    return NextResponse.json({ ok: false, error: "Invalid startTs" }, { status: 400 });
+  }
+
+  let serviceId: string | null = null;
+  let durationMinutes: number | null = payload.durationMinutes ?? null;
+  let priceMyr: number | null = payload.priceMyr ?? null;
+  if (payload.serviceId) {
+    const resolved = await bookingSupabaseService.resolveServiceId(payload.providerId, payload.serviceId);
+    if (!resolved) {
+      return NextResponse.json({ ok: false, error: "Service not found for provider" }, { status: 400 });
+    }
+    serviceId = resolved;
+    durationMinutes = null;
+    priceMyr = null;
+  }
+  if (!serviceId && (durationMinutes === null || durationMinutes <= 0)) {
+    return NextResponse.json({ ok: false, error: "A service or durationMinutes is required" }, { status: 400 });
+  }
+
+  try {
+    const sql = getSql();
+    const [row] = await sql<{ r: EngineBookResult }[]>`
+      select public.book_appointment(
+        ${payload.customerId},
+        ${payload.providerId},
+        ${serviceId},
+        ${payload.resourceId ?? null},
+        ${start.toISOString()},
+        ${payload.timezone ?? null},
+        ${durationMinutes},
+        ${priceMyr},
+        ${payload.notes ?? null},
+        ${payload.idempotencyKey ?? null},
+        'payment_required'
+      ) as r
+    `;
+    const r = row?.r;
+    if (!r?.ok) {
+      return NextResponse.json(
+        { ok: false, error: r?.error || "Booking failed", conflict: r?.conflict, alternatives: r?.alternatives },
+        { status: r?.conflict ? 409 : 400 },
+      );
+    }
+    const bookingId = r.booking_id!;
+    Promise.all([
+      notifyProviderOnBooking(bookingId).catch((e) => console.error("Provider notification failed:", bookingId, e)),
+    ]);
+    return NextResponse.json({
+      ok: true,
+      bookingId,
+      duplicate: r.duplicate ?? false,
+      totalAmountMyr: r.total_amount_myr,
+      depositMode: r.deposit_mode,
+      depositAmountMyr: r.deposit_amount_myr,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Booking failed";
+    return NextResponse.json({ ok: false, error: message }, { status: 400 });
+  }
 }
 
 export async function POST(req: Request) {
@@ -58,6 +161,10 @@ export async function POST(req: Request) {
   }
 
   try {
+    if (isEnginePayload(payload as unknown as Record<string, unknown>)) {
+      return await createEngineBooking(payload as unknown as EngineBookingPayload);
+    }
+
     const result = await resolveAndCreateBooking(payload);
     if ("error" in result) return result.error;
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getSql } from "@/lib/db/postgres"
 import { getSupabaseSsrClient } from "@leish/shared/lib/auth/ssr"
+import { engineHasWindows, fetchComputedSlots } from "@/lib/services/studio-engine"
 
 const THIRTY_MINUTES_MS = 30 * 60 * 1000
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
@@ -13,10 +14,45 @@ function formatSlotLabel(iso: string) {
   })
 }
 
+function formatSlotLabelTz(iso: string, tz: string) {
+  return new Date(iso).toLocaleTimeString("en-US", {
+    timeZone: tz,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  })
+}
+
+/**
+ * GET /api/availability
+ *
+ * Availability for a provider. Runs in one of two modes:
+ *
+ *  - ENGINE mode (studio has availability_windows): open times are COMPUTED by
+ *    public.get_available_slots() from weekly windows, service durations,
+ *    buffers, blocked periods and existing bookings. Response rows:
+ *      { resourceId, resourceName, resourceKind, startTs, endTs,
+ *        durationMinutes, priceMyr, label }
+ *
+ *  - LEGACY mode (no windows yet): pre-materialised 30-minute
+ *    availability_slots rows, kept for backwards compatibility while a studio
+ *    migrates. Response rows:
+ *      { id, slot, startsAt, endsAt, available }
+ *
+ * Query params: providerId (required), date (YYYY-MM-DD), serviceId,
+ * resourceId, durationMinutes, priceMyr, timezone, mode=engine|legacy
+ */
 export async function GET(req: Request) {
   const url = new URL(req.url)
   const providerId = url.searchParams.get("providerId")
   const dateKey = url.searchParams.get("date")
+  const serviceId = url.searchParams.get("serviceId")
+  const resourceId = url.searchParams.get("resourceId")
+  const timezoneParam = url.searchParams.get("timezone")
+  const durationRaw = url.searchParams.get("durationMinutes")
+  const priceRaw = url.searchParams.get("priceMyr")
+  const forcedMode = url.searchParams.get("mode")
+
   if (!providerId) {
     return NextResponse.json({ error: "Missing providerId" }, { status: 400 })
   }
@@ -28,6 +64,76 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Database not configured" }, { status: 503 })
   }
 
+  const engineActive = await engineHasWindows(sql, providerId)
+  const useEngine =
+    forcedMode !== "legacy" &&
+    (forcedMode === "engine" || engineActive) &&
+    // Provider dashboards call without a date/service to list legacy rows —
+    // keep the legacy array shape for those calls.
+    (Boolean(dateKey) || Boolean(serviceId) || Boolean(resourceId) || Boolean(durationRaw))
+
+  if (useEngine) {
+    const [settings] = await sql<{
+      timezone: string
+      deposit_mode: string | null
+      deposit_amount: string | null
+    }[]>`
+      select timezone, deposit_mode, deposit_amount
+      from public.studio_settings where provider_id = ${providerId}
+    `
+    // Caller-provided timezone wins; otherwise use the studio timezone.
+    const tz = timezoneParam || settings?.timezone || "Asia/Kuala_Lumpur"
+    const depositMode = settings?.deposit_mode ?? "none"
+    const depositAmountMyr = Math.ceil(Number(settings?.deposit_amount ?? 0))
+
+    const todayInTz = new Date().toLocaleDateString("en-CA", { timeZone: tz })
+    const durationMinutes = durationRaw ? Number.parseInt(durationRaw, 10) : null
+    const priceMyr = priceRaw ? Number.parseInt(priceRaw, 10) : null
+    const dateKeyResolved = dateKey || todayInTz
+
+    // Without a service (or explicit duration) there is nothing to compute.
+    if (!serviceId && !durationRaw) {
+      return NextResponse.json({
+        mode: "engine",
+        timezone: tz,
+        date: dateKeyResolved,
+        requiresService: true,
+        depositMode,
+        depositAmountMyr,
+        slots: [],
+      })
+    }
+
+    const slots = await fetchComputedSlots(sql, {
+      providerId,
+      serviceId,
+      resourceId,
+      date: dateKeyResolved,
+      timezone: tz,
+      durationMinutes,
+      priceMyr,
+    })
+
+    return NextResponse.json({
+      mode: "engine",
+      timezone: tz,
+      date: dateKeyResolved,
+      depositMode,
+      depositAmountMyr,
+      slots: slots.map((s) => ({
+        resourceId: s.resourceId,
+        resourceName: s.resourceName,
+        resourceKind: s.resourceKind,
+        startTs: s.startTs.toISOString(),
+        endTs: s.endTs.toISOString(),
+        durationMinutes: s.durationMinutes,
+        priceMyr: s.priceMyr,
+        label: formatSlotLabelTz(s.startTs.toISOString(), tz),
+      })),
+    })
+  }
+
+  // ---- LEGACY mode ------------------------------------------------------
   let rows
   if (dateKey) {
     const rawRows = await sql<{
@@ -56,9 +162,14 @@ export async function GET(req: Request) {
       order by starts_at
     `
   }
-  return NextResponse.json(rows)
+  return NextResponse.json({ mode: "legacy", rows })
 }
 
+/**
+ * POST /api/availability  — LEGACY: create a 30-minute availability slot row.
+ * Deprecated for studios using the engine; kept so existing integrations keep
+ * working. Studio schedule editors should use /api/studio/schedule instead.
+ */
 function parseAvailabilityPayload(raw: unknown): { providerId: string; startsAt: string; endsAt: string } | null {
   const payload = raw as Record<string, unknown>
   const providerId = (payload.providerId || payload.provider_id) as string | undefined

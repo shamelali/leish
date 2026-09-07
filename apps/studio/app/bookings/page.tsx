@@ -55,6 +55,9 @@ export default function BookingsPage() {
   const resolveStatus = useCallback((action: string, currentStatus: string) => {
     if (action === "cancel") return "canceled"
     if (action === "confirm") return "confirmed"
+    if (action === "complete") return "completed"
+    if (action === "refund") return "refunded"
+    if (action === "no_show") return "no_show"
     return currentStatus
   }, [])
 

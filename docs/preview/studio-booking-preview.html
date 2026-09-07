@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Leish — Studio Booking System preview</title>
+<style>
+  :root{
+    --bg:#f7f6f2; --card:#ffffff; --ink:#1c1917; --muted:#78716c;
+    --line:#e7e5e4; --line2:#d6d3d1; --accent:#0d9488; --accent-ink:#ffffff;
+    --accent-soft:#ccfbf1; --destructive:#dc2626; --soft:#f5f5f4;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  .eyebrow{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  h1.serif,h2.serif,h3.serif{font-family:Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:.1px;margin:0}
+  .muted{color:var(--muted)} .small{font-size:12.5px} .tiny{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  .bar{background:#1c1917;color:#f5f5f4;padding:14px 0}
+  .bar .inner{display:flex;align-items:center;gap:14px}
+  .logo{font-family:Georgia,serif;font-size:20px;font-weight:700}
+  .logo b{color:#5eead4}
+  .inner{max-width:1120px;margin:0 auto;padding:0 22px}
+  section{padding:40px 0}
+  .titleblock{margin-bottom:18px}
+  .titleblock p{margin:6px 0 0}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 4px}
+  .pill{border:1px solid var(--line2);border-radius:999px;padding:8px 15px;font-size:13.5px;background:#fff;text-decoration:none;color:var(--ink)}
+  .pill.on{border-color:var(--accent);background:var(--accent-soft);color:#0f766e;font-weight:600}
+  .card{background:var(--card);border:1px solid var(--line);padding:24px}
+  .card + .card{margin-top:18px}
+  .grid{display:grid;gap:18px}
+  .g2{grid-template-columns:1.05fr 1.35fr}
+  @media(max-width:900px){.g2{grid-template-columns:1fr}}
+  .banner{border:1px solid #99f6e4;background:#f0fdfa;border-radius:6px;padding:10px 14px;font-size:13.5px;margin-bottom:16px}
+  .banner b{color:#0f766e}
+  .fields{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  @media(max-width:900px){.fields{grid-template-columns:repeat(2,1fr)}}
+  .field label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:6px;font-weight:600}
+  .ctrl{width:100%;border:1px solid var(--line2);background:#fff;border-radius:6px;padding:8px 10px;font-size:13.5px;color:var(--ink)}
+  .btn{border-radius:6px;padding:9px 16px;font-size:13.5px;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+  .btn.block{width:100%}
+  .btn.ghost{border-color:var(--line2);background:#fff;color:var(--ink)}
+  .btn.danger{border-color:#fca5a5;background:#fff;color:var(--destructive)}
+  .btn[disabled]{opacity:.45;cursor:not-allowed}
+  .rowline{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;border-top:1px solid var(--line);padding:12px 0}
+  .daycol{width:96px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+  .chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line2);border-radius:999px;padding:4px 12px;font-size:12.5px;background:#fff}
+  .chip .x{color:var(--muted);cursor:pointer;font-size:15px;line-height:1}
+  .chip .x:hover{color:var(--destructive)}
+  .chip .for{color:var(--muted);font-size:11px}
+  .listitem{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:6px;padding:9px 13px;margin-top:8px;font-size:13.5px;background:#fff}
+  .tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;background:#f0efed;color:var(--muted);border-radius:999px;padding:3px 8px}
+  .rulegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+  @media(max-width:900px){.rulegrid{grid-template-columns:1fr 1fr}}
+  .checks{display:flex;flex-direction:column;gap:10px;margin-top:16px;font-size:13.5px}
+  .checks label{display:flex;gap:9px;align-items:center}
+  .checks input{accent-color:var(--accent);width:16px;height:16px}
+  .save{margin-top:18px}
+  /* booking widget */
+  .widget{border:1px solid var(--line);background:#fff;padding:26px}
+  .stephead{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:20px 0 2px;display:flex;gap:8px;align-items:center}
+  .stephead .n{display:inline-flex;width:18px;height:18px;border-radius:99px;background:var(--accent);color:#fff;align-items:center;justify-content:center;font-size:11px}
+  .servicebtn{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--line2);background:#fff;border-radius:8px;padding:12px 15px;margin-top:9px;cursor:pointer;text-align:left}
+  .servicebtn.on{border-color:var(--accent);background:var(--accent-soft)}
+  .servicebtn .nm{font-weight:600;font-size:14px}
+  .servicebtn .dur{font-size:12px;color:var(--muted)}
+  .price{font-family:Georgia,serif;font-size:17px}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:10px;text-align:center}
+  .dow{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:4px 0}
+  .day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:6px;color:var(--ink)}
+  .day.past{color:#d6d3d1}
+  .day.today{box-shadow:inset 0 0 0 1px var(--line2)}
+  .day.sel{background:var(--ink);color:#fff}
+  .slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+  .slot{border:1px solid var(--line2);padding:11px 4px;text-align:center;font-size:12px;border-radius:4px;background:#fff;cursor:pointer}
+  .slot.taken{background:var(--soft);color:#d6d3d1;text-decoration:line-through;cursor:not-allowed}
+  .slot.sel{border-color:var(--ink);background:var(--ink);color:#fff}
+  .footnote{font-size:12px;color:var(--muted);margin-top:12px}
+  .payopt{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid var(--line2);border-radius:8px;padding:13px 15px;margin-top:9px;background:#fff;cursor:pointer;text-align:left}
+  .payopt.on{border-color:var(--accent);background:var(--accent-soft)}
+  .payopt .amt{font-family:Georgia,serif;font-size:17px}
+  .billstrip{display:flex;gap:10px;align-items:center;border:1px solid var(--accent);background:var(--accent-soft);border-radius:8px;padding:11px 15px;margin-top:14px;font-size:13px}
+  .dots{display:inline-block;width:8px;height:8px;border-radius:99px;background:#fff;box-shadow:0 0 0 1px var(--accent)}
+  .cta{display:flex;gap:10px;margin-top:16px}
+  .topline{display:flex;justify-content:space-between;align-items:baseline;gap:14px}
+  .note{font-size:12px;color:var(--muted);border-left:3px solid #14b8a6;background:#f0fdfa;padding:8px 14px;margin-top:14px;border-radius:0 6px 6px 0}
+</style>
+</head>
+<body>
+
+<header class="bar"><div class="inner">
+  <span class="logo">Leish<b>!</b></span>
+  <span class="small muted" style="color:#a8a29e">Studio Booking Engine — static UI preview (no database)</span>
+</div></header>
+
+<!-- ═══════════════════ 1. STUDIO DASHBOARD ═══════════════════ -->
+<section>
+  <div class="inner">
+    <div class="titleblock">
+      <p class="eyebrow">Dashboard</p>
+      <h1 class="serif" style="font-size:34px">Schedule &amp; Booking Rules</h1>
+      <p class="muted">Weekly opening hours, closures, bookable resources and per-studio booking rules.</p>
+      <nav class="pills">
+        <a class="pill" href="#">Overview</a><a class="pill" href="#">Bookings</a><a class="pill" href="#">Payments</a>
+        <a class="pill" href="#">Reviews</a><a class="pill" href="#">Profile</a><a class="pill on" href="#">Schedule</a>
+      </nav>
+    </div>
+
+    <div class="banner"><b>Engine schedule active.</b>&nbsp; Customers book any duration against your weekly windows — availability is computed live, so there are no manual 30-minute slots to maintain.</div>
+
+    <div class="card">
+      <h3 class="serif" style="font-size:19px">Weekly schedule</h3>
+      <p class="small muted" style="margin:4px 0 14px">Recurring opening hours. “All resources” applies to the whole studio; pick a specific room / artist for its own hours.</p>
+      <div class="fields">
+        <div class="field"><label>Resource</label><select class="ctrl"><option>All resources (whole studio)</option><option>Studio A — Main hall</option><option>Studio B — Bridal suite</option><option>Artist #2</option></select></div>
+        <div class="field"><label>Day</label><select class="ctrl"><option>Tuesday</option><option>Wednesday</option><option>Thursday</option></select></div>
+        <div class="field"><label>Opens</label><input class="ctrl" type="time" value="09:00"/></div>
+        <div class="field"><label>Closes</label><input class="ctrl" type="time" value="17:00"/></div>
+        <div class="field" style="display:flex;align-items:flex-end"><button class="btn block">Add hours</button></div>
+      </div>
+
+      <div class="rowline"><span class="daycol">Monday</span>
+        <span class="chip">09:00–18:00 <span class="for">All resources</span> <span class="x">×</span></span>
+        <span class="chip">09:00–18:00 <span class="for">Studio B — Bridal suite</span> <span class="x">×</span></span>
+      </div>
+      <div class="rowline"><span class="daycol">Tuesday</span>
+        <span class="chip">09:00–21:00 <span class="for">All resources</span> <span class="x">×</span></span>
+        <span class="chip">10:00–21:00 <span class="for">Artist #2</span> <span class="x">×</span></span>
+      </div>
+      <div class="rowline"><span class="daycol">Wednesday</span>
+        <span class="chip">09:00–21:00 <span class="for">All resources</span> <span class="x">×</span></span>
+      </div>
+      <div class="rowline"><span class="daycol">Thursday</span>
+        <span class="chip">09:00–18:00 <span class="for">All resources</span> <span class="x">×</span></span>
+      </div>
+      <div class="rowline"><span class="daycol">Friday</span>
+        <span class="chip">09:00–18:00 <span class="for">All resources</span> <span class="x">×</span></span>
+        <span class="chip">18:00–22:00 <span class="for">Studio B — Bridal suite</span> <span class="x">×</span></span>
+      </div>
+      <div class="rowline"><span class="daycol">Saturday</span>
+        <span class="chip">10:00–16:00 <span class="for">All resources</span> <span class="x">×</span></span>
+      </div>
+      <div class="rowline"><span class="daycol">Sunday</span><span class="small muted">Closed</span></div>
+    </div>
+
+    <div class="card">
+      <h3 class="serif" style="font-size:19px">Closed / blocked times</h3>
+      <p class="small muted" style="margin:4px 0 14px">One-off closures — holidays, leave, maintenance, or blocking a single room.</p>
+      <div class="fields" style="grid-template-columns:repeat(4,1fr)">
+        <div class="field"><label>Resource</label><select class="ctrl"><option>All resources (whole studio)</option><option>Studio B — Bridal suite</option></select></div>
+        <div class="field"><label>From</label><input class="ctrl" type="datetime-local" value="2026-09-18T09:00"/></div>
+        <div class="field"><label>To</label><input class="ctrl" type="datetime-local" value="2026-09-18T18:00"/></div>
+        <div class="field"><label>Reason (optional)</label><input class="ctrl" placeholder="e.g. Deepavali"/></div>
+      </div>
+      <div style="margin-top:10px"><button class="btn danger" style="border-color:#fca5a5;color:#dc2626">Block time</button></div>
+      <div class="listitem"><div><b>Mon, 7 Sep, 12:00 PM → 2:00 PM</b><br/><span class="small muted">Studio B — Bridal suite · Maintenance</span></div><button class="btn danger" style="padding:5px 10px;font-size:12px">Remove</button></div>
+      <div class="listitem"><div><b>Fri, 18 Sep, all day</b><br/><span class="small muted">All resources · Deepavali</span></div><button class="btn danger" style="padding:5px 10px;font-size:12px">Remove</button></div>
+    </div>
+
+    <div class="card">
+      <h3 class="serif" style="font-size:19px">Bookable resources</h3>
+      <p class="small muted" style="margin:4px 0 14px">Rooms, artists, chairs — anything a customer can book. “venue” is the whole-studio unit (created automatically).</p>
+      <div class="listitem"><span><span class="tag">venue</span> <b style="margin-left:8px">Glam Studio KL (whole studio)</b></span><button class="btn" style="padding:5px 12px;font-size:12.5px;background:#fff;color:var(--accent)">Hide</button></div>
+      <div class="listitem"><span><span class="tag">room</span> <b style="margin-left:8px">Studio A — Main hall</b></span><span style="display:flex;gap:8px"><button class="btn danger" style="padding:5px 10px;font-size:12px">Delete</button><button class="btn" style="padding:5px 12px;font-size:12.5px;background:#fff;color:var(--accent)">Hide</button></span></div>
+      <div class="listitem"><span><span class="tag">room</span> <b style="margin-left:8px">Studio B — Bridal suite</b> <span class="small muted">(from Rooms gallery)</span></span><span style="display:flex;gap:8px"><button class="btn danger" style="padding:5px 10px;font-size:12px">Delete</button><button class="btn" style="padding:5px 12px;font-size:12.5px;background:#fff;color:var(--accent)">Hide</button></span></div>
+      <div class="listitem"><span><span class="tag">artist</span> <b style="margin-left:8px">Artist #2 — Nurul</b></span><span style="display:flex;gap:8px"><button class="btn danger" style="padding:5px 10px;font-size:12px">Delete</button><button class="btn" style="padding:5px 12px;font-size:12.5px;background:#fff;color:var(--accent)">Hide</button></span></div>
+      <div style="display:flex;gap:10px;align-items:flex-end;margin-top:14px">
+        <div class="field" style="flex:0 0 150px"><label>Kind</label><select class="ctrl"><option>room</option><option>artist</option><option>chair</option></select></div>
+        <div class="field" style="flex:1"><label>Name</label><input class="ctrl" placeholder="e.g. Bridal Suite C / Chair 4"/></div>
+        <button class="btn">Add resource</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="serif" style="font-size:19px">Booking rules</h3>
+      <p class="small muted" style="margin:4px 0 0">Every rule below is stored per studio (studio_settings) and enforced by the booking engine in SQL.</p>
+      <div class="rulegrid">
+        <div class="field"><label>Timezone</label><select class="ctrl"><option>Asia/Kuala_Lumpur</option></select></div>
+        <div class="field"><label>Booking style</label><select class="ctrl"><option>Customers pick a room / resource</option><option>Whole studio (single unit)</option></select></div>
+        <div class="field"><label>Slot interval (min)</label><input class="ctrl" type="number" value="15"/></div>
+        <div class="field"><label>Gap between appts (min)</label><input class="ctrl" type="number" value="15"/></div>
+        <div class="field"><label>Advance notice (min)</label><input class="ctrl" type="number" value="720"/><span class="tiny">12 hours</span></div>
+        <div class="field"><label>Bookable horizon (days)</label><input class="ctrl" type="number" value="90"/></div>
+        <div class="field"><label>Deposit</label><select class="ctrl"><option>Percent</option><option>None</option><option>Fixed (MYR)</option></select></div>
+        <div class="field"><label>Percent (%)</label><input class="ctrl" type="number" value="20"/></div>
+        <div class="field"><label>Free-cancel window (h)</label><input class="ctrl" type="number" value="24"/></div>
+      </div>
+      <div class="checks">
+        <label><input type="checkbox" checked/> Customers may cancel online</label>
+        <label><input type="checkbox"/> Auto-confirm bookings (default: you confirm each request)</label>
+      </div>
+      <div class="save"><button class="btn">Save booking rules</button></div>
+    </div>
+  </div>
+</section>
+
+<div style="border-top:1px solid var(--line)"></div>
+
+<!-- ═══════════════════ 2. CUSTOMER BOOKING WIDGET (marketplace) ═══════════════════ -->
+<section>
+  <div class="inner">
+    <div class="titleblock">
+      <p class="eyebrow">Marketplace · leish.my/studios/glam-studio-kl/book</p>
+      <h1 class="serif" style="font-size:34px">Customer booking widget</h1>
+      <p class="muted">Same flow as <span style="font-family:ui-monospace,monospace">apps/web/components/booking-calendar.tsx</span> — now engine-aware: service → date → <b>computed</b> time slots → studio deposit / full payment via Billplz.</p>
+    </div>
+
+    <div class="grid g2">
+      <!-- aside -->
+      <aside>
+        <div class="card">
+          <p class="eyebrow">Studio Booking</p>
+          <h2 class="serif" style="font-size:28px;margin-top:8px">Book Glam Studio KL</h2>
+          <p class="small muted" style="margin-top:8px">Kuala Lumpur · 4 artists · Secure checkout</p>
+          <p class="small muted">Signature studio for bridal &amp; editorial makeup, with two bookable rooms and resident artists.</p>
+          <p class="small muted" style="margin-top:10px"><b style="color:var(--accent)">Resource picker on:</b> customers choose a room / artist, each with its own weekly hours.</p>
+        </div>
+        <div class="card">
+          <p class="tiny">Before you book</p>
+          <p class="small muted" style="margin:10px 0 0">✔ Real-time availability for every service — pick a time that fits.<br/>✔ Billplz checkout; webhook confirmation is the final source of truth.<br/>✔ 20% deposit option set by the studio (MYR 60 on a MYR 300 bridal trial).</p>
+        </div>
+        <div class="card">
+          <div class="topline"><span class="tiny">Starting from</span><span class="small muted">View Profile →</span></div>
+          <p class="serif" style="font-size:30px;margin:6px 0">MYR 120</p>
+          <p class="small" style="margin:8px 0 0"><b>Bridal Makeup Trial</b> — 120 mins · MYR 300</p>
+          <p class="small muted">Studio B — Bridal suite · Nurul (Artist)</p>
+        </div>
+      </aside>
+
+      <!-- widget -->
+      <div class="widget">
+        <h2 class="serif" style="font-size:22px">Book Glam Studio KL</h2>
+
+        <div class="stephead"><span class="n">1</span> Select a service</div>
+        <button class="servicebtn on"><span><span class="nm">Bridal Makeup Trial</span><br/><span class="dur">120 minutes</span></span><span class="price">MYR 300</span></button>
+        <button class="servicebtn"><span><span class="nm">Editorial Session</span><br/><span class="dur">90 minutes</span></span><span class="price">MYR 450</span></button>
+        <button class="servicebtn"><span><span class="nm">Studio Hourly Rental</span><br/><span class="dur">60 minutes</span></span><span class="price">MYR 120</span></button>
+
+        <div class="stephead"><span class="n">2</span> Pick a room / artist <span class="tiny" style="margin-left:6px">(studio style: room)</span></div>
+        <div class="slots" style="grid-template-columns:repeat(2,1fr)">
+          <div class="slot sel">Studio B — Bridal suite</div>
+          <div class="slot">Studio A — Main hall</div>
+        </div>
+
+        <div class="stephead"><span class="n">3</span> Pick a date</div>
+        <div class="cal">
+          <span class="dow">Su</span><span class="dow">Mo</span><span class="dow">Tu</span><span class="dow">We</span><span class="dow">Th</span><span class="dow">Fr</span><span class="dow">Sa</span>
+          <span></span><span class="day past">31</span>
+          <span class="day past">1</span><span class="day past">2</span><span class="day past">3</span><span class="day past">4</span>
+          <span class="day past">5</span><span class="day today">6</span><span class="day sel">7</span><span class="day">8</span><span class="day">9</span><span class="day">10</span><span class="day">11</span>
+          <span class="day">12</span><span class="day">13</span><span class="day">14</span><span class="day">15</span><span class="day">16</span><span class="day">17</span><span class="day">18</span>
+          <span class="day">19</span><span class="day">20</span><span class="day">21</span><span class="day">22</span><span class="day">23</span><span class="day">24</span><span class="day">25</span>
+          <span class="day">26</span><span class="day">27</span><span class="day">28</span><span class="day">29</span><span class="day">30</span><span class="day">1</span><span class="day">2</span>
+        </div>
+
+        <div class="stephead"><span class="n">4</span> Choose a time <span class="tiny" style="margin-left:6px">computed · 120-min sessions · Asia/Kuala_Lumpur</span></div>
+        <div class="slots">
+          <div class="slot taken">9:00 AM</div>
+          <div class="slot taken">9:15 AM</div>
+          <div class="slot sel">9:30 AM</div>
+          <div class="slot">9:45 AM</div>
+          <div class="slot">10:00 AM</div>
+          <div class="slot">10:15 AM</div>
+          <div class="slot">12:00 PM</div>
+          <div class="slot">12:15 PM</div>
+          <div class="slot">2:00 PM</div>
+          <div class="slot">2:15 PM</div>
+          <div class="slot taken">3:30 PM</div>
+          <div class="slot">4:45 PM</div>
+        </div>
+        <p class="footnote">Starts at 15-minute grid · 15-min cleanup gap between appointments · the 9:00/9:15 slots overlap a pending booking for this room and are therefore hidden.</p>
+
+        <div class="stephead"><span class="n">5</span> Payment</div>
+        <div class="topline" style="margin-top:12px"><span class="tiny">Order summary</span><span class="small muted">Bridal Makeup Trial · Studio B · Tue 7 Sep · 9:30 AM</span></div>
+        <button class="payopt"><span><b style="font-size:14px">Pay Full Amount</b><br/><span class="small muted">One-time payment</span></span><span class="amt">MYR 300</span></button>
+        <button class="payopt on"><span><b style="font-size:14px">Pay Deposit</b><br/><span class="small muted">Studio-set deposit · remaining MYR 240 due on the day</span></span><span class="amt">MYR 60</span></button>
+        <div class="billstrip"><span class="dots"></span><b>Billplz</b> &nbsp;·&nbsp; you will be redirected to pay securely. &nbsp;<span class="small muted">(30% deposit &amp; BNPL options remain on artist bookings)</span></div>
+        <div class="cta">
+          <button class="btn ghost" style="flex:1">Back</button>
+          <button class="btn" style="flex:1">Pay MYR 60 →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="note"><b>Note:</b> this is a static mock of the interfaces implemented in this repo — the studio <b>Schedule &amp; Booking Rules</b> dashboard and the marketplace <b>booking widget</b>. Live previews are running below; DB-backed pages require your Supabase/DB credentials (<code>.env.local</code>) plus applying <code>supabase/migrations/20260907000000_studio_booking_engine.sql</code>.</div>
+  </div>
+</section>
+
+<footer style="background:#1c1917;color:#a8a29e;padding:20px 0;margin-top:30px">
+  <div class="inner small">Leish — Studio Booking System preview · generated from <b>apps/studio/components/schedule-manager.tsx</b>, <b>apps/studio/app/availability/page.tsx</b> and <b>apps/web/components/booking-calendar.tsx</b>.</div>
+</footer>
+</body>
+</html>

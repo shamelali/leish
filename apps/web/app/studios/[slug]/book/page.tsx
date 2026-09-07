@@ -92,7 +92,7 @@ export async function generateMetadata({
 
   return {
     title: `Book ${studio.name} | Leish!`,
-    description: `Book ${studio.name} in ${studio.location}. Choose your service, pick a 30-minute slot, and pay securely with Billplz.`,
+    description: `Book ${studio.name} in ${studio.location}. Choose your service, pick a time that suits you, and pay securely with Billplz.`,
   }
 }
 
@@ -166,7 +166,7 @@ export default async function StudioBookingPage({
                 <div className="mt-4 space-y-4 text-sm text-muted-foreground">
                   <div className="flex gap-3">
                     <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                    <p>Choose from published 30-minute slots only. Same-day and within-24-hour bookings are blocked.</p>
+                    <p>See real-time availability for every service — pick an exact time that fits your schedule.</p>
                   </div>
                   <div className="flex gap-3">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
