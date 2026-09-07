@@ -21,10 +21,14 @@
 --   * public.upsert_studio_settings(...)
 --   * public.studio_has_windows(...)    engine-mode detector for API fallback
 --
--- Double-booking is prevented inside book_appointment via an advisory lock on
--- (provider, resource) + a re-check against computed availability, so no two
--- clients can pass the same check simultaneously. The previous atomic RPC
--- (create_booking_with_lock) stays for legacy slot-based flows.
+-- Double-booking is prevented at the storage layer: the bookings_no_overlap_active
+-- exclusion constraint (see below) rejects any second active booking that
+-- overlaps the same provider+resource window, no matter how two requests
+-- interleave. book_appointment additionally serialises via an advisory lock on
+-- (provider, resource) + a re-check against computed availability so that the
+-- common (non-racing) case fails fast with helpful alternatives. The previous
+-- atomic RPC (create_booking_with_lock) stays for legacy slot-based flows and
+-- is covered by the same constraint because it writes to the same table.
 -- ============================================================================
 
 -- ============================================================================
@@ -355,6 +359,64 @@ exception
   when duplicate_object then null;
 end $$;
 
+-- ----------------------------------------------------------------------------
+-- Hard double-booking guard.
+--
+-- book_appointment also serialises via an advisory lock + post-lock re-check,
+-- but that pattern alone is NOT race-proof: when the RPC runs as a single
+-- autocommit statement, the statement snapshot is taken before the advisory
+-- lock is acquired, so the re-check can still read a slot as free while a
+-- concurrent booking is uncommitted. The real invariant is enforced here, at
+-- the storage layer: two overlapping bookings for the same provider+resource
+-- may never both be active, no matter how the calls interleave.
+-- (create_booking_with_lock — the legacy slot-based RPC — is protected the
+-- same way because it writes to the same table.)
+-- ----------------------------------------------------------------------------
+do $$ begin
+  create extension if not exists btree_gist;
+end $$;
+
+-- retire newer overlapping duplicates (if any exist from before this guard)
+-- so the constraint below can always be installed without data loss: keep the
+-- earliest active booking, cancel the later ones.
+update public.bookings b
+set status = 'canceled', updated_at = now()
+from public.bookings o
+where b.provider_id = o.provider_id
+  and b.resource_id = o.resource_id
+  and b.starts_at is not null and b.ends_at is not null
+  and o.starts_at is not null and o.ends_at is not null
+  and b.status::text not in ('canceled', 'refunded', 'no_show')
+  and o.status::text not in ('canceled', 'refunded', 'no_show')
+  and o.id <> b.id
+  and o.created_at < b.created_at
+  and tstzrange(o.starts_at, o.ends_at + make_interval(mins => coalesce(o.buffer_minutes, 0)))
+      && tstzrange(b.starts_at, b.ends_at + make_interval(mins => coalesce(b.buffer_minutes, 0)));
+
+do $$ begin
+  alter table public.bookings drop constraint if exists bookings_no_overlap_active;
+  alter table public.bookings add constraint bookings_no_overlap_active
+    exclude using gist (
+      provider_id with =,
+      resource_id with =,
+      -- only "live" statuses produce a range; anything else (canceled,
+      -- refunded, no_show, or future states) yields NULL and never conflicts.
+      -- The CASE lists pre-existing enum values only: the constraint can be
+      -- created in the same migration that ADDs the 'no_show' enum value,
+      -- and Postgres forbids using a brand-new enum value in that same
+      -- transaction. No text casts are used, so the expression stays IMMUTABLE.
+      -- NOTE: the buffered window is NOT indexed — `timestamptz + interval`
+      -- is STABLE (timezone-dependent), which index expressions forbid. The
+      -- constraint pins the exact [starts_at, ends_at) occupancy; the buffer
+      -- margin stays enforced by the advisory-lock re-check + availability.
+      (case
+         when status in ('pending', 'payment_required', 'confirmed', 'paid_deposit', 'paid_full')
+              and starts_at is not null and ends_at is not null and resource_id is not null
+         then tstzrange(starts_at, ends_at)
+       end) with &&
+    );
+end $$;
+
 -- ============================================================================
 -- 6. Engine functions
 -- ============================================================================
@@ -517,9 +579,9 @@ begin
   v_duration := p_duration_minutes;
   v_price    := p_price_myr;
   if p_service_id is not null then
-    select duration_minutes, price_myr into v_service
-    from public.services
-    where id = p_service_id and provider_id = p_provider_id and is_active;
+    select s.duration_minutes, s.price_myr into v_service
+    from public.services s
+    where s.id = p_service_id and s.provider_id = p_provider_id and s.is_active;
     if not found then
       raise exception 'Service not found or inactive for this provider';
     end if;
@@ -711,9 +773,9 @@ begin
   v_duration := p_duration_minutes;
   v_price    := p_price_myr;
   if p_service_id is not null then
-    select duration_minutes, price_myr into v_service
-    from public.services
-    where id = p_service_id and provider_id = p_provider_id and is_active;
+    select s.duration_minutes, s.price_myr into v_service
+    from public.services s
+    where s.id = p_service_id and s.provider_id = p_provider_id and s.is_active;
     if not found then raise exception 'Service not found or inactive for this provider'; end if;
     v_duration := v_service.duration_minutes;
     v_price    := v_service.price_myr;
@@ -814,6 +876,28 @@ begin
       return jsonb_build_object(
         'ok', true, 'duplicate', true,
         'booking_id', v_booking_id
+      );
+    when exclusion_violation then
+      -- lost the race to a concurrent booking on the same provider+resource
+      -- (advisory-lock re-check ran on a pre-lock snapshot; the storage-layer
+      --  bookings_no_overlap_active constraint is the authoritative guard)
+      if p_idempotency_key is not null then
+        select id into v_booking_id
+        from public.bookings
+        where customer_id = p_customer_id and idempotency_key = p_idempotency_key
+        limit 1;
+        if v_booking_id is not null then
+          return jsonb_build_object(
+            'ok', true, 'duplicate', true,
+            'booking_id', v_booking_id
+          );
+        end if;
+      end if;
+      return jsonb_build_object(
+        'ok', false,
+        'error', 'Time slot is no longer available',
+        'conflict', true,
+        'alternatives', '[]'::jsonb
       );
   end;
 
@@ -1014,14 +1098,20 @@ begin
   end case;
 
   -- apply -------------------------------------------------------------------
-  update public.bookings
-  set status = v_next,
-      updated_at = now(),
-      starts_at = case when p_event = 'reschedule' then v_new_start else starts_at end,
-      ends_at   = case when p_event = 'reschedule' then v_new_start + v_new_dur else ends_at end,
-      resource_id = case when p_event = 'reschedule' then v_new_resource else resource_id end,
-      slot_id     = case when p_event = 'reschedule' then null else slot_id end
-  where id = p_booking_id;
+  begin
+    update public.bookings
+    set status = v_next,
+        updated_at = now(),
+        starts_at = case when p_event = 'reschedule' then v_new_start else starts_at end,
+        ends_at   = case when p_event = 'reschedule' then v_new_start + v_new_dur else ends_at end,
+        resource_id = case when p_event = 'reschedule' then v_new_resource else resource_id end,
+        slot_id     = case when p_event = 'reschedule' then null else slot_id end
+    where id = p_booking_id;
+  exception
+    when exclusion_violation then
+      -- another booking claimed the target window between our check and update
+      raise exception 'Requested time is not available';
+  end;
 
   -- free a legacy pre-materialised slot when the time is released
   if v_slot_free and v_b.slot_id is not null then
