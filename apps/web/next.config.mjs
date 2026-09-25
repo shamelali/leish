@@ -8,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["@leish/shared"],
-  outputFileTracingRoot: path.join(__dirname, "../.."),
+  outputFileTracingRoot: __dirname,
   images: {
     remotePatterns: [
       {

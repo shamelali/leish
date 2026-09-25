@@ -21,7 +21,7 @@ const nextConfig = {
     optimizeCss: true,
   },
   transpilePackages: ["@leish/shared"],
-  outputFileTracingRoot: path.join(__dirname, "../.."),
+  outputFileTracingRoot: __dirname,
   turbopack: {
     root: __dirname,
     resolveAlias: {

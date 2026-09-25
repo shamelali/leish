@@ -5,7 +5,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const nextConfig = {
   transpilePackages: ["@leish/shared"],
-  outputFileTracingRoot: path.join(__dirname, "../.."),
+  outputFileTracingRoot: __dirname,
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/**" },
