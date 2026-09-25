@@ -23,7 +23,7 @@ const nextConfig = {
   transpilePackages: ["@leish/shared"],
   outputFileTracingRoot: path.join(__dirname, "../.."),
   turbopack: {
-    root: path.join(__dirname, "../.."),
+    root: __dirname,
     resolveAlias: {
       "@leish/shared": path.join(__dirname, "../../packages/shared"),
       "@leish/server": path.join(__dirname, "../../packages/server"),
