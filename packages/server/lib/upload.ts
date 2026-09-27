@@ -9,7 +9,7 @@ import {
   generateKey,
   STORAGE_PREFIXES,
   objectExists,
-} from "@/lib/storage";
+} from "./storage";
 
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB

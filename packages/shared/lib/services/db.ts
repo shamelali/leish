@@ -1,4 +1,4 @@
-import { getSupabaseServerClient } from "../auth/server"
+import { getSupabaseServerClient } from "../auth/supabase.server"
 
 export async function getUser() {
   const supabase = getSupabaseServerClient()

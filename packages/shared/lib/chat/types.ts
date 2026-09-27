@@ -134,3 +134,42 @@ export const DEFAULT_CHAT_CONFIG: ChatConfig = {
   rateLimitPerMinute: 30,
   rateLimitBurst: 5,
 };
+
+// ── Hook Types ────────────────────────────────────────────────────────────────
+
+export interface ChatError extends Error {
+  code?: string;
+}
+
+export interface UseChatOptions {
+  bookingId: string;
+  token: string;
+  wsUrl: string;
+  onMessage?: (message: ChatMessage) => void;
+  onPresenceChange?: (users: UserPresence[]) => void;
+  onTyping?: (typing: TypingUpdate) => void;
+  onError?: (error: Error) => void;
+  onConnect?: () => void;
+  onDisconnect?: (reason: string) => void;
+  autoConnect?: boolean;
+  reconnectAttempts?: number;
+  reconnectDelay?: number;
+  maxHistoryMessages?: number;
+}
+
+export interface UseChatReturn {
+  status: "connecting" | "connected" | "disconnected" | "error";
+  error: Error | null;
+  messages: ChatMessage[];
+  hasMoreHistory: boolean;
+  isLoadingHistory: boolean;
+  users: UserPresence[];
+  currentUser: UserPresence | null;
+  typingUsers: UserPresence[];
+  sendMessage: (body: string) => Promise<ChatMessage | null>;
+  sendTyping: (isTyping: boolean) => void;
+  markRead: (messageId: string) => void;
+  loadMoreHistory: () => Promise<void>;
+  reconnect: () => void;
+  disconnect: () => void;
+}

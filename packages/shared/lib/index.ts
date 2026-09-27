@@ -39,23 +39,20 @@ export { trackEvent, trackArtistView, trackSearch, trackBookingForm } from "./ag
 export {
   SEED_ARTISTS,
   SEED_STUDIOS,
-  MALAYSIA_STATES,
   AREAS_BY_STATE,
   BRIDAL_EVENTS,
   NON_BRIDAL_EVENTS,
 } from "./data"
 
 // Chat components
-export * from "./chat"
+export { useChat, ChatInterface } from "./chat"
+export type { ChatMessage, UserPresence, UseChatOptions, UseChatReturn, ChatError, ChatConfig } from "./chat"
 
 // CSP utilities
 export * from "./csp"
 
 // Pagination utilities
 export { paginate, type PaginationParams, type PaginatedResult } from "./pagination"
-
-// Storage utilities
-export { storage, type StorageAdapter } from "./storage"
 
 // Theme
 export { ThemeProvider, useTheme } from "./theme"
@@ -66,5 +63,5 @@ export { getTurnstileToken } from "./turnstile-token"
 // Types
 export type * from "./types"
 
-// Utils
-export { formatRM, pluralize, cn } from "./utils"
+// Utils (additional)
+export { formatRM, pluralize, catalogPath, catalogImageSrc } from "./utils"
