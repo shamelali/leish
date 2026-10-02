@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { Loader2, ShieldCheck, Copy, Check } from "lucide-react"
+import { ShieldCheck, Copy, Check } from "lucide-react"
 
 export function MFAEnroll() {
   const { data: session, update } = useSession()

@@ -31,7 +31,8 @@ export interface EmailMessage {
   html?: string;
 }
 
-export type EmailProvider = "dev" | "resend" | "postmark" | "brevo";
+export type { EmailProvider } from "./integrations";
+import type { EmailProvider } from "./integrations";
 
 /**
  * Connector names for Vercel Connect API-key connectors.

@@ -1,23 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { ShieldCheck, ShieldOff, Loader2, Trash2 } from "lucide-react"
 
 export function MFAStatus() {
-  const { data: session, update } = useSession()
+  const { data: session, status, update } = useSession()
   const router = useRouter()
-  const [mfaEnabled, setMfaEnabled] = useState(false)
-  const [loading, setLoading] = useState(true)
+  // Derived from the session; the local override reflects a successful
+  // unenroll before the session refreshes.
+  const [mfaOverride, setMfaEnabled] = useState<boolean | null>(null)
+  const mfaEnabled = mfaOverride ?? Boolean((session?.user as { mfaEnabled?: boolean } | undefined)?.mfaEnabled)
+  const loading = status === "loading"
   const [error, setError] = useState<string | null>(null)
   const [removing, setRemoving] = useState(false)
-
-  useEffect(() => {
-    const mfa = (session?.user as any)?.mfaEnabled
-    setMfaEnabled(mfa ?? false)
-    setLoading(false)
-  }, [session])
 
   const handleRemove = async () => {
     if (!confirm("Disable two-factor authentication? Your account will be less secure.")) return

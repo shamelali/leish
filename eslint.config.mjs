@@ -11,6 +11,7 @@ const config = [
   {
     ignores: [
       "**/.next/**",
+      "**/coverage/**",
       "node_modules/**",
       ".vercel/**",
       "supabase/functions/**",
@@ -26,6 +27,14 @@ const config = [
       "@typescript-eslint/ban-ts-comment": "warn",
       "security/detect-non-literal-fs-filename": "off",
       "security/detect-object-injection": "off",
+    },
+  },
+  {
+    // Style-only rule; table-driven rewrites of every multi-case test add churn
+    // without catching bugs.
+    files: ["**/*.test.ts", "**/*.test.tsx"],
+    rules: {
+      "sonarjs/parameterized-tests": "off",
     },
   },
 ]

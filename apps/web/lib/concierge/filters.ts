@@ -107,8 +107,9 @@ export function parseLocation(text: string): string | null {
 
 export function parseBudget(text: string): { min: number; max: number } | null {
   // Match patterns like "MYR 300", "RM300", "$500", "300-600", "under 400"
-  // eslint-disable-next-line sonarjs/slow-regex
-  const rangeMatch = text.match(/(?:myr|rm|\$)?\s*(\d+)\s*[-–to]+\s*(?:myr|rm|\$)?\s*(\d+)/i)
+  // Bounded whitespace keeps these linear; the separator is "-", "–" or the
+  // word "to" (the old `[-–to]+` class also matched "too", "oo", "t"...).
+  const rangeMatch = text.match(/(?:myr|rm|\$)?[ \t]{0,3}(\d{1,6})[ \t]{0,3}(?:-|–|to\b)[ \t]{0,3}(?:myr|rm|\$)?[ \t]{0,3}(\d{1,6})/i)
   if (rangeMatch) {
     return {
       min: Math.min(parseInt(rangeMatch[1]), parseInt(rangeMatch[2])),
@@ -116,15 +117,13 @@ export function parseBudget(text: string): { min: number; max: number } | null {
     }
   }
 
-  // eslint-disable-next-line sonarjs/slow-regex
-  const underMatch = text.match(/under\s*(?:myr|rm|\$)?\s*(\d+)/i)
+  const underMatch = text.match(/under[ \t]{0,3}(?:myr|rm|\$)?[ \t]{0,3}(\d{1,6})/i)
   if (underMatch) return { min: 0, max: parseInt(underMatch[1]) }
 
-  // eslint-disable-next-line sonarjs/slow-regex
-  const aboveMatch = text.match(/(?:above|over|from|min|starting)\s*(?:myr|rm|\$)?\s*(\d+)/i)
+  const aboveMatch = text.match(/(?:above|over|from|min|starting)[ \t]{0,3}(?:myr|rm|\$)?[ \t]{0,3}(\d{1,6})/i)
   if (aboveMatch) return { min: parseInt(aboveMatch[1]), max: 99999 }
 
-  const singleMatch = text.match(/(?:myr|rm|\$)\s*(\d+)/i)
+  const singleMatch = text.match(/(?:myr|rm|\$)[ \t]{0,3}(\d{1,6})/i)
   if (singleMatch) return { min: 0, max: parseInt(singleMatch[1]) }
 
   if (/\b(affordable|budget|cheap|low cost)\b/i.test(text)) { return { min: 0, max: 300 } }
@@ -136,8 +135,7 @@ export function parseBudget(text: string): { min: number; max: number } | null {
 
 export function parseExperienceYears(text: string): number {
   // "5 years", "10+ years", etc.
-  // eslint-disable-next-line sonarjs/slow-regex
-  const m = text.match(/(\d+)\+?\s*years?/i)
+  const m = text.match(/(\d{1,3})\+?[ \t]{0,3}years?/i)
   if (m) return parseInt(m[1])
   if (/beginner|new|fresh/i.test(text)) return 0
   if (/veteran|senior|master|decade/i.test(text)) return 10

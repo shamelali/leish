@@ -288,8 +288,9 @@ it("should create a profile with role metadata on signup", async () => {
       }
     })
 
-    it("should retrieve profile by user ID", async () => {
+    it("should retrieve profile by user ID", async (ctx) => {
       if (!profileTestUserId) {
+        ctx.skip()
         return
       }
       const { data: profile, error } = await supabase
@@ -304,8 +305,9 @@ it("should create a profile with role metadata on signup", async () => {
       expect(profile?.phone).toBe("+60198765432")
     })
 
-    it("should update profile fields", async () => {
+    it("should update profile fields", async (ctx) => {
       if (!profileTestUserId) {
+        ctx.skip()
         return
       }
       const { error } = await supabase
@@ -365,8 +367,9 @@ describe("Role-based Access", () => {
       }
     })
 
-    it("should assign customer role correctly", async () => {
+    it("should assign customer role correctly", async (ctx) => {
       if (!customerUserId) {
+        ctx.skip()
         return
       }
       const { data: profile } = await supabase
@@ -378,8 +381,9 @@ describe("Role-based Access", () => {
       expect(profile?.role).toBe("customer")
     })
 
-    it("should assign artist role correctly", async () => {
+    it("should assign artist role correctly", async (ctx) => {
       if (!artistUserId) {
+        ctx.skip()
         return
       }
       const { data: profile } = await supabase
@@ -391,8 +395,9 @@ describe("Role-based Access", () => {
       expect(profile?.role).toBe("artist")
     })
 
-    it("should assign studio role correctly", async () => {
+    it("should assign studio role correctly", async (ctx) => {
       if (!studioUserId) {
+        ctx.skip()
         return
       }
       const { data: profile } = await supabase
@@ -572,8 +577,9 @@ describe("Role-based Access", () => {
       }
     })
 
-    it("should store metadata on signup", async () => {
+    it("should store metadata on signup", async (ctx) => {
       if (!metadataUserId) {
+        ctx.skip()
         return
       }
       const { data: user } = await supabase.auth.getUser(metadataUserId)
@@ -584,8 +590,9 @@ describe("Role-based Access", () => {
       expect(user.user?.user_metadata.role).toBe("customer")
     })
 
-    it("should update user metadata", async () => {
+    it("should update user metadata", async (ctx) => {
       if (!metadataUserId) {
+        ctx.skip()
         return
       }
       const { error } = await supabase.auth.admin.updateUserById(metadataUserId, {
@@ -621,8 +628,9 @@ describe("Role-based Access", () => {
       }
     })
 
-    it("should resend confirmation email", async () => {
+    it("should resend confirmation email", async (ctx) => {
       if (!verifyUserId) {
+        ctx.skip()
         return
       }
 
@@ -631,8 +639,9 @@ describe("Role-based Access", () => {
       expect(error).toBeNull()
     })
 
-    it("should check unverified user status", async () => {
+    it("should check unverified user status", async (ctx) => {
       if (!verifyUserId) {
+        ctx.skip()
         return
       }
       const { data: user } = await supabase.auth.getUser(verifyUserId)

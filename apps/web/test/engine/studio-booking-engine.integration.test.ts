@@ -225,7 +225,7 @@ describe.skipIf(!ENABLED)("studio booking engine (integration)", () => {
     const date = await targetDate()
     const slots = await openSlots(date)
     // 9:00..16:00 inclusive on a 15-min grid = 29 starts for a 60-min service
-    expect(slots.length).toBe(29)
+    expect(slots).toHaveLength(29)
     for (const s of slots) {
       expect(s.duration_minutes).toBe(60)
       expect(s.price_myr).toBe(300)
@@ -244,7 +244,7 @@ describe.skipIf(!ENABLED)("studio booking engine (integration)", () => {
   it("excludes slots that overlap a legacy pre-booked availability slot", async () => {
     const date = await targetDate()
     const before = await openSlots(date)
-    expect(before.length).toBe(29)
+    expect(before).toHaveLength(29)
 
     // legacy row occupies 09:30-10:00 -> any 60-min start whose window
     // intersects [09:30, 10:00) disappears: 09:00, 09:15, 09:30, 09:45
@@ -256,7 +256,7 @@ describe.skipIf(!ENABLED)("studio booking engine (integration)", () => {
               true)
     `)
     const after = await openSlots(date)
-    expect(after.length).toBe(25)
+    expect(after).toHaveLength(25)
 
     const labels = after.map((s) =>
       new Intl.DateTimeFormat("en-GB", {
@@ -278,13 +278,13 @@ describe.skipIf(!ENABLED)("studio booking engine (integration)", () => {
               ('${date}' || ' 23:59:59')::timestamp at time zone '${TZ}',
               'Holiday')
     `)
-    expect((await openSlots(date)).length).toBe(0)
+    expect((await openSlots(date))).toHaveLength(0)
   })
 
   it("books atomically with deposit guidance and holds the slot", async () => {
     const date = await targetDate()
     const slots = await openSlots(date)
-    expect(slots.length).toBe(29)
+    expect(slots).toHaveLength(29)
 
     await db.query(`
       update public.studio_settings
@@ -301,10 +301,10 @@ describe.skipIf(!ENABLED)("studio booking engine (integration)", () => {
 
     // the booked window and every start intersecting it (09:00-09:45) are gone
     const after = await openSlots(date)
-    expect(after.length).toBe(25)
+    expect(after).toHaveLength(25)
     const bookedStart = slots[0].start_ts.getTime()
     for (const s of after) {
-      expect(s.start_ts.getTime() === bookedStart).toBe(false)
+      expect(s.start_ts.getTime()).not.toBe(bookedStart)
     }
     // the slot right after the window (10:00) is still offered
     const nextStart = new Intl.DateTimeFormat("en-GB", {
