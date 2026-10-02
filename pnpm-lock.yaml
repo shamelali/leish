@@ -512,6 +512,9 @@ importers:
       graphql-scalars:
         specifier: ^1.25.0
         version: 1.25.0(graphql@16.14.2)
+      graphql-tag:
+        specifier: ^2.12.7
+        version: 2.12.7(graphql@16.14.2)
       graphql-tools:
         specifier: ^9.0.26
         version: 9.0.28(graphql@16.14.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(rxjs@7.8.2)
@@ -733,6 +736,9 @@ importers:
 
   packages/shared:
     dependencies:
+      '@auth/core':
+        specifier: 0.41.2
+        version: 0.41.2
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.10.0(react-hook-form@7.79.0(react@19.2.4))

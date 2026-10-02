@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm turbo run build",
+  "buildCommand": "pnpm turbo run build --filter=@leish/web",
   "installCommand": "pnpm install",
   "outputDirectory": "apps/web/.next",
   "regions": [

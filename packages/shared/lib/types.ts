@@ -1,4 +1,6 @@
 export type Role = "customer" | "artist" | "studio" | "admin";
+/** Alias used by the auth helpers. */
+export type UserRole = Role;
 
 export type BridalEvent =
   "engagement" | "solemnization" | "reception" | "full-package" | "bridal-other";

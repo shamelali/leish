@@ -10,6 +10,7 @@
     "postinstall": "pnpm exec prisma generate"
   },
   "dependencies": {
+    "@auth/core": "0.41.2",
     "@hookform/resolvers": "^3.9.1",
     "@prisma/adapter-pg": "^7.8.0",
     "@radix-ui/react-accordion": "1.2.12",

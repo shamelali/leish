@@ -72,6 +72,7 @@
     "googleapis": "^173.0.0",
     "graphql": "^16.13.1",
     "graphql-scalars": "^1.25.0",
+    "graphql-tag": "^2.12.7",
     "graphql-tools": "^9.0.26",
     "input-otp": "1.4.2",
     "lucide-react": "^0.564.0",

@@ -8,7 +8,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["@leish/shared"],
-  outputFileTracingRoot: __dirname,
+  // Monorepo root: shared packages live in ../../packages.
+  outputFileTracingRoot: path.join(__dirname, "../.."),
   images: {
     remotePatterns: [
       {
@@ -48,7 +49,7 @@ const nextConfig = {
     optimizeCss: true,
   },
   turbopack: {
-    root: __dirname,
+    root: path.join(__dirname, "../.."),
     resolveAlias: {
       "@leish/shared": path.join(__dirname, "../../packages/shared"),
       "@leish/server": path.join(__dirname, "../../packages/server"),
