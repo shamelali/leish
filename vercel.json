@@ -2,5 +2,49 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm turbo run build",
   "installCommand": "pnpm install",
-  "outputDirectory": "apps/web/.next"
+  "outputDirectory": "apps/web/.next",
+  "regions": [
+    "sin1"
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/cleanup",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/webhook-monitor",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/booking-cleanup",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/balance-reminders",
+      "schedule": "0 1 * * *"
+    }
+  ]
 }

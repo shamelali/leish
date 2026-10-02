@@ -3,19 +3,18 @@ import { getSql } from "@/lib/db/postgres";
 import { sendEmail } from "@/lib/email/brevo";
 import { bookingReminderTemplate } from "@/lib/email/templates";
 import { sendBookingReminder } from "@/lib/notifications/whatsapp";
+import { authorizeCron } from "@/lib/ops/cron-auth"
+
+// Vercel kills the function after this many seconds; keep each sweep bounded.
+export const maxDuration = 60
 
 // Cron endpoint to send 24-hour reminder emails and SMS/WhatsApp
 // Should be called by Vercel Cron or external scheduler
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export async function GET(req: Request) {
-  // Simple auth check using CRON_SECRET
-  const authHeader = req.headers.get("authorization");
-  const expectedSecret = process.env.CRON_SECRET;
-
-  if (expectedSecret && authHeader !== `Bearer ${expectedSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const denied = authorizeCron(req)
+  if (denied) return denied
 
   try {
     const sql = getSql();

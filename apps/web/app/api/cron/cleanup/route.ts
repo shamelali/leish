@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getSql } from "@/lib/db/postgres"
+import { authorizeCron } from "@/lib/ops/cron-auth"
+
+// Vercel kills the function after this many seconds; keep each sweep bounded.
+export const maxDuration = 60
 
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization")
-  const cronSecret = process.env.CRON_SECRET
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const denied = authorizeCron(req)
+  if (denied) return denied
 
   const sql = getSql()
   const results: { cleaned: number; message: string }[] = []

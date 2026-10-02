@@ -12,10 +12,13 @@ import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { sendEmail } from "@/lib/email/brevo"
 import { bookingExpiredTemplate, bookingReminderTemplate } from "@/lib/email/templates"
+import { authorizeCron } from "@/lib/ops/cron-auth"
+
+// Vercel kills the function after this many seconds; keep each sweep bounded.
+export const maxDuration = 60
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const CRON_SECRET = process.env.CRON_SECRET
 
 interface CleanupResult {
   expired: number
@@ -26,11 +29,8 @@ interface CleanupResult {
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export async function GET(req: Request) {
-  // Verify cron secret
-  const authHeader = req.headers.get("authorization")
-  if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const denied = authorizeCron(req)
+  if (denied) return denied
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey, {
     auth: { autoRefreshToken: false, persistSession: false },

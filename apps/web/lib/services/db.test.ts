@@ -1,4 +1,8 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
+
+// validateBookingTransition is pure; stub the auth-bound Supabase client so
+// importing ./db does not drag in next-auth.
+vi.mock("@/lib/supabase/ssr", () => ({ getSupabaseSsrClient: vi.fn() }))
 import { validateBookingTransition } from "./db"
 
 describe("validateBookingTransition", () => {

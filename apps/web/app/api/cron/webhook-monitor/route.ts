@@ -10,13 +10,14 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { sendEmail } from "@/lib/email/brevo"
+import { authorizeCron } from "@/lib/ops/cron-auth"
+
+// Vercel kills the function after this many seconds; keep each sweep bounded.
+export const maxDuration = 60
 // import { adminAlertTemplate } from "@/lib/email/templates"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-// Cron secret for authorization
-const CRON_SECRET = process.env.CRON_SECRET
 
 interface WebhookAlert {
   type: "failed_webhook" | "missing_webhook" | "delayed_payment"
@@ -27,13 +28,9 @@ interface WebhookAlert {
   details: Record<string, unknown>
 }
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export async function GET(req: Request) {
-  // Verify cron secret
-  const authHeader = req.headers.get("authorization")
-  if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const denied = authorizeCron(req)
+  if (denied) return denied
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey, {
     auth: { autoRefreshToken: false, persistSession: false },

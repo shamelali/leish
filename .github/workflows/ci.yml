@@ -21,9 +21,8 @@ jobs:
           node-version: 22
 
       - name: Install pnpm
+        # Version comes from the root package.json `packageManager` field.
         uses: pnpm/action-setup@v4
-        with:
-          version: 10.10.0
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -34,8 +33,8 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Test
-        run: cd apps/web && npx vitest run --exclude '**/booking*.test.ts' --exclude '**/registration.test.ts' --exclude '**/*.load.test.ts'
+      - name: Test (with coverage gate)
+        run: cd apps/web && npx vitest run --coverage --exclude '**/booking*.test.ts' --exclude '**/registration.test.ts' --exclude '**/*.load.test.ts'
 
       - name: Build
         run: pnpm build
