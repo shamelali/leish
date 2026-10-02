@@ -47,3 +47,4 @@ leish-498007-56e977b1873a.json
 .aider*
 .env*
 coverage/
+packages/server/data/*.db*
