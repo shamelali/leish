@@ -1,5 +1,7 @@
 export type Role = "customer" | "artist" | "studio" | "admin";
 
+export type UserRole = Role;
+
 export type BridalEvent =
   "engagement" | "solemnization" | "reception" | "full-package" | "bridal-other";
 

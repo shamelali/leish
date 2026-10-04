@@ -2,10 +2,11 @@
 import { fileURLToPath } from "url"
 import path from "path"
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const monorepoRoot = path.join(__dirname, "../..")
 
 const nextConfig = {
   transpilePackages: ["@leish/shared"],
-  outputFileTracingRoot: __dirname,
+  outputFileTracingRoot: monorepoRoot,
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/**" },
@@ -15,10 +16,10 @@ const nextConfig = {
     ],
   },
   turbopack: {
-    root: __dirname,
+    root: monorepoRoot,
     resolveAlias: {
-      "@leish/shared": path.join(__dirname, "../../packages/shared"),
-      "@leish/server": path.join(__dirname, "../../packages/server"),
+      "@leish/shared": path.join(monorepoRoot, "packages/shared"),
+      "@leish/server": path.join(monorepoRoot, "packages/server"),
     },
   },
 }

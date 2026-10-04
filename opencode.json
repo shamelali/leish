@@ -1,5 +1,17 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "lsp": true,
-  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git"]
+  "plugins": ["superpowers@git+https://github.com/obra/superpowers.git"],
+  "mcp": {
+    "supabase": {
+      "type": "remote",
+      "url": "https://mcp.supabase.com/mcp?project_ref=rnlgwckkpjvtmtsowkrj&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching",
+      "enabled": true
+    },
+    "meta": {
+      "type": "remote",
+      "url": "https://mcp.facebook.com/devtools",
+      "enabled": true
+    }
+  }
 }

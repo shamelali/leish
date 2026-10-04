@@ -7,9 +7,9 @@ allowBuilds:
   sharp: true
   '@prisma/engines': true
   prisma: true
-ignoredBuiltDependencies:
-  - '@prisma/engines'
-  - prisma
+  '@apollo/protobufjs': true
+  msgpackr-extract: true
+  unrs-resolver: true
 overrides:
   '@types/react': 19.2.14
   '@types/react-dom': 19.2.3
