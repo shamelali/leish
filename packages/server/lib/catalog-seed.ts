@@ -1,5 +1,5 @@
 import { getDb, bind } from "./db.ts";
-import { SEED_ARTISTS, SEED_STUDIOS } from "../lib/data.ts";
+import { SEED_ARTISTS, SEED_STUDIOS } from "@/lib/data";
 import type { Artist, Studio } from "@/lib/types";
 import { generateReferralCode } from "./referral.ts";
 

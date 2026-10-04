@@ -2,11 +2,24 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "rootDir": ".",
     "outDir": "dist",
     "declaration": true,
     "declarationMap": true,
-    "noEmit": true
+    "noEmit": true,
+    // Top-level `await` in lib/upload.test.ts needs ES2017+ (root is ES6).
+    // `module`/`moduleResolution` stay inherited from the root config.
+    "target": "ES2020",
+    // Several modules keep leish_v2's "./db.ts" style relative imports.
+    "allowImportingTsExtensions": true,
+    // leish_v2 sources import via "@/..." where "@/"" is <repo>/src. In this
+    // package that maps onto the ported layout: "@/server/*" -> lib/* and
+    // "@/lib/*" -> the shared package that received leish_v2's src/lib/*.
+    // (No "rootDir": those shared files sit outside this package, and with
+    // noEmit there is no output layout to constrain anyway.)
+    "paths": {
+      "@/server/*": ["./lib/*"],
+      "@/lib/*": ["../shared/lib/*"]
+    }
   },
   "include": ["lib/**/*"],
   "exclude": ["node_modules", "dist"]
