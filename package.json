@@ -15,7 +15,9 @@
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
-    "clean": "turbo clean && rm -rf node_modules"
+    "clean": "turbo clean && rm -rf node_modules",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -34,10 +36,14 @@
     "@opencode-ai/sdk": "^1.15.0",
     "@types/bcryptjs": "^3.0.0",
     "@types/pg": "^8.20.0",
+    "@upstash/ratelimit": "^2.2.0",
+    "@upstash/redis": "^1.39.0",
     "eslint-config-next": "16.1.6",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-security": "^4.0.1",
     "eslint-plugin-sonarjs": "^4.2.1",
     "next": "^16.2.6",
+    "prettier": "^3.9.9",
     "prisma": "^7.8.0",
     "supabase": "^2.77.0",
     "turbo": "^2.9.18",

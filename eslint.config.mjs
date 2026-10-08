@@ -2,12 +2,14 @@ import nextVitals from "eslint-config-next/core-web-vitals"
 import nextTypescript from "eslint-config-next/typescript"
 import security from "eslint-plugin-security"
 import sonarjs from "eslint-plugin-sonarjs"
+import prettier from "eslint-config-prettier"
 
 const config = [
   ...nextVitals,
   ...nextTypescript,
   security.configs.recommended,
   sonarjs.configs.recommended,
+  prettier,
   {
     ignores: [
       "**/.next/**",
