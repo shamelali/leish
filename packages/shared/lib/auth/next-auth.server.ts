@@ -6,10 +6,18 @@ import Facebook from "@auth/core/providers/facebook"
 import Credentials from "@auth/core/providers/credentials"
 import { authConfig } from "./config"
 
-// Ensure AUTH_SECRET is available at runtime
+// AUTH_SECRET signs session JWTs. Surface a misconfiguration from the first
+// log line, but do NOT throw: this module is reached by route handlers and,
+// via @/lib/supabase/ssr -> auth/ssr, by unit tests, and a top-level throw
+// turns a missing variable into an import-time crash that fails `next build`
+// and the test suite in environments where it is legitimately absent (CI
+// checks out no .env.local, and ci.yml declares no env). NextAuth still fails
+// fast at the point of use with its own MissingSecret error.
 const authSecret = process.env.AUTH_SECRET
 if (!authSecret) {
-  throw new Error("AUTH_SECRET environment variable is required but not set. Check .env.local")
+  console.warn(
+    "[auth] AUTH_SECRET is not set — session JWTs cannot be signed. Set it in .env.local (see .env.example).",
+  )
 }
 
 const fullAuthConfig = {
