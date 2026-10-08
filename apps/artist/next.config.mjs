@@ -5,6 +5,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const monorepoRoot = path.join(__dirname, "../..")
 
 const nextConfig = {
+  compiler: {
+    removeConsole: { exclude: ["error", "warn"] },
+  },
   transpilePackages: ["@leish/shared"],
   outputFileTracingRoot: monorepoRoot,
   images: {

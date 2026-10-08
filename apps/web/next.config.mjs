@@ -8,6 +8,9 @@ const monorepoRoot = path.join(__dirname, "../..")
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  compiler: {
+    removeConsole: { exclude: ["error", "warn"] },
+  },
   transpilePackages: ["@leish/shared"],
   outputFileTracingRoot: monorepoRoot,
   images: {
